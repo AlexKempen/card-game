@@ -3,12 +3,12 @@ plugins {
 }
 
 android {
-    namespace = "com.cardgame"
+    namespace = "edu.utdallas.hearts"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.cardgame"
-        minSdk = 24
+        applicationId = "edu.utdallas.hearts"
+        minSdk = 23
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"

@@ -1,4 +1,4 @@
-package com.cardgame;
+package edu.utdallas.hearts;
 
 import org.junit.Test;
 
