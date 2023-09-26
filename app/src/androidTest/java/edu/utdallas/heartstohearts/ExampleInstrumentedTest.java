@@ -1,4 +1,4 @@
-package edu.utdallas.hearts;
+package edu.utdallas.heartstohearts;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("edu.utdallas.hearts", appContext.getPackageName());
+        assertEquals("edu.utdallas.heartstohearts", appContext.getPackageName());
     }
 }

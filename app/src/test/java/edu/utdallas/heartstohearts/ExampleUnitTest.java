@@ -1,4 +1,4 @@
-package edu.utdallas.hearts;
+package edu.utdallas.heartstohearts;
 
 import org.junit.Test;
 
