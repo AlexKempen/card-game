@@ -10,12 +10,12 @@ import android.util.Log;
 
 public class MainActivity extends AppCompatActivity {
 
-    View.OnClickListener handleHostGameClick = v -> {
+    private View.OnClickListener handleHostGameClick = v -> {
         Log.d("Main", "Host game");
         startActivity(new Intent(MainActivity.this, HostGameActivity.class));
     };
 
-    View.OnClickListener handleJoinGameClick = v -> {
+    private View.OnClickListener handleJoinGameClick = v -> {
         Log.d("Main", "Join game");
     };
 
