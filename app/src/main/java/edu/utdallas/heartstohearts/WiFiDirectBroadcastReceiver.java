@@ -12,13 +12,13 @@ import androidx.appcompat.app.AppCompatActivity;
 /**
  * Listens for WiFi p2p events.
  */
-public class NetworkReceiver extends BroadcastReceiver {
+public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     private WifiP2pManager manager;
     private Channel channel;
     // It's hard to say at this point whether taking activity is a good idea
     private AppCompatActivity activity;
 
-    public NetworkReceiver(WifiP2pManager manager, Channel channel, AppCompatActivity activity) {
+    public WiFiDirectBroadcastReceiver(WifiP2pManager manager, Channel channel, AppCompatActivity activity) {
         super();
         this.manager = manager;
         this.channel = channel;

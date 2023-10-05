@@ -17,6 +17,7 @@ public class MainActivity extends AppCompatActivity {
 
     private View.OnClickListener handleJoinGameClick = v -> {
         Log.d("Main", "Join game");
+        startActivity(new Intent(MainActivity.this, JoinGameActivity.class));
     };
 
     @Override
