@@ -15,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity;
 public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     private WifiP2pManager manager;
     private Channel channel;
-    // It's hard to say at this point whether taking activity is a good idea
     private AppCompatActivity activity;
 
     public WiFiDirectBroadcastReceiver(WifiP2pManager manager, Channel channel, AppCompatActivity activity) {
@@ -37,20 +36,6 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         return intentFilter;
     }
 
-    /**
-     * Registers the receiver on the given activity.
-     */
-    public void registerReceiver() {
-        activity.registerReceiver(this, createIntentFilter());
-    }
-
-    /**
-     * Unregisters the receiver on the given activity.
-     */
-    public void unregisterReceiver() {
-        activity.unregisterReceiver(this);
-    }
-
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
@@ -69,7 +54,6 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     }
 
     private void handlePeersChanged() {
-
 
     }
 }

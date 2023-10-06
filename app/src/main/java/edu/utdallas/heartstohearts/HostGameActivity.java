@@ -128,7 +128,6 @@ public class HostGameActivity extends AppCompatActivity {
         super.onResume();
         receiver = new WiFiDirectBroadcastReceiver(manager, channel, this);
         registerReceiver(receiver, intentFilter);
-        receiver.registerReceiver();
     }
 
     @Override
