@@ -51,7 +51,7 @@ public class CommandStream {
      * Reads an Object of type T from the stream.
      */
     public <T> T read() {
-        return this.castObject(readObject());
+        return CommandStream.castObject(readObject());
     }
 
     /**
@@ -72,7 +72,7 @@ public class CommandStream {
     /**
      * Performs an unchecked cast on Object to type T.
      */
-    public <T> T castObject(Object o) {
+    static public <T> T castObject(Object o) {
         @SuppressWarnings("unchecked") T result = (T) o;
         return result;
     }
