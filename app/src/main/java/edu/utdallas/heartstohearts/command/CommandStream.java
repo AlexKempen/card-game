@@ -25,7 +25,7 @@ public class CommandStream {
 
     /**
      * Registers an input stream.
-     * Must be called after construction prior to using read.
+     * Must be called after construction, prior to using read.
      */
     public void addInputStream(InputStream in) {
         try {
@@ -36,7 +36,7 @@ public class CommandStream {
     }
 
     /**
-     * Writes Object o to the stream.
+     * Writes an Object to the stream.
      */
     public void write(Object o) {
         try {
@@ -51,7 +51,7 @@ public class CommandStream {
      * Reads an Object of type T from the stream.
      */
     public <T> T read() {
-        return this.<T>castObject(readObject());
+        return this.castObject(readObject());
     }
 
     /**

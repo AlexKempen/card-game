@@ -1,18 +1,18 @@
 package edu.utdallas.heartstohearts.command;
 
 /**
- * A class defining a generic receiver for Commands
- * which receives them from an ObjectInputStream.
- * The first object in the ObjectInputStream is the
- * executor; it receives an output stream which
- * can be used to stream data back to the CommandInvoker.
+ * Defines a generic client for processing Commands received from a CommandStream.
+ * The first object is expected to the Executor, which this class will automatically take ownership of.
  */
 public class CommandReceiver {
     public CommandReceiver(CommandStream stream) {
         this.stream = stream;
-        executor = stream.<Executor>read();
+        executor = stream.read();
     }
 
+    /**
+     * Reads and processes commands from stream until an ExitCommand is received.
+     */
     public void processCommands() {
         while (true) {
             Object object = stream.readObject();
@@ -26,21 +26,21 @@ public class CommandReceiver {
     /**
      * Executes a command object.
      *
-     * @return true if the process should exit.
+     * @return true if the process should exit afterwards.
      */
     private boolean executeCommandObject(Object object) {
         if (object instanceof Command<?>) {
-            Command<Executor> command = stream.<Command<Executor>>castObject(object);
+            Command<Executor> command = stream.castObject(object);
             command.execute(executor);
             return command.exit();
         } else if (object instanceof ResultCommand<?, ?>) {
-            ResultCommand<Executor, ?> resultCommand = stream.<ResultCommand<Executor, ?>>castObject(object);
+            ResultCommand<Executor, ?> resultCommand = stream.castObject(object);
             stream.write(resultCommand.execute(executor));
             return false; // always continue after ResultCommand
         }
         throw new AssertionError("Expected valid command.");
     }
 
-    private Executor executor;
-    private CommandStream stream;
+    private final Executor executor;
+    private final CommandStream stream;
 }

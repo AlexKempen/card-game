@@ -3,10 +3,15 @@ package edu.utdallas.heartstohearts.command;
 import java.io.Serializable;
 
 /**
- * Executes Commands by sending them to a given CommandProcess.
- * Note the given command process assumes ownership of a given executor.
+ * Executes Commands by sending them to a given CommandStream.
+ * Generally speaking, the CommandStream should be hooked to a CommandReceiver, which
+ * will execute the Commands on the passed in Executor.
  */
 public class CommandInvoker<T extends Executor> {
+    /**
+     * @param executor: An executor, which is passed to the client and used to process future commands.
+     * @param stream:   A CommandStream connecting to the client.
+     */
     public CommandInvoker(T executor, CommandStream stream) {
         this.stream = stream;
         // send executor to the process
@@ -14,7 +19,7 @@ public class CommandInvoker<T extends Executor> {
     }
 
     /**
-     * Writes a command to out.
+     * Writes a Command to out.
      */
     public void send(Command<T> command) {
         stream.write(command);
@@ -30,12 +35,12 @@ public class CommandInvoker<T extends Executor> {
 
     /**
      * Writes an exit command to the stream.
-     * Note the underlying Process may still take some time to exit.
+     * Note the underlying CommandReceiver may still take some time to exit.
      */
     public void exit() {
         stream.write(new ExitCommand());
         stream.close();
     }
 
-    private CommandStream stream;
+    private final CommandStream stream;
 }
