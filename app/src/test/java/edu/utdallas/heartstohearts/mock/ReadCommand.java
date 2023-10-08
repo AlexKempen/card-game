@@ -3,7 +3,7 @@ package edu.utdallas.heartstohearts.mock;
 import edu.utdallas.heartstohearts.command.ResultCommand;
 
 /**
- * Reads data from memory.
+ * Reads data from Memory.
  */
 public class ReadCommand extends ResultCommand<Memory, Integer> {
     public ReadCommand(int address) {
