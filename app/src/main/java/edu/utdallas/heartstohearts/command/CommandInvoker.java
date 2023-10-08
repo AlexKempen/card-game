@@ -3,9 +3,7 @@ package edu.utdallas.heartstohearts.command;
 import java.io.Serializable;
 
 /**
- * Executes Commands by sending them to a given CommandStream.
- * Generally speaking, the CommandStream should be hooked to a CommandReceiver, which
- * will execute the Commands on the passed in Executor.
+ * Executes Commands by sending them to a client via a CommandStream.
  */
 public class CommandInvoker<T extends Executor> {
     /**
@@ -19,14 +17,16 @@ public class CommandInvoker<T extends Executor> {
     }
 
     /**
-     * Writes a Command to out.
+     * Writes a Command to the client.
      */
     public void send(Command<T> command) {
         stream.write(command);
     }
 
     /**
-     * Writes a ResultCommand to out and returns the result.
+     * Writes a ResultCommand to the client.
+     *
+     * @return The response from the client (which is generally the value returned by the Command).
      */
     public <R extends Serializable> R send(ResultCommand<T, R> command) {
         stream.write(command);
@@ -34,8 +34,8 @@ public class CommandInvoker<T extends Executor> {
     }
 
     /**
-     * Writes an exit command to the stream.
-     * Note the underlying CommandReceiver may still take some time to exit.
+     * Writes an ExitCommand to the client and closes the connection.
+     * Note the client may still take some time to exit afterwards.
      */
     public void exit() {
         stream.write(new ExitCommand());

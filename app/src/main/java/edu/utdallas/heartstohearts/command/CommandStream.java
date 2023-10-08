@@ -26,6 +26,7 @@ public class CommandStream {
     /**
      * Registers an input stream.
      * Must be called after construction, prior to using read.
+     * Note this method is separate from the Constructor in order to enable different stream construction semantics.
      */
     public void addInputStream(InputStream in) {
         try {
@@ -77,6 +78,9 @@ public class CommandStream {
         return result;
     }
 
+    /**
+     * Closes both streams underlying this class.
+     */
     public void close() {
         try {
             in.close();

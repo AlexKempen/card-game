@@ -2,16 +2,20 @@ package edu.utdallas.heartstohearts.command;
 
 /**
  * Defines a generic client for processing Commands received from a CommandStream.
- * The first object is expected to the Executor, which this class will automatically take ownership of.
+ * The first object received is expected to the Executor, which this class will automatically take ownership of.
+ * The Executor will then be provided to future commands, allowing them to manipulate it.
  */
 public class CommandReceiver {
+    /**
+     * @param stream: A CommandStream connecting to the server.
+     */
     public CommandReceiver(CommandStream stream) {
         this.stream = stream;
         executor = stream.read();
     }
 
     /**
-     * Reads and processes commands from the CommandStream until an ExitCommand is received.
+     * Reads and processes Commands from the CommandStream until an ExitCommand is received.
      */
     public void processCommands() {
         while (true) {
@@ -23,7 +27,7 @@ public class CommandReceiver {
     }
 
     /**
-     * Executes a command object.
+     * Executes a Command object.
      *
      * @return `true` if the Receiver should exit afterwards.
      */
