@@ -1,0 +1,59 @@
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TableRow
+        android:id="@+id/spadesRow"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/spadesIcon"
+            style="@style/SuiteIcon"
+            android:contentDescription="@string/spadesIcon"
+            app:srcCompat="@drawable/spades_icon" />
+
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/heartsRow"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/heartsIcon"
+            style="@style/SuiteIcon"
+            android:contentDescription="@string/heartsIcon"
+            app:srcCompat="@drawable/hearts_icon" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/clubsRow"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/clubsIcon"
+            style="@style/SuiteIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/clubsIcon"
+            app:srcCompat="@drawable/clubs_icon" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/diamondsRow"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/diamondsIcon"
+            style="@style/SuiteIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/diamondsIcon"
+            app:srcCompat="@drawable/diamonds_icon" />
+    </TableRow>
+
+</TableLayout>

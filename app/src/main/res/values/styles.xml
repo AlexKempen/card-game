@@ -1,7 +1,10 @@
 <resources>
 
-    <style name="Widget.Theme.HeartsToHearts.MyView" parent="">
-        <item name="android:background">@color/gray_400</item>
-        <item name="exampleColor">@color/light_blue_400</item>
+    <style name="SuiteIcon" parent="">
+        <!-- Style for sizing suite icons -->
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:maxHeight">40sp</item>
+        <item name="android:minHeight">20sp</item>
+        <item name="android:adjustViewBounds">true</item>
     </style>
 </resources>
