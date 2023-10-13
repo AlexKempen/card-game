@@ -1,4 +1,5 @@
 package edu.utdallas.heartstohearts;
+
 public class Card {
 	private int rank = 0; // A, 2, 3, 4, ..., 9, 10, J, Q, K
 	private static final int QUEEN = 11;

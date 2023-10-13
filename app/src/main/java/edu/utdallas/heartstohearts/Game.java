@@ -5,59 +5,60 @@ import java.util.ArrayList;
 
 public class Game {
 
-	private Player[] players = null; //array of 4 players
-	private Card[] deck = null; //array  of 52 cards
-	
-	
-	public Game(Player[] playerList, Card[] fullDeck) {
-		this.players = playerList;
-		this.deck = fullDeck;
-	}
-	
-	
-	// SIMPLE GETTERS
-	public Player[] getPlayers() {
-		return this.players;
-	}
-	
-	public Card[] getDeck() {
-		return this.deck;
-	}
-	
-	// SIMPLE SETTERS
-		public void setPlayers(Player[] p) {
-			this.players = p;
-		}
-		
-		public void setDeck(Card[] c) {
-			this.deck = c;
-		}
-	
-	
-	public void dealCard(Card c, Player p) {
-		p.addCardToHand(c);
-	}
-	public void shuffleDeck() {
-		Card[] d = this.getDeck();
-		Random rand = new Random();
-		for (int i = 0; i < d.length; i++) {
-			int randomIndexToSwap = rand.nextInt(d.length);
-			Card temp = d[randomIndexToSwap];
-			d[randomIndexToSwap] = d[i];
-			d[i] = temp;
-		}
-	}
-	
-	public void dealDeck() {
-		Card[] d = this.getDeck();
-		Player[] p = this.getPlayers();
-		int playerTrack = 0;
-		for (int i = 0; i < 52; i ++) {
-			dealCard(d[i], p[(playerTrack % 4)]); // deals the entire 52 card deck to the 4 players, round robin
-			playerTrack++;
-		}
-		playerTrack = 0; // resets playerTrack to be safe, not really necessary
-	}
+    private Player[] players = null; //array of 4 players
+    private Card[] deck = null; //array  of 52 cards
+
+
+    public Game(Player[] playerList, Card[] fullDeck) {
+        this.players = playerList;
+        this.deck = fullDeck;
+    }
+
+
+    // SIMPLE GETTERS
+    public Player[] getPlayers() {
+        return this.players;
+    }
+
+    public Card[] getDeck() {
+        return this.deck;
+    }
+
+    // SIMPLE SETTERS
+    public void setPlayers(Player[] p) {
+        this.players = p;
+    }
+
+    public void setDeck(Card[] c) {
+        this.deck = c;
+    }
+
+
+    public void dealCard(Card c, Player p) {
+        p.addCardToHand(c);
+    }
+
+    public void shuffleDeck() {
+        Card[] d = this.getDeck();
+        Random rand = new Random();
+        for (int i = 0; i < d.length; i++) {
+            int randomIndexToSwap = rand.nextInt(d.length);
+            Card temp = d[randomIndexToSwap];
+            d[randomIndexToSwap] = d[i];
+            d[i] = temp;
+        }
+    }
+
+    public void dealDeck() {
+        Card[] d = this.getDeck();
+        Player[] p = this.getPlayers();
+        int playerTrack = 0;
+        for (int i = 0; i < 52; i++) {
+            dealCard(d[i], p[(playerTrack % 4)]); // deals the entire 52 card deck to the 4 players, round robin
+            playerTrack++;
+        }
+        playerTrack = 0; // resets playerTrack to be safe, not really necessary
+    }
 
 	public static void main(String[] args) {
 		// Initiate the 4 players, with user-input usernames
@@ -92,7 +93,7 @@ public class Game {
 		Card jackOfHearts = new Card(11, Suit.HEARTS);
 		Card queenOfHearts = new Card(12, Suit.HEARTS);
 		Card kingOfHearts = new Card(13, Suit.HEARTS);
-		
+
 		Card aceOfSpades = new Card(1, Suit.SPADES);
 		Card twoOfSpades = new Card(2, Suit.SPADES);
 		Card threeOfSpades = new Card(3, Suit.SPADES);
@@ -106,7 +107,7 @@ public class Game {
 		Card jackOfSpades = new Card(11, Suit.SPADES);
 		Card queenOfSpades = new Card(12, Suit.SPADES);
 		Card kingOfSpades = new Card(13, Suit.SPADES);
-		
+
 		Card aceOfDiamonds = new Card(1, Suit.DIAMONDS);
 		Card twoOfDiamonds = new Card(2, Suit.DIAMONDS);
 		Card threeOfDiamonds = new Card(3, Suit.DIAMONDS);
@@ -120,7 +121,7 @@ public class Game {
 		Card jackOfDiamonds = new Card(11, Suit.DIAMONDS);
 		Card queenOfDiamonds = new Card(12, Suit.DIAMONDS);
 		Card kingOfDiamonds = new Card(13, Suit.DIAMONDS);
-		
+
 		Card aceOfClubs = new Card(1, Suit.CLUBS);
 		Card twoOfClubs = new Card(2, Suit.CLUBS);
 		Card threeOfClubs = new Card(3, Suit.CLUBS);
@@ -176,57 +177,57 @@ public class Game {
 		
 		int round = 0;
 
-		passPhase(game, p0, p1, p2, p3, round);
-		playRound(game);
-		
-	}
-	
-	public static void passPhase(Game game, Player p0, Player p1, Player p2, Player p3, int rnd) {
-		//first trick - start by passing 3 cards to the right
-		
-		// One ArrayList to hold each player's three cards they're going to pass
-		ArrayList<Card> cardsToPassFrom0 = new ArrayList<Card>();
-		ArrayList<Card> cardsToPassFrom1 = new ArrayList<Card>();
-		ArrayList<Card> cardsToPassFrom2 = new ArrayList<Card>();
-		ArrayList<Card> cardsToPassFrom3 = new ArrayList<Card>();
-				
-		ArrayList<ArrayList<Card>> listOfHeldCards = new ArrayList<ArrayList<Card>>();
-		listOfHeldCards.add(cardsToPassFrom0);
-		listOfHeldCards.add(cardsToPassFrom1);
-		listOfHeldCards.add(cardsToPassFrom2);
-		listOfHeldCards.add(cardsToPassFrom3);
-		
-		Scanner reader = new Scanner(System.in);  // Create a Scanner object
-		
-		for (int i = 0; i < game.getPlayers().length; i++) {
-			Player p = game.getPlayers()[i];
-			System.out.println(p.getUsername() + ", it's your turn to pass 3 cards to the right.\nEnter the index of the first card you'd like to pass (0 is the first card in your hand; 12 is the last card in your hand.");
-			int index = reader.nextInt();
-			while (index < 0 || index > 12) {
-				System.out.println("Index must be between 0 and 12 inclusive, try again:");
-				index = reader.nextInt();
-			}
-			// RESERVE THIS CARD TO PASS
-			(listOfHeldCards.get(i)).add(p.getCurrHand().get(index));
-			
-			System.out.println("Now enter the index of the second card you'd like to pass to the right");
-			index = reader.nextInt();
-			while (index < 0 || index > 12) {
-				System.out.println("Index must be between 0 and 12 inclusive, try again:");
-				index = reader.nextInt();
-			}
-			// RESERVE THIS CARD TO PASS
-			(listOfHeldCards.get(i)).add(p.getCurrHand().get(index));
-			
-			System.out.println("Now enter the index of the third card you'd like to pass to the right");
-			index = reader.nextInt();
-			while (index < 0 || index > 12) {
-				System.out.println("Index must be between 0 and 12 inclusive, try again:");
-				index = reader.nextInt();
-			}
-			// RESERVE THIS CARD TO PASS
-			(listOfHeldCards.get(i)).add(p.getCurrHand().get(index));
-		}
+        passPhase(game, p0, p1, p2, p3, round);
+        playRound(game);
+
+    }
+
+    public static void passPhase(Game game, Player p0, Player p1, Player p2, Player p3, int rnd) {
+        //first trick - start by passing 3 cards to the right
+
+        // One ArrayList to hold each player's three cards they're going to pass
+        ArrayList<Card> cardsToPassFrom0 = new ArrayList<Card>();
+        ArrayList<Card> cardsToPassFrom1 = new ArrayList<Card>();
+        ArrayList<Card> cardsToPassFrom2 = new ArrayList<Card>();
+        ArrayList<Card> cardsToPassFrom3 = new ArrayList<Card>();
+
+        ArrayList<ArrayList<Card>> listOfHeldCards = new ArrayList<ArrayList<Card>>();
+        listOfHeldCards.add(cardsToPassFrom0);
+        listOfHeldCards.add(cardsToPassFrom1);
+        listOfHeldCards.add(cardsToPassFrom2);
+        listOfHeldCards.add(cardsToPassFrom3);
+
+        Scanner reader = new Scanner(System.in);  // Create a Scanner object
+
+        for (int i = 0; i < game.getPlayers().length; i++) {
+            Player p = game.getPlayers()[i];
+            System.out.println(p.getUsername() + ", it's your turn to pass 3 cards to the right.\nEnter the index of the first card you'd like to pass (0 is the first card in your hand; 12 is the last card in your hand.");
+            int index = reader.nextInt();
+            while (index < 0 || index > 12) {
+                System.out.println("Index must be between 0 and 12 inclusive, try again:");
+                index = reader.nextInt();
+            }
+            // RESERVE THIS CARD TO PASS
+            (listOfHeldCards.get(i)).add(p.getCurrHand().get(index));
+
+            System.out.println("Now enter the index of the second card you'd like to pass to the right");
+            index = reader.nextInt();
+            while (index < 0 || index > 12) {
+                System.out.println("Index must be between 0 and 12 inclusive, try again:");
+                index = reader.nextInt();
+            }
+            // RESERVE THIS CARD TO PASS
+            (listOfHeldCards.get(i)).add(p.getCurrHand().get(index));
+
+            System.out.println("Now enter the index of the third card you'd like to pass to the right");
+            index = reader.nextInt();
+            while (index < 0 || index > 12) {
+                System.out.println("Index must be between 0 and 12 inclusive, try again:");
+                index = reader.nextInt();
+            }
+            // RESERVE THIS CARD TO PASS
+            (listOfHeldCards.get(i)).add(p.getCurrHand().get(index));
+        }
 		
 		/*
 		// TESTING THAT CARDS ARE STORED PROPERLY; THEY ARE
@@ -237,70 +238,71 @@ public class Game {
 			}
 		}
 		*/
-		
-		// pass the stored cards to the correct players
-		// pass right
-		if (rnd == 0) {
-			p0.passCards(cardsToPassFrom0, p3);
-			p1.passCards(cardsToPassFrom1, p0);
-			p2.passCards(cardsToPassFrom2, p1);
-			p3.passCards(cardsToPassFrom3, p2);
-		}
-		
-		// pass left
-		if (rnd == 1) {
-			p0.passCards(cardsToPassFrom0, p1);
-			p1.passCards(cardsToPassFrom1, p2);
-			p2.passCards(cardsToPassFrom2, p3);
-			p3.passCards(cardsToPassFrom3, p0);
-		}
-		
-		// pass across
-		if (rnd == 2) {
-			p0.passCards(cardsToPassFrom0, p2);
-			p1.passCards(cardsToPassFrom1, p3);
-			p2.passCards(cardsToPassFrom2, p0);
-			p3.passCards(cardsToPassFrom3, p1);
-		}
-		
-		System.out.println("Players' hands after passing:");
-		for (Player p : game.getPlayers()) {
-			ArrayList<Card> hand = p.getCurrHand();
-			System.out.print(p.getUsername() + "'s hand: ");
-			for (Card c : hand) {
-				System.out.print(c.getRank() + " of " + c.getSuit() + ", ");
-			}
-			System.out.println();
-		}
-		System.out.println();
-	}	
-	
-	public static void playRound(Game g) {
-		//find who has the two of clubs, make that player the leader of the first trick
-		Player lead = null;
-		for (Player p : g.getPlayers()) {
-			for (int i = 0; i < p.getCurrHand().size(); i++) {
-				if (p.getCurrHand().get(i).getRank() == 2 && p.getCurrHand().get(i).getSuit() == Suit.CLUBS) {
-					System.out.println(p.getUsername() + " is the leader");
-					lead = p;
-				}
-			}
-			
-		}
-		playTrick(lead);
-	}
-	
-	public static void playTrick(Player leader) {
-		
-		ArrayList<Card> trickStack = new ArrayList<Card>();
-		Scanner scan = new Scanner(System.in);
-		System.out.println("Enter index of card you'd like to play from your hand");
-		int index = scan.nextInt();
-		leader.playCard(leader.getCurrHand().get(index), trickStack);
-		System.out.println("Trick stack contents:");
-		for (int i = 0; i < trickStack.size(); i++) {
-			System.out.println(trickStack.get(i).getRank() + " of " + trickStack.get(i).getSuit());
-		}
-		
-	}
+
+        // pass the stored cards to the correct players
+        // pass right
+        if (rnd == 0) {
+            p0.passCards(cardsToPassFrom0, p3);
+            p1.passCards(cardsToPassFrom1, p0);
+            p2.passCards(cardsToPassFrom2, p1);
+            p3.passCards(cardsToPassFrom3, p2);
+        }
+
+        // pass left
+        if (rnd == 1) {
+            p0.passCards(cardsToPassFrom0, p1);
+            p1.passCards(cardsToPassFrom1, p2);
+            p2.passCards(cardsToPassFrom2, p3);
+            p3.passCards(cardsToPassFrom3, p0);
+        }
+
+        // pass across
+        if (rnd == 2) {
+            p0.passCards(cardsToPassFrom0, p2);
+            p1.passCards(cardsToPassFrom1, p3);
+            p2.passCards(cardsToPassFrom2, p0);
+            p3.passCards(cardsToPassFrom3, p1);
+        }
+
+        System.out.println("Players' hands after passing:");
+        for (Player p : game.getPlayers()) {
+            ArrayList<Card> hand = p.getCurrHand();
+            System.out.print(p.getUsername() + "'s hand: ");
+            for (Card c : hand) {
+                System.out.print(c.getRank() + " of " + c.getSuit() + ", ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    public static void playRound(Game g) {
+        //find who has the two of clubs, make that player the leader of the first trick
+        Player lead = null;
+        for (Player p : g.getPlayers()) {
+            for (int i = 0; i < p.getCurrHand().size(); i++) {
+                if (p.getCurrHand().get(i).getRank() == 2 && p.getCurrHand().get(i).getSuit() == "clubs") {
+                    System.out.println(p.getUsername() + " is the leader");
+                    lead = p;
+                }
+            }
+
+        }
+        playTrick(lead);
+
+    }
+
+    public static void playTrick(Player leader) {
+
+        ArrayList<Card> trickStack = new ArrayList<Card>();
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Enter index of card you'd like to play from your hand");
+        int index = scan.nextInt();
+        leader.playCard(leader.getCurrHand().get(index), trickStack);
+        System.out.println("Trick stack contents:");
+        for (int i = 0; i < trickStack.size(); i++) {
+            System.out.println(trickStack.get(i).getRank() + " of " + trickStack.get(i).getSuit());
+        }
+
+    }
 }
