@@ -79,61 +79,61 @@ public class Game {
 		Player[] fourPlayers = {p0, p1, p2, p3};
 		
 		// Initiate the 52-card deck
-		Card aceOfHearts = new Card(1, "hearts");
-		Card twoOfHearts = new Card(2, "hearts");
-		Card threeOfHearts = new Card(3, "hearts");
-		Card fourOfHearts = new Card(4, "hearts");
-		Card fiveOfHearts = new Card(5, "hearts");
-		Card sixOfHearts = new Card(6, "hearts");
-		Card sevenOfHearts = new Card(7, "hearts");
-		Card eightOfHearts = new Card(8, "hearts");
-		Card nineOfHearts = new Card(9, "hearts");
-		Card tenOfHearts = new Card(10, "hearts");
-		Card jackOfHearts = new Card(11, "hearts");
-		Card queenOfHearts = new Card(12, "hearts");
-		Card kingOfHearts = new Card(13, "hearts");
+		Card aceOfHearts = new Card(1, Suit.HEARTS);
+		Card twoOfHearts = new Card(2, Suit.HEARTS);
+		Card threeOfHearts = new Card(3, Suit.HEARTS);
+		Card fourOfHearts = new Card(4, Suit.HEARTS);
+		Card fiveOfHearts = new Card(5, Suit.HEARTS);
+		Card sixOfHearts = new Card(6, Suit.HEARTS);
+		Card sevenOfHearts = new Card(7, Suit.HEARTS);
+		Card eightOfHearts = new Card(8, Suit.HEARTS);
+		Card nineOfHearts = new Card(9, Suit.HEARTS);
+		Card tenOfHearts = new Card(10, Suit.HEARTS);
+		Card jackOfHearts = new Card(11, Suit.HEARTS);
+		Card queenOfHearts = new Card(12, Suit.HEARTS);
+		Card kingOfHearts = new Card(13, Suit.HEARTS);
 		
-		Card aceOfSpades = new Card(1, "spades");
-		Card twoOfSpades = new Card(2, "spades");
-		Card threeOfSpades = new Card(3, "spades");
-		Card fourOfSpades = new Card(4, "spades");
-		Card fiveOfSpades = new Card(5, "spades");
-		Card sixOfSpades = new Card(6, "spades");
-		Card sevenOfSpades = new Card(7, "spades");
-		Card eightOfSpades = new Card(8, "spades");
-		Card nineOfSpades = new Card(9, "spades");
-		Card tenOfSpades = new Card(10, "spades");
-		Card jackOfSpades = new Card(11, "spades");
-		Card queenOfSpades = new Card(12, "spades");
-		Card kingOfSpades = new Card(13, "spades");
+		Card aceOfSpades = new Card(1, Suit.SPADES);
+		Card twoOfSpades = new Card(2, Suit.SPADES);
+		Card threeOfSpades = new Card(3, Suit.SPADES);
+		Card fourOfSpades = new Card(4, Suit.SPADES);
+		Card fiveOfSpades = new Card(5, Suit.SPADES);
+		Card sixOfSpades = new Card(6, Suit.SPADES);
+		Card sevenOfSpades = new Card(7, Suit.SPADES);
+		Card eightOfSpades = new Card(8, Suit.SPADES);
+		Card nineOfSpades = new Card(9, Suit.SPADES);
+		Card tenOfSpades = new Card(10, Suit.SPADES);
+		Card jackOfSpades = new Card(11, Suit.SPADES);
+		Card queenOfSpades = new Card(12, Suit.SPADES);
+		Card kingOfSpades = new Card(13, Suit.SPADES);
 		
-		Card aceOfDiamonds = new Card(1, "diamonds");
-		Card twoOfDiamonds = new Card(2, "diamonds");
-		Card threeOfDiamonds = new Card(3, "diamonds");
-		Card fourOfDiamonds = new Card(4, "diamonds");
-		Card fiveOfDiamonds = new Card(5, "diamonds");
-		Card sixOfDiamonds = new Card(6, "diamonds");
-		Card sevenOfDiamonds = new Card(7, "diamonds");
-		Card eightOfDiamonds = new Card(8, "diamonds");
-		Card nineOfDiamonds = new Card(9, "diamonds");
-		Card tenOfDiamonds = new Card(10, "diamonds");
-		Card jackOfDiamonds = new Card(11, "diamonds");
-		Card queenOfDiamonds = new Card(12, "diamonds");
-		Card kingOfDiamonds = new Card(13, "diamonds");
+		Card aceOfDiamonds = new Card(1, Suit.DIAMONDS);
+		Card twoOfDiamonds = new Card(2, Suit.DIAMONDS);
+		Card threeOfDiamonds = new Card(3, Suit.DIAMONDS);
+		Card fourOfDiamonds = new Card(4, Suit.DIAMONDS);
+		Card fiveOfDiamonds = new Card(5, Suit.DIAMONDS);
+		Card sixOfDiamonds = new Card(6, Suit.DIAMONDS);
+		Card sevenOfDiamonds = new Card(7, Suit.DIAMONDS);
+		Card eightOfDiamonds = new Card(8, Suit.DIAMONDS);
+		Card nineOfDiamonds = new Card(9, Suit.DIAMONDS);
+		Card tenOfDiamonds = new Card(10, Suit.DIAMONDS);
+		Card jackOfDiamonds = new Card(11, Suit.DIAMONDS);
+		Card queenOfDiamonds = new Card(12, Suit.DIAMONDS);
+		Card kingOfDiamonds = new Card(13, Suit.DIAMONDS);
 		
-		Card aceOfClubs = new Card(1, "clubs");
-		Card twoOfClubs = new Card(2, "clubs");
-		Card threeOfClubs = new Card(3, "clubs");
-		Card fourOfClubs = new Card(4, "clubs");
-		Card fiveOfClubs = new Card(5, "clubs");
-		Card sixOfClubs = new Card(6, "clubs");
-		Card sevenOfClubs = new Card(7, "clubs");
-		Card eightOfClubs = new Card(8, "clubs");
-		Card nineOfClubs = new Card(9, "clubs");
-		Card tenOfClubs = new Card(10, "clubs");
-		Card jackOfClubs = new Card(11, "clubs");
-		Card queenOfClubs = new Card(12, "clubs");
-		Card kingOfClubs = new Card(13, "clubs");
+		Card aceOfClubs = new Card(1, Suit.CLUBS);
+		Card twoOfClubs = new Card(2, Suit.CLUBS);
+		Card threeOfClubs = new Card(3, Suit.CLUBS);
+		Card fourOfClubs = new Card(4, Suit.CLUBS);
+		Card fiveOfClubs = new Card(5, Suit.CLUBS);
+		Card sixOfClubs = new Card(6, Suit.CLUBS);
+		Card sevenOfClubs = new Card(7, Suit.CLUBS);
+		Card eightOfClubs = new Card(8, Suit.CLUBS);
+		Card nineOfClubs = new Card(9, Suit.CLUBS);
+		Card tenOfClubs = new Card(10, Suit.CLUBS);
+		Card jackOfClubs = new Card(11, Suit.CLUBS);
+		Card queenOfClubs = new Card(12, Suit.CLUBS);
+		Card kingOfClubs = new Card(13, Suit.CLUBS);
 		
 		Card[] full52Deck = {aceOfHearts, twoOfHearts, threeOfHearts, fourOfHearts, fiveOfHearts, sixOfHearts, sevenOfHearts, eightOfHearts, nineOfHearts, tenOfHearts, jackOfHearts, queenOfHearts, kingOfHearts, 
 							 aceOfSpades, twoOfSpades, threeOfSpades, fourOfSpades, fiveOfSpades, sixOfSpades, sevenOfSpades, eightOfSpades, nineOfSpades, tenOfSpades, jackOfSpades, queenOfSpades, kingOfSpades, 
@@ -280,7 +280,7 @@ public class Game {
 		Player lead = null;
 		for (Player p : g.getPlayers()) {
 			for (int i = 0; i < p.getCurrHand().size(); i++) {
-				if (p.getCurrHand().get(i).getRank() == 2 && p.getCurrHand().get(i).getSuit() == "clubs") {
+				if (p.getCurrHand().get(i).getRank() == 2 && p.getCurrHand().get(i).getSuit() == Suit.CLUBS) {
 					System.out.println(p.getUsername() + " is the leader");
 					lead = p;
 				}
@@ -288,7 +288,6 @@ public class Game {
 			
 		}
 		playTrick(lead);
-		
 	}
 	
 	public static void playTrick(Player leader) {
