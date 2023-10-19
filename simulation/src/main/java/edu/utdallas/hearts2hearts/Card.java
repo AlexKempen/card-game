@@ -1,4 +1,4 @@
-package hearts2hearts;
+package edu.utdallas.hearts2hearts;
 
 import java.io.Serializable;
 

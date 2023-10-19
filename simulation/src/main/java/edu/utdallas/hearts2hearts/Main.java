@@ -1,4 +1,4 @@
-package hearts2hearts;
+package edu.utdallas.hearts2hearts;
 
 public class Main {
     public static void main(String[] args) {
