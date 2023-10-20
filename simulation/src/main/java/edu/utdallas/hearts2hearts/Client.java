@@ -1,6 +1,7 @@
 package edu.utdallas.hearts2hearts;
 
 import java.net.*;
+import java.util.ArrayList;
 import java.io.*;
 
 public class Client extends Thread {
@@ -47,26 +48,47 @@ public class Client extends Thread {
         }
     }
 
-    public void run(){
-
-        boolean connectedToServer = connectToServer();
-        if (!connectedToServer)
-            return;
-
+    public GameState receiveGameStateFromServer(){
+        GameState gameState = null;
         try { 
-            GameState gameState = (GameState) objectInputStream.readObject();
+            gameState = (GameState) objectInputStream.readObject(); // block until server has sent object
             System.out.printf("(Client %d) Received GameState object\n", id);
-            String handString = String.format("(Client %d) Hand: ", id);
-            for (int i = 0; i < 13; i++)
-                handString += gameState.players[id].hand.get(i).toString() + ", ";
-            System.out.println(handString);
         }
         catch(IOException i){
             System.out.println(i);
         }catch (ClassNotFoundException c){
             System.out.println(c);
         }
+        return gameState;
+    }
 
+    public void sendGameStateToServer(GameState gameState){
+        try{
+            objectOutputStream.writeObject(gameState);
+        }
+        catch (IOException i) {
+            System.out.println(i);
+        }
+    }
+
+    public void passCards(){
+        GameState gameState = receiveGameStateFromServer();
+        // logic for passing around
+        ArrayList<Card> cardsToPass = gameState.players[id].cardsToPlay;
+        ArrayList<Card> hand = gameState.players[id].hand; 
+        for (int i = 0; i < 3; i++)
+            cardsToPass.add(hand.remove(0));
+        sendGameStateToServer(gameState);
+    }
+
+    public void run(){
+
+        boolean connectedToServer = connectToServer();
+        if (!connectedToServer)
+            return;
+        
+
+        passCards();
         closeConnection();
     }
 

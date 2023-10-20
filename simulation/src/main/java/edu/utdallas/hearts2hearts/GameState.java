@@ -5,11 +5,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class GameState implements Serializable{
-    
+
+    static enum Direction {
+        LEFT,
+        RIGHT,
+        ACROSS,
+        NONE
+    }
+
     public Player[] players;
     public boolean areHeartsBroken;
+    public Direction currentDirection;
 
     public GameState() {
+        currentDirection = Direction.LEFT;
         players = new Player[4];
         for (int playerID = 0; playerID < 4; playerID++)
             players[playerID] = new Player(playerID);

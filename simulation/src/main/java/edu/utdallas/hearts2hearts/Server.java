@@ -1,6 +1,7 @@
 package edu.utdallas.hearts2hearts;
 
 import java.net.*;
+import java.util.ArrayList;
 import java.io.*;
 
 public class Server extends Thread {
@@ -68,12 +69,8 @@ public class Server extends Thread {
         }
     }
 
-    public void run(){
-
-        startServer();
-        waitForClientConnections();
-        
-        GameState gameState = new GameState();
+    public void sendGameStateToClients(GameState gameState){
+        // send GameState to clients
         for (int playerID = 0; playerID < NUM_PLAYERS; playerID++) {
             try {
                 outputStreams[playerID].writeObject(gameState);
@@ -82,7 +79,66 @@ public class Server extends Thread {
                 System.out.println(i);
             }
         }
+    }
 
+    public GameState[] receiveGameStateFromClients(){
+        GameState[] gameStates = new GameState[4];
+        for (int i = 0; i < 4; i++){
+            try{
+                gameStates[i] = (GameState) inputStreams[i].readObject(); // block until first client writes
+            }
+            catch(IOException e){
+                System.out.println(e);
+            }
+            catch(ClassNotFoundException e){
+                System.out.println(e);
+            }
+
+        }
+        return gameStates;
+    }
+
+    public void passAround(GameState gameState){
+
+        sendGameStateToClients(gameState);
+        GameState[] clientGameStates = receiveGameStateFromClients();
+        ArrayList<ArrayList<Card>> cardsToPass = new ArrayList<ArrayList<Card>>();
+        for (int i = 0; i < 4; i++){
+            cardsToPass.add(clientGameStates[i].players[i].cardsToPlay);
+        }
+        switch(gameState.currentDirection){
+            case LEFT: {
+                gameState.players[0].hand.addAll(cardsToPass.get(3));
+                gameState.players[1].hand.addAll(cardsToPass.get(0));
+                gameState.players[2].hand.addAll(cardsToPass.get(1));
+                gameState.players[3].hand.addAll(cardsToPass.get(2));
+                break;
+            }
+            case RIGHT: {
+
+
+                break;
+            }
+            case ACROSS: {
+
+                break;
+            }
+            case NONE: {
+
+            }
+        }
+        
+    }
+
+    public void run(){
+
+        startServer();
+        waitForClientConnections();
+
+        GameState gameState = new GameState();  // initialize game
+        passAround(gameState);
+        
+        
         closeClientConnections();
         closeServer();
         return;
