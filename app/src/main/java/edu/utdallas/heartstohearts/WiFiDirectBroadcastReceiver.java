@@ -43,7 +43,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             // Check to see if Wi-Fi is enabled and notify appropriate activity
         } else if (action.equals(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION)) {
             // Call WifiP2pManager.requestPeers() to get a list of current peers
-            handlePeersChanged();
+
         } else if (action.equals(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION)) {
             // Respond to new connection or disconnections
 
@@ -51,9 +51,5 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             // Respond to this device's wifi state changing
 
         }
-    }
-
-    private void handlePeersChanged() {
-
     }
 }

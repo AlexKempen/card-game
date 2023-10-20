@@ -42,16 +42,11 @@ public class JoinGameActivity extends AppCompatActivity {
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
-        if (!initP2p())
-            finish();
-        else
-            Log.d(TAG, "Wi-Fi Direct is initialized");
+        if (!initP2p()) finish();
+        else Log.d(TAG, "Wi-Fi Direct is initialized");
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    JoinGameActivity.PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, JoinGameActivity.PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION);
             // After this point you wait for callback in
             // onRequestPermissionsResult(int, String[], int[]) overridden method
         }
@@ -60,14 +55,12 @@ public class JoinGameActivity extends AppCompatActivity {
 
             @Override
             public void onSuccess() {
-                Toast.makeText(JoinGameActivity.this, "Discovery Initiated",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(JoinGameActivity.this, "Discovery Initiated", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onFailure(int reasonCode) {
-                Toast.makeText(JoinGameActivity.this, "Discovery Failed : " + reasonCode,
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(JoinGameActivity.this, "Discovery Failed : " + reasonCode, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -78,9 +71,7 @@ public class JoinGameActivity extends AppCompatActivity {
                 peers.addAll(peerList.getDeviceList());
                 if (peers.size() == 0) {
                     Log.d(JoinGameActivity.TAG, "No devices found");
-
-                }
-                else {
+                } else {
                     Log.d(JoinGameActivity.TAG, "Devices found");
                     Log.d(JoinGameActivity.TAG, peerList.toString());
                 }
@@ -90,8 +81,7 @@ public class JoinGameActivity extends AppCompatActivity {
         manager.requestPeers(channel, peerListListener);
     }
 
-    private boolean initP2p()
-    {
+    private boolean initP2p() {
         // Device capability definition check
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI_DIRECT)) {
             Log.e(TAG, "Wi-Fi Direct is not supported by this device.");
@@ -125,7 +115,7 @@ public class JoinGameActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION:
-                if  (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     Log.e(TAG, "Fine location permission is not granted!");
                     finish();
                 }
