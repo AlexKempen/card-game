@@ -1,12 +1,10 @@
-package edu.utdallas.heartstohearts.game;
+package edu.utdallas.heartstohearts.gameui;
 
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-
-import java.util.List;
 
 /**
  * An activity representing the main game screen.
@@ -17,13 +15,12 @@ public class GameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         GameViewModel model = new ViewModelProvider(this).get(GameViewModel.class);
-        model.getGameStateData().observe(this, gameState -> {
-            // gameState is immutable - modify via model methods
-            List<Card> hand = gameState.getHand();
-            List<Card> trick = gameState.getTrick();
+        model.getHandData().observe(this, hand -> {
+            // Gets called every time hand changes
 
-//            List<Card> chosenCards = Arrays.asList(0, 1, 5).stream().map(hand::get).collect(Collectors.toList());
-//            model.chooseCards(chosenCards);
+            // gameState is immutable - modify via model methods
+            // List<Card> chosenCards = Arrays.asList(0, 1, 5).stream().map(hand::get).collect(Collectors.toList());
+            // model.chooseCards(chosenCards);
         });
     }
 }
