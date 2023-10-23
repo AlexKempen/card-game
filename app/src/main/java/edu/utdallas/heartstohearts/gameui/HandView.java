@@ -12,11 +12,11 @@ import android.widget.TableRow;
 import java.util.EnumMap;
 
 import edu.utdallas.heartstohearts.R;
-import edu.utdallas.heartstohearts.game.Suite;
+import edu.utdallas.heartstohearts.game.Suit;
 
 public class HandView extends TableLayout {
 
-    private EnumMap<Suite, TableRow> suite_rows;
+    private EnumMap<Suit, TableRow> suiteRows;
 
     public HandView(Context context) {
         super(context);
@@ -31,8 +31,8 @@ public class HandView extends TableLayout {
     protected void init(Context context) {
         // Load all elements from the XML into this view
         LayoutInflater.from(context).inflate(R.layout.hand_view, this);
-        suite_rows = new EnumMap<Suite, TableRow>(Suite.class);
-        suite_rows.put(Suite.HEARTS, this.findViewById(R.id.heartsRow));
+        suiteRows = new EnumMap<>(Suit.class);
+        suiteRows.put(Suit.HEARTS, this.findViewById(R.id.hearts_row));
 
         addCard("Dynamic card");
 
@@ -51,7 +51,7 @@ public class HandView extends TableLayout {
      * @return id of the added card
      */
     public int addCard(String card_name) {
-        TableRow row = suite_rows.get(Suite.HEARTS);
+        TableRow row = suiteRows.get(Suit.HEARTS);
         Button button = new Button(getContext());
         button.setText(card_name);
         row.addView(button);

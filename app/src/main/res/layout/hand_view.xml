@@ -17,24 +17,26 @@
     </TableRow>
 
     <TableRow
-        android:id="@+id/heartsRow"
+        android:id="@+id/hearts_row"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <ImageView
-            android:id="@+id/heartsIcon"
+            android:id="@+id/hearts_icon"
             style="@style/SuiteIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:contentDescription="@string/heartsIcon"
             app:srcCompat="@drawable/hearts_icon" />
     </TableRow>
 
     <TableRow
-        android:id="@+id/clubsRow"
+        android:id="@+id/clubs_row"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <ImageView
-            android:id="@+id/clubsIcon"
+            android:id="@+id/clubs_icon"
             style="@style/SuiteIcon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -43,12 +45,12 @@
     </TableRow>
 
     <TableRow
-        android:id="@+id/diamondsRow"
+        android:id="@+id/diamonds_row"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <ImageView
-            android:id="@+id/diamondsIcon"
+            android:id="@+id/diamonds_icon"
             style="@style/SuiteIcon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

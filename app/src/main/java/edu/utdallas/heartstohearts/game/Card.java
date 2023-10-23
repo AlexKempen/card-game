@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class Card implements Serializable {
     private Suit suit;
     private Rank rank;
+    private boolean playable;
 
     public Card(Suit suit, Rank rank) {
         this.suit = suit;
@@ -17,6 +18,15 @@ public class Card implements Serializable {
     public Card(int id) {
         this(Suit.fromInt(id / 13), Rank.fromInt(id % 13));
     }
+
+    public boolean isPlayable() {
+        return playable;
+    }
+
+    public void setPlayable(boolean playable) {
+        this.playable = playable;
+    }
+
 
     public Suit getSuit() {
         return suit;
