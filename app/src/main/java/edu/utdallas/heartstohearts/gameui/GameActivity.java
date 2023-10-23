@@ -15,8 +15,8 @@ public class GameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         GameViewModel model = new ViewModelProvider(this).get(GameViewModel.class);
-        model.getHandData().observe(this, hand -> {
-            // Gets called every time hand changes
+        model.getGameStateData().observe(this, gameUiState -> {
+            // Gets called every time gameUiState changes
 
             // gameState is immutable - modify via model methods
             // List<Card> chosenCards = Arrays.asList(0, 1, 5).stream().map(hand::get).collect(Collectors.toList());

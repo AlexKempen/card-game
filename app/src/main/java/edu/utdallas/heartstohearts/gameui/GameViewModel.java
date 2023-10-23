@@ -4,60 +4,52 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import edu.utdallas.heartstohearts.game.Card;
 import edu.utdallas.heartstohearts.game.Scores;
-import kotlin.collections.ArrayDeque;
 
 public class GameViewModel extends ViewModel {
-    private final MutableLiveData<List<Card>> handData = new MutableLiveData<>(null);
-    private final MutableLiveData<List<Card>> trickData = new MutableLiveData<>(null);
-    private final MutableLiveData<Scores> scoreData = new MutableLiveData<>(null);
+    private final MutableLiveData<GameUiState> gameStateData = new MutableLiveData<>(new GameUiState());
 
-    public LiveData<List<Card>> getHandData() {
-        return handData;
-    }
-
-    public LiveData<List<Card>> getTrickData() {
-        return trickData;
-    }
-
-    public LiveData<Scores> getScoreData() {
-        return scoreData;
+    public LiveData<GameUiState> getGameStateData() {
+        return gameStateData;
     }
 
     public void setTrick(List<Card> trick) {
-        trickData.setValue(trick);
+        GameUiState currState = gameStateData.getValue();
+        currState.setTrick(trick);
+        gameStateData.setValue(currState);
     }
 
     public void setHand(List<Card> hand) {
-        handData.setValue(hand);
+        GameUiState currState = gameStateData.getValue();
+        currState.setHand(hand);
+        gameStateData.setValue(currState);
     }
 
     public void setScores(Scores scores) {
-        scoreData.setValue(scores);
+        GameUiState currState = gameStateData.getValue();
+        currState.setScores(scores);
+        gameStateData.setValue(currState);
     }
 
     /**
      * Choose three cards to pass.
      */
-    public void chooseCards(List<Card> cards) {
-        List<Card> currHand = handData.getValue();
-        currHand.removeAll(cards);
-        handData.setValue(currHand);
+    public void passCards(List<Card> cards) {
+        GameUiState currState = gameStateData.getValue();
+        currState.getHand().removeAll(cards);
+        gameStateData.setValue(currState);
     }
 
     /**
      * Choose a card to play from your hand.
      */
     public void playCard(Card card) {
-        List<Card> currHand = handData.getValue();
-        List<Card> currTrick = trickData.getValue();
-        currHand.remove(card);
-        currTrick.add(card);
-        handData.setValue(currHand);
-        trickData.setValue(currTrick);
+        GameUiState currState = gameStateData.getValue();
+        currState.getHand().remove(card);
+        currState.getTrick().add(card);
+        gameStateData.setValue(currState);
     }
 }
