@@ -4,21 +4,17 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.utdallas.heartstohearts.game.Card;
 import edu.utdallas.heartstohearts.game.Scores;
+import kotlin.collections.ArrayDeque;
 
 public class GameViewModel extends ViewModel {
-    private final MutableLiveData<List<Card>> handData;
-    private final MutableLiveData<List<Card>> trickData;
-    private final MutableLiveData<Scores> scoreData;
-
-    public GameViewModel(List<Card> hand, List<Card> trick, Scores scores) {
-        handData = new MutableLiveData<>(hand);
-        trickData = new MutableLiveData<>(trick);
-        scoreData = new MutableLiveData<>(scores);
-    }
+    private final MutableLiveData<List<Card>> handData = new MutableLiveData<>(null);
+    private final MutableLiveData<List<Card>> trickData = new MutableLiveData<>(null);
+    private final MutableLiveData<Scores> scoreData = new MutableLiveData<>(null);
 
     public LiveData<List<Card>> getHandData() {
         return handData;
