@@ -1,6 +1,5 @@
 package edu.utdallas.heartstohearts.game;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class GameState {
@@ -14,9 +13,9 @@ public class GameState {
         this.scores = scores;
     }
 
-    public GameState() {
-        this(new ArrayList<>(), new ArrayList<>(), new Scores());
-    }
+//    public GameState() {
+//        this(new ArrayList<>(), new ArrayList<>(), new Scores());
+//    }
 
     public List<Card> getHand() {
         return hand;

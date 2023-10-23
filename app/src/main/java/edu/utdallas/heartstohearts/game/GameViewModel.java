@@ -7,44 +7,45 @@ import androidx.lifecycle.ViewModel;
 import java.util.List;
 
 public class GameViewModel extends ViewModel {
-    private final MutableLiveData<GameState> gameState;
+    private final MutableLiveData<GameState> gameStateData;
 
     public GameViewModel(GameState gameState) {
-        this.gameState = new MutableLiveData<>(gameState);
+        this.gameStateData = new MutableLiveData<>(gameState);
     }
 
-    public LiveData<GameState> getGameState() {
-        return gameState;
+    public LiveData<GameState> getGameStateData() {
+        return gameStateData;
     }
 
     public void setTrick(List<Card> trick) {
-        GameState currState = gameState.getValue();
+        GameState currState = gameStateData.getValue();
         currState.setTrick(trick);
-        gameState.setValue(currState);
+        gameStateData.setValue(currState);
     }
 
     public void setHand(List<Card> hand) {
-        GameState currState = gameState.getValue();
+        GameState currState = gameStateData.getValue();
         currState.setHand(hand);
-        gameState.setValue(currState);
+        gameStateData.setValue(currState);
     }
 
     /**
      * Choose three cards to pass.
      */
     public void chooseCards(List<Card> cards) {
-        GameState currState = gameState.getValue();
+        GameState currState = gameStateData.getValue();
         currState.getHand().removeAll(cards);
-        gameState.setValue(currState);
+        gameStateData.setValue(currState);
     }
 
     /**
      * Choose a card to play from your hand.
      */
     public void playCard(Card card) {
-        GameState currState = gameState.getValue();
+        GameState currState = gameStateData.getValue();
         currState.getHand().remove(card);
         currState.getTrick().add(card);
-        gameState.setValue(currState);
+        gameStateData.setValue(currState);
     }
+
 }
