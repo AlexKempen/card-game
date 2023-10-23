@@ -4,7 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 
-import edu.utdallas.heartstohearts.views.HandView;
+import edu.utdallas.heartstohearts.gameui.HandView;
 
 public class MainActivity extends AppCompatActivity {
 
