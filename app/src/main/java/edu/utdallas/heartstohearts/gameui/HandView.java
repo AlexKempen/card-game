@@ -28,7 +28,6 @@ public class HandView extends TableLayout {
         init(context);
     }
 
-
     protected void init(Context context) {
         // Load all elements from the XML into this view
         LayoutInflater.from(context).inflate(R.layout.hand_view, this);

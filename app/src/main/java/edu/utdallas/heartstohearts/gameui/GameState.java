@@ -5,7 +5,7 @@ import java.util.List;
 import edu.utdallas.heartstohearts.game.Card;
 import edu.utdallas.heartstohearts.game.Scores;
 
-public class GameUiState {
+public class GameState {
     private List<Card> hand;
     private List<Card> trick;
     /**
