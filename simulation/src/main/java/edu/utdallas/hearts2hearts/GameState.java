@@ -6,7 +6,7 @@ import java.util.Collections;
 
 public class GameState implements Serializable{
 
-    static enum Direction {
+    public static enum Direction {
         LEFT,
         RIGHT,
         ACROSS,
@@ -16,6 +16,8 @@ public class GameState implements Serializable{
     public Player[] players;
     public boolean areHeartsBroken;
     public Direction currentDirection;
+    public ArrayList<Card> currentPlay;
+    public int turn;
 
     public GameState() {
         currentDirection = Direction.LEFT;

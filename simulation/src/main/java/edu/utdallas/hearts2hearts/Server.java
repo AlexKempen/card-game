@@ -2,6 +2,10 @@ package edu.utdallas.hearts2hearts;
 
 import java.net.*;
 import java.util.ArrayList;
+
+import edu.utdallas.hearts2hearts.GameState.Direction;
+import edu.utdallas.hearts2hearts.Message.MSG_TYPE;
+
 import java.io.*;
 
 public class Server extends Thread {
@@ -15,7 +19,7 @@ public class Server extends Thread {
     private ObjectInputStream[] inputStreams;
 
 
-    public void startServer(){
+    private void startServer(){
         try{
             serverSocket = new ServerSocket(port);
             System.out.println("(Server) Server started.");
@@ -25,7 +29,7 @@ public class Server extends Thread {
         }
     }
 
-    public void waitForClientConnections(){
+    private void waitForClientConnections(){
         System.out.println("(Server) Waiting for players to join ...");
         for (int playerID = 0; playerID < NUM_PLAYERS; playerID++) {
             if (!clientsJoined[playerID]){
@@ -44,7 +48,7 @@ public class Server extends Thread {
         }
     }
 
-    public void closeClientConnections (){
+    private void closeClientConnections (){
         for (int playerID = 0; playerID < NUM_PLAYERS; playerID++) {
             if (clientsJoined[playerID]){
                 try {
@@ -60,7 +64,7 @@ public class Server extends Thread {
         }
     }
 
-    public void closeServer(){
+    private void closeServer(){
         try {
             serverSocket.close();
         }
@@ -69,11 +73,12 @@ public class Server extends Thread {
         }
     }
 
-    public void sendGameStateToClients(GameState gameState){
+    private void sendGameStateToClients(GameState gameState){
         // send GameState to clients
         for (int playerID = 0; playerID < NUM_PLAYERS; playerID++) {
             try {
-                outputStreams[playerID].writeObject(gameState);
+                Message msg = new Message(Message.MSG_TYPE.GAME_STATE, gameState);
+                outputStreams[playerID].writeObject(msg);
             }
             catch (IOException i) {
                 System.out.println(i);
@@ -81,11 +86,14 @@ public class Server extends Thread {
         }
     }
 
-    public GameState[] receiveGameStateFromClients(){
-        GameState[] gameStates = new GameState[4];
+    private ArrayList<ArrayList<Card>> receiveCardsToPassFromClients(){
+        ArrayList<ArrayList<Card>> cardsToPass = new ArrayList<ArrayList<Card>>();
         for (int i = 0; i < 4; i++){
             try{
-                gameStates[i] = (GameState) inputStreams[i].readObject(); // block until first client writes
+                Message msg = (Message) inputStreams[i].readObject(); // block until first client writes
+                if (msg.getMessageType() == MSG_TYPE.PASS_CARDS){
+                    cardsToPass.add((ArrayList<Card>) msg.getObject());
+                }
             }
             catch(IOException e){
                 System.out.println(e);
@@ -95,18 +103,33 @@ public class Server extends Thread {
             }
 
         }
-        return gameStates;
+        return cardsToPass;
     }
 
-    public void passAround(GameState gameState){
-
+    private void passingRound(GameState gameState){
         sendGameStateToClients(gameState);
-        GameState[] clientGameStates = receiveGameStateFromClients();
-        ArrayList<ArrayList<Card>> cardsToPass = new ArrayList<ArrayList<Card>>();
-        for (int i = 0; i < 4; i++){
-            cardsToPass.add(clientGameStates[i].players[i].cardsToPlay);
+        if (gameState.currentDirection == Direction.NONE)
+            return;
+
+        ArrayList<ArrayList<Card>> cardsToPass = receiveCardsToPassFromClients();
+        System.out.println("(Server) Received cards to pass from clients.");
+
+        // remove passed cards from current hands
+        for (int playerID = 0; playerID < 4; playerID++){
+            ArrayList<Card> cardsToRemove = cardsToPass.get(playerID);
+            ArrayList<Card> handToRemoveFrom = gameState.players[playerID].hand;
+            handToRemoveFrom.removeAll(cardsToRemove);
         }
+        
+        // repetitive but should work, someone could make this "neater"
         switch(gameState.currentDirection){
+            case RIGHT: {
+                gameState.players[0].hand.addAll(cardsToPass.get(1));
+                gameState.players[1].hand.addAll(cardsToPass.get(2));
+                gameState.players[2].hand.addAll(cardsToPass.get(3));
+                gameState.players[3].hand.addAll(cardsToPass.get(0));
+                break;
+            }
             case LEFT: {
                 gameState.players[0].hand.addAll(cardsToPass.get(3));
                 gameState.players[1].hand.addAll(cardsToPass.get(0));
@@ -114,21 +137,36 @@ public class Server extends Thread {
                 gameState.players[3].hand.addAll(cardsToPass.get(2));
                 break;
             }
-            case RIGHT: {
-
-
-                break;
-            }
             case ACROSS: {
-
+                gameState.players[0].hand.addAll(cardsToPass.get(2));
+                gameState.players[1].hand.addAll(cardsToPass.get(3));
+                gameState.players[2].hand.addAll(cardsToPass.get(0));
+                gameState.players[3].hand.addAll(cardsToPass.get(1));
                 break;
             }
             case NONE: {
-
+                // should never reach here
+                break;
             }
         }
+
+        System.out.println("(Server) Successfully passed cards to players in GameState.");
+    }
+
+
+    /* TODO: there's "turn" variable in GameState to monitor who starts (player index)
+     * in passingRound() assign that turn to whoever has 2 of clubs
+     * 
+     * Turns should be clockwise
+     * -> 2 ->
+     * 1     3
+     * <- 0 <-
+    */
+    private void playingRound(GameState gameState){
+        sendGameStateToClients(gameState);
         
     }
+    
 
     public void run(){
 
@@ -136,8 +174,8 @@ public class Server extends Thread {
         waitForClientConnections();
 
         GameState gameState = new GameState();  // initialize game
-        passAround(gameState);
-        
+        passingRound(gameState);
+        playingRound(gameState);
         
         closeClientConnections();
         closeServer();

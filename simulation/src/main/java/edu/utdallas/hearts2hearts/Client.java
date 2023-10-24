@@ -2,6 +2,10 @@ package edu.utdallas.hearts2hearts;
 
 import java.net.*;
 import java.util.ArrayList;
+
+import edu.utdallas.hearts2hearts.GameState.Direction;
+import edu.utdallas.hearts2hearts.Message.MSG_TYPE;
+
 import java.io.*;
 
 public class Client extends Thread {
@@ -13,7 +17,7 @@ public class Client extends Thread {
     private ObjectInputStream objectInputStream;
     private ObjectOutputStream objectOutputStream;
 
-    public boolean connectToServer(){
+    private boolean connectToServer(){
         try {
             socket = new Socket(address, port);
             objectInputStream = new ObjectInputStream(socket.getInputStream());
@@ -37,7 +41,7 @@ public class Client extends Thread {
         return true;
     }
 
-    public void closeConnection(){
+    private void closeConnection(){
         try {
             objectInputStream.close();
             objectOutputStream.close();
@@ -48,11 +52,14 @@ public class Client extends Thread {
         }
     }
 
-    public GameState receiveGameStateFromServer(){
+    private GameState receiveGameStateFromServer(){
         GameState gameState = null;
         try { 
-            gameState = (GameState) objectInputStream.readObject(); // block until server has sent object
-            System.out.printf("(Client %d) Received GameState object\n", id);
+            Message msg = (Message) objectInputStream.readObject(); // block until server has sent object
+            if (msg.getMessageType() == MSG_TYPE.GAME_STATE){
+                gameState = (GameState) msg.getObject();
+                System.out.printf("(Client %d) Received GameState object\n", id);
+            }
         }
         catch(IOException i){
             System.out.println(i);
@@ -62,23 +69,34 @@ public class Client extends Thread {
         return gameState;
     }
 
-    public void sendGameStateToServer(GameState gameState){
+    private void sendCardsToPassToServer(ArrayList<Card> cards){
         try{
-            objectOutputStream.writeObject(gameState);
+            Message msg = new Message(MSG_TYPE.PASS_CARDS, cards);
+            objectOutputStream.writeObject(msg);
         }
         catch (IOException i) {
             System.out.println(i);
         }
     }
 
-    public void passCards(){
+    private void passCards(){
         GameState gameState = receiveGameStateFromServer();
+        if (gameState.currentDirection == Direction.NONE)
+            return;
+
         // logic for passing around
-        ArrayList<Card> cardsToPass = gameState.players[id].cardsToPlay;
+        ArrayList<Card> cardsToPass = new ArrayList<Card>();
         ArrayList<Card> hand = gameState.players[id].hand; 
         for (int i = 0; i < 3; i++)
             cardsToPass.add(hand.remove(0));
-        sendGameStateToServer(gameState);
+
+        sendCardsToPassToServer(cardsToPass);
+    }
+
+    private void playCard(){
+        GameState gameState = receiveGameStateFromServer();
+        if (gameState.turn != id)
+            return;
     }
 
     public void run(){
@@ -89,6 +107,7 @@ public class Client extends Thread {
         
 
         passCards();
+        playCard();
         closeConnection();
     }
 
