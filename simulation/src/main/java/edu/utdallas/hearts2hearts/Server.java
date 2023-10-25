@@ -106,10 +106,28 @@ public class Server extends Thread {
         return cardsToPass;
     }
 
+    // takes playerID as parameter so it knows which input stream to check
+    private Card receiveCardToPlayFromClient(int playerID){
+        Card cardToPlay = new Card(0, 0);
+        try{
+            Message msg = (Message) inputStreams[playerID].readObject(); // block until client writes
+            if (msg.getMessageType() == MSG_TYPE.PLAY_CARD){
+                cardToPlay = (Card) msg.getObject();
+            }
+        }
+        catch(IOException e){
+            System.out.println(e);
+        }
+        catch(ClassNotFoundException e){
+            System.out.println(e);
+        }
+    }
     private void passingRound(GameState gameState){
         sendGameStateToClients(gameState);
+        /*
         if (gameState.currentDirection == Direction.NONE)
             return;
+        */
 
         ArrayList<ArrayList<Card>> cardsToPass = receiveCardsToPassFromClients();
         System.out.println("(Server) Received cards to pass from clients.");
@@ -145,25 +163,87 @@ public class Server extends Thread {
                 break;
             }
             case NONE: {
-                // should never reach here
                 break;
+            }
+
+            // ASSIGN TURN TO WHOEVER HAS 2 OF CLUBS
+            Card twoOfClubs = new Card(0, 0);
+            for (int playerID = 0; i < 4; playerID++) {
+                for (int cardIndex = 0; cardIndex < 13; cardIndex++) {
+                    if (gameState.players[playerID].hand.get(cardIndex).equals(twoOfClubs)) {
+                        gameState.turn = playerID;
+                    }
+                }
+                
             }
         }
 
         System.out.println("(Server) Successfully passed cards to players in GameState.");
     }
 
+    /*TODO: determine the winner of the trick based on the trump suit (needs to be a new var in GameState?) and currentPlay list
+    * For now, just return player 0 as the winner
+    */
+    private int determineWinnerOfTrick(GameState gameState) {
+        return 0;
+    }
 
-    /* TODO: there's "turn" variable in GameState to monitor who starts (player index)
-     * in passingRound() assign that turn to whoever has 2 of clubs
-     * 
-     * Turns should be clockwise
+    private void giveTrickToWinner(GameState gameState, int winner) {
+        gameState.players[winner].tricksTaken.addAll(gameState.currentPlay);
+    }
+
+    private void givePlayersPoints(GameState gameState) {
+        int pointsGainedThisRound = 0;
+        for (int player = 0; player < 4; player++) {
+            pointsGainedThisRound = 0;
+            for (int cardIndex = 0; cardIndex < gameState.players[player].tricksTaken.size(); cardIndex++) {
+                if (gameState.players[player].tricksTaken.get(cardIndex).getRank() == 3) { // card is a Heart
+                    pointsGainedThisRound += 1;
+                }
+                else if (gameState.players[player].tricksTaken.get(cardIndex).getRank() == 1gameState.players[player].tricksTaken.get(cardIndex).getSuit() == 10) { // card is Queen of Spades
+                    pointsGainedThisRound += 13;
+                }
+            }
+            if (pointsGainedThisRound == 26) { //player shot the moon, subtract 26 points instead
+                pointsGainedThisRound = -26;
+            }
+            gameState.players[player].points += pointsGainedThisRound;
+        }
+    }
+
+
+    /* Turns should be clockwise
      * -> 2 ->
      * 1     3
      * <- 0 <-
     */
     private void playingRound(GameState gameState){
         sendGameStateToClients(gameState);
+        for (int trickNumber = 0; trickNumber < 13; trickNumber++) { // 13 tricks per round played
+            for (int i = 0; i < 4; i ++) { // four iterations so that each player plays one card
+                int turn = gameState.turn;
+    
+                Card cardBeingPlayed = receiveCardToPlayFromClient(turn);
+        
+                //remove card being played from player's hand, put it in play
+                gameState.players[turn].hand.remove(cardBeingPlayed);
+                gameState.currentPlay.add(cardBeingPlayed);
+        
+                // next player's turn for this trick
+                if (gameState.turn < 3) {
+                    gameState.turn++;
+                }
+                else {
+                    gameState.turn = 0;
+                }
+            }
+    
+            gameState.turn = determineWinnerOfTrick(gameState);
+            giveTrickToWinner(gameState.turn);
+        }
+
+        //after all cards have been played, calculate each player's points based on the tricks they took
+        givePlayersPoints(gameState);
         
     }
     

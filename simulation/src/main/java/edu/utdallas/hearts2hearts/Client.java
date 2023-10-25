@@ -79,6 +79,16 @@ public class Client extends Thread {
         }
     }
 
+    private void sendCardToPlayToServer(Card card){
+        try{
+            Message msg = new Message(MSG_TYPE.PLAY_CARD, card);
+            objectOutputStream.writeObject(msg);
+        }
+        catch (IOException i) {
+            System.out.println(i);
+        }
+    }
+
     private void passCards(){
         GameState gameState = receiveGameStateFromServer();
         if (gameState.currentDirection == Direction.NONE)
@@ -95,8 +105,10 @@ public class Client extends Thread {
 
     private void playCard(){
         GameState gameState = receiveGameStateFromServer();
-        if (gameState.turn != id)
-            return;
+        ArrayList<Card> hand = gameState.players[id].hand;
+        Card cardToPlay = new Card(0,0);
+        cardToPlay = gameState.players[id].hand.get(0); //for now, player will play first card in their hand
+        sendCardToPlayToServer(cardToPlay);
     }
 
     public void run(){
