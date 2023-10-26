@@ -87,7 +87,7 @@ public class DeviceListFragment extends ListFragment implements PeerListListener
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         WifiP2pDevice device = (WifiP2pDevice) getListAdapter().getItem(position);
-        ((DeviceActionListener) getActivity()).showDetails(device);
+        ((PeerSelectionListener) getActivity()).connect_to(device);
     }
 
     /**
@@ -175,13 +175,7 @@ public class DeviceListFragment extends ListFragment implements PeerListListener
      * An interface-callback for the activity to listen to fragment interaction
      * events.
      */
-    public interface DeviceActionListener {
-        void showDetails(WifiP2pDevice device);
-
-        void cancelDisconnect();
-
-        void connect(WifiP2pConfig config);
-
-        void disconnect();
+    public interface PeerSelectionListener{
+        void connect_to(WifiP2pDevice config);
     }
 }

@@ -37,8 +37,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import edu.utdallas.heartstohearts.DeviceListFragment.DeviceActionListener;
-
 //import java.io.File;
 //import java.io.FileOutputStream;
 import java.io.IOException;
@@ -85,13 +83,13 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
 //                    }
 //                }
                 );
-                ((DeviceActionListener) getActivity()).connect(config);
+                ((DeviceListFragment.PeerSelectionListener) getActivity()).connect_to(device);
             }
         });
         mContentView.findViewById(R.id.btn_disconnect).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((DeviceActionListener) getActivity()).disconnect();
+                /*((DeviceActionListener) getActivity()).disconnect();*/
             }
         });
         mContentView.findViewById(R.id.btn_start_client).setOnClickListener(new View.OnClickListener() {
