@@ -181,7 +181,7 @@ public class Server extends Thread {
         System.out.println("(Server) Successfully passed cards to players in GameState.");
     }
 
-    /*TODO: determine the winner of the trick based on the trump suit (needs to be a new var in GameState?) and currentPlay list
+    /*TODO: determine the winner of the trick based on the trump suit and currentPlay list
     * For now, just return player 0 as the winner
     */
     private int determineWinnerOfTrick(GameState gameState) {
@@ -220,6 +220,7 @@ public class Server extends Thread {
     private void playingRound(GameState gameState){
         sendGameStateToClients(gameState);
         for (int trickNumber = 0; trickNumber < 13; trickNumber++) { // 13 tricks per round played
+            gameState.trumpSuit = -1; // there is no trump suit at the beginning of each trick
             for (int i = 0; i < 4; i ++) { // four iterations so that each player plays one card
                 int turn = gameState.turn;
     

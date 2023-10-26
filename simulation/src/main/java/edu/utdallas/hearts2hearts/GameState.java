@@ -18,6 +18,7 @@ public class GameState implements Serializable{
     public Direction currentDirection;
     public ArrayList<Card> currentPlay;
     public int turn;
+    public int trumpSuit; //current trump suit; equals -1 at start of each trick so any suit is playable (except maybe Hearts)
 
     public GameState() {
         currentDirection = Direction.LEFT;
