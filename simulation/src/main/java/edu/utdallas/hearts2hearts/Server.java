@@ -121,6 +121,7 @@ public class Server extends Thread {
         catch(ClassNotFoundException e){
             System.out.println(e);
         }
+        return cardToPlay;
     }
     private void passingRound(GameState gameState){
         sendGameStateToClients(gameState);
@@ -181,11 +182,26 @@ public class Server extends Thread {
         System.out.println("(Server) Successfully passed cards to players in GameState.");
     }
 
-    /*TODO: determine the winner of the trick based on the trump suit and currentPlay list
-    * For now, just return player 0 as the winner
+    /*Determines the winner of the trick based on the trump suit and currentPlay list
     */
     private int determineWinnerOfTrick(GameState gameState) {
-        return 0;
+        //find highest card of trump suit in currentPlay list; this card is the winning card
+        Card currWinningCard = new Card(-1, -1);
+        int currWinningIndex = -1;
+        for (int cardIndex = 0; cardIndex < gameState.currentPlay.size(); cardIndex++) {
+            if (gameState.currentPlay.get(cardIndex).getSuit() == gameState.trumpSuit && gameState.currentPlay.get(cardIndex).getRank() > currWinningCard.getRank()) {
+                currWinningCard = gameState.currentPlay.get(cardIndex);
+                currWinningIndex = cardIndex;
+            }
+        }
+
+        //based on gameState.turn(index of the player who played the last card), determine index of the winning player
+        int winner = turn - 3 + currWinningIndex;
+        if (winner < 0) {
+            winner += 4;
+        }
+
+        return winner;
     }
 
     private void giveTrickToWinner(GameState gameState, int winner) {

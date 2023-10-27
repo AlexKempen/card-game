@@ -150,7 +150,6 @@ public class Client extends Thread {
 
     private void playCard(){
         GameState gameState = receiveGameStateFromServer();
-        ArrayList<Card> hand = gameState.players[id].hand;
         Card cardToPlay = new Card(0,0);
         int i = 0;
         cardToPlay = gameState.players[id].hand.get(i); //for now, player will play first legal card in their hand
