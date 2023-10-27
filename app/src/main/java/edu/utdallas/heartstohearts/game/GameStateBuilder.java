@@ -1,33 +1,29 @@
 package edu.utdallas.heartstohearts.game;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class GameStateBuilder {
-    public List<Card> hand = new ArrayList<>();
+    public List<List<Card>> hands = Collections.nCopies(4, new ArrayList<>());
+    // Trick is shared
     public List<Card> trick = new ArrayList<>();
-    public PlayerAction action = PlayerAction.CHOOSE_CARDS;
-    public int score = 0;
+    public List<PlayerAction> actions = Collections.nCopies(4, PlayerAction.CHOOSE_CARDS);
+    public List<Integer> points = Collections.nCopies(4, 0);
 
-    public void setHandAndAction(List<Card> hand) {
-        this.hand = hand;
-        this.action = hand.contains(Card.TWO_OF_CLUBS) ? PlayerAction.PLAY_CARD : PlayerAction.WAIT;
+    public void setHandsAndActions(List<List<Card>> hands) {
+        IntStream.range(0, 4).forEach(i -> setHandAndAction(i, hands.get(i)));
     }
 
-    public void copy(GameState state) {
-        hand = state.getHand();
-        trick = state.getTrick();
-        action = state.getAction();
-        score = state.getScore();
+    public void setHandAndAction(int playerId, List<Card> hand) {
+        hands.set(playerId, hand);
+        actions.set(playerId, hand.contains(Card.TWO_OF_CLUBS) ? PlayerAction.PLAY_CARD : PlayerAction.WAIT);
     }
 
-    public GameState make() {
-        return new GameState(hand, trick, action, score);
-    }
-
-    public static List<GameState> makeAll(List<GameStateBuilder> builders) {
-        return builders.stream().map(GameStateBuilder::make).collect(Collectors.toList());
+    public List<GameState> make() {
+        return IntStream.range(0, 4).mapToObj(i -> new GameState(hands.get(i), trick, actions.get(i), points.get(i))).collect(Collectors.toList());
     }
 }

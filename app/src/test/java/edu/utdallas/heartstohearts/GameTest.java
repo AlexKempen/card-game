@@ -10,12 +10,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import edu.utdallas.heartstohearts.game.Card;
 import edu.utdallas.heartstohearts.game.GameManager;
-import edu.utdallas.heartstohearts.game.GameState;
+import edu.utdallas.heartstohearts.game.GameManagerBuilder;
 import edu.utdallas.heartstohearts.game.GameStateBuilder;
 import edu.utdallas.heartstohearts.game.PassDirection;
+import edu.utdallas.heartstohearts.game.PlayerAction;
 import edu.utdallas.heartstohearts.game.PlayerBuilder;
 import edu.utdallas.heartstohearts.game.Rank;
 import edu.utdallas.heartstohearts.game.Suit;
@@ -24,24 +26,24 @@ import edu.utdallas.heartstohearts.game.Suit;
 public class GameTest {
     private List<List<Card>> hands;
     private PlayerBuilder playerBuilder;
-    private List<GameStateBuilder> stateBuilders;
+    private GameStateBuilder stateBuilder;
+    private GameManagerBuilder managerBuilder;
 
     @Before
     public void initialize() {
         playerBuilder = new PlayerBuilder();
-        stateBuilders = Collections.nCopies(4, new GameStateBuilder());
+        managerBuilder = new GameManagerBuilder(playerBuilder);
+        stateBuilder = new GameStateBuilder();
         hands = Card.dealHands(Card.makeDeck());
     }
 
     @Test
     public void testSimpleDeal() {
-        for (int i = 0; i < 4; i++) {
-            stateBuilders.get(i).setHandAndAction(hands.get(i));
-        }
-        GameManager manager = new GameManager(playerBuilder.make(), PassDirection.NONE);
+        stateBuilder.setHandsAndActions(hands);
+        GameManager manager = managerBuilder.make();
         manager.deal(hands);
         assertFalse(manager.shouldPass());
-        assertEquals(GameStateBuilder.makeAll(stateBuilders), manager.getGameStates());
+        assertEquals(stateBuilder.make(), manager.getGameStates());
     }
 
     @Test
@@ -58,37 +60,72 @@ public class GameTest {
             hand.removeAll(cardsToPass.get(i));
             oppositeHand.removeAll(cardsToPass.get(oppositeIndex));
 
-            stateBuilders.get(i).setHandAndAction(hand);
-            stateBuilders.get(oppositeIndex).setHandAndAction(oppositeHand);
+            stateBuilder.setHandAndAction(i, hand);
+            stateBuilder.setHandAndAction(oppositeIndex, oppositeHand);
         }
-        GameManager manager = new GameManager(playerBuilder.make(), PassDirection.ACROSS);
+        managerBuilder.direction = PassDirection.ACROSS;
+        GameManager manager = managerBuilder.make();
         manager.deal(hands);
         assertTrue(manager.shouldPass());
         manager.passCards(cardsToPass);
-        assertEquals(GameStateBuilder.makeAll(stateBuilders), manager.getGameStates());
+        assertEquals(stateBuilder.make(), manager.getGameStates());
     }
 
     @Test
     public void testPlayCard() {
-        // Test situation where a player plays a card
+        // Mark player 0 as current player
+        PlayerAction.playCard(0, playerBuilder.actions);
+        Card playedCard = hands.get(0).get(0);
 
+        managerBuilder.heartsBroken = true; // Ensure test is deterministic
+        GameManager manager = managerBuilder.make();
+        manager.deal(hands);
+
+        manager.playCard(playedCard);
+
+        // Player 1 should be up
+        PlayerAction.playCard(1, stateBuilder.actions);
+        // The card should be gone from their hand
+        stateBuilder.hands.get(0).remove(0);
+        // And it should be in the trick
+        stateBuilder.trick.add(playedCard);
+        assertEquals(stateBuilder.make(), manager.getGameStates());
     }
 
     @Test
     public void testTakeTrick() {
-        // Test situation where a player takes a trick after a card is played
+        List<Card> trick = Arrays.asList(Card.QUEEN_OF_SPADES, Card.TWO_OF_CLUBS, new Card(Suit.HEARTS, Rank.QUEEN));
+        Card playedCard = hands.get(0).get(0);
+        PlayerAction.playCard(0, playerBuilder.actions);
+        managerBuilder.currentTrick = trick;
+        GameManager manager = managerBuilder.make();
+        manager.playCard(playedCard);
+
+        stateBuilder.hands.get(0).remove(0);
+        assertEquals(stateBuilder.make(), manager.getGameStates());
+
+        // Test score is actually added at the end
+        manager.finishRound();
+        assertEquals(14, manager.getGameStates().get(0).getPoints());
     }
 
     @Test
     public void testScoring() {
         List<Card> trick = Arrays.asList(Card.QUEEN_OF_SPADES, new Card(Suit.HEARTS, Rank.TWO), new Card(Suit.DIAMONDS, Rank.QUEEN));
         playerBuilder.tricks.set(0, trick);
+        stateBuilder.points.set(0, 14);
 
-        GameManager manager = new GameManager(playerBuilder.make(), PassDirection.NONE);
+        GameManager manager = managerBuilder.make();
         manager.finishRound();
 
-        stateBuilders.get(0).score = 14;
-        assertEquals(GameStateBuilder.makeAll(stateBuilders), manager.getGameStates());
+        assertEquals(stateBuilder.make(), manager.getGameStates());
+    }
+
+    @Test
+    public void testPassChange() {
+        managerBuilder.direction = PassDirection.NONE;
+        GameManager manager = managerBuilder.make();
+        manager.finishRound();
         assertTrue(manager.shouldPass());
     }
 
@@ -98,20 +135,18 @@ public class GameTest {
         trick.addAll(Arrays.stream(Rank.values()).map(rank -> new Card(Suit.HEARTS, rank)).collect(Collectors.toList()));
         playerBuilder.tricks.set(0, trick);
 
-        GameManager manager = new GameManager(playerBuilder.make(), PassDirection.NONE);
+        GameManager manager = managerBuilder.make();
         manager.finishRound();
 
-        for (int i = 1; i < 3; ++i) {
-            stateBuilders.get(i).score = 26;
-        }
-        assertEquals(GameStateBuilder.makeAll(stateBuilders), manager.getGameStates());
+        IntStream.range(1, 4).forEach(i -> stateBuilder.points.set(i, 26));
+        assertEquals(stateBuilder.make(), manager.getGameStates());
     }
 
     @Test
     public void testGameEnd() {
         playerBuilder.points.set(0, 105);
-        GameManager manager = new GameManager(playerBuilder.make(), PassDirection.ACROSS);
+        GameManager manager = managerBuilder.make();
         assertTrue(manager.finishRound());
-        assertEquals(105, manager.getGameStates().get(0).getScore());
+        assertEquals(105, manager.getGameStates().get(0).getPoints());
     }
 }

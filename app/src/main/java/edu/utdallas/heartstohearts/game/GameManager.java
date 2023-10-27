@@ -4,24 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GameManager {
-
-    private boolean heartsBroken = false;
+    private boolean heartsBroken;
     private List<Player> players;
     private PassDirection direction;
     private List<Card> currentTrick;
 
-    public GameManager(List<Player> players, PassDirection direction, List<Card> currentTrick) {
+    public GameManager(List<Player> players, PassDirection direction, List<Card> currentTrick, boolean heartsBroken) {
         this.players = players;
         this.direction = direction;
         this.currentTrick = currentTrick;
-    }
-
-    public GameManager(List<Player> players, PassDirection direction) {
-        this(players, direction, new ArrayList<>());
-    }
-
-    public static GameManager make() {
-        return new GameManager(new PlayerBuilder().make(), PassDirection.NONE);
+        this.heartsBroken = heartsBroken;
     }
 
     /**
@@ -49,16 +41,21 @@ public class GameManager {
 
     /**
      * Passes the cards among the players according to the current PassDirection.
-     * Throws if shouldPass() currently returns False.
+     * This method may throw if shouldPass() currently returns false.
      */
     public void passCards(List<List<Card>> playerChoices) {
     }
 
     /**
-     * Returns true if the given player should play a card.
+     * Returns the id of the player who should currently play a card, or null if no player should.
      */
-    public boolean shouldPlayCard(int playerId) {
-        return players.get(playerId).getAction() == PlayerAction.PLAY_CARD;
+    public Integer shouldPlayCard() {
+        for (Player player : players) {
+            if (player.getAction() == PlayerAction.PLAY_CARD) {
+                return player.getId();
+            }
+        }
+        return null;
     }
 
     /**

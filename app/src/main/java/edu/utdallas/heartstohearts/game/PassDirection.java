@@ -5,6 +5,21 @@ import java.util.Arrays;
 public enum PassDirection {
     LEFT, RIGHT, ACROSS, NONE;
 
+    public PassDirection nextPassDirection() {
+        switch (this) {
+            case LEFT:
+                return RIGHT;
+            case RIGHT:
+                return ACROSS;
+            case ACROSS:
+                return NONE;
+            case NONE:
+                return LEFT;
+            default:
+                throw new AssertionError("Unhandled PassDirection");
+        }
+    }
+
     public int mapPassIndex(int index) {
         switch (this) {
             // Assume clockwise seating (and turn order)

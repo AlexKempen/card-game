@@ -7,13 +7,13 @@ public class GameState {
     private List<Card> hand;
     private List<Card> trick;
     private PlayerAction action;
-    private int score;
+    private int points;
 
-    public GameState(List<Card> hand, List<Card> trick, PlayerAction action, int score) {
+    public GameState(List<Card> hand, List<Card> trick, PlayerAction action, int points) {
         this.hand = hand;
         this.trick = trick;
         this.action = action;
-        this.score = score;
+        this.points = points;
     }
 
     public GameState(List<Card> hand, PlayerAction action) {
@@ -40,9 +40,7 @@ public class GameState {
         return action;
     }
 
-
-    public int getScore() {
-        return score;
+    public int getPoints() {
+        return points;
     }
-
 }

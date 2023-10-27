@@ -3,6 +3,8 @@ package edu.utdallas.heartstohearts.game;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class PlayerBuilder {
     public List<Integer> points = Collections.nCopies(4, 0);
@@ -13,10 +15,6 @@ public class PlayerBuilder {
     public List<PlayerAction> actions = Collections.nCopies(4, PlayerAction.CHOOSE_CARDS);
 
     public List<Player> make() {
-        List<Player> players = new ArrayList<>();
-        for (int i = 0; i < 4; ++i) {
-            players.add(new Player(i, names.get(i), hands.get(i), tricks.get(i), points.get(i)));
-        }
-        return players;
+        return IntStream.range(0, 4).mapToObj(i -> new Player(i, names.get(i), hands.get(i), tricks.get(i), actions.get(i), points.get(i))).collect(Collectors.toList());
     }
 }

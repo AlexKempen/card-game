@@ -14,12 +14,13 @@ public class Player implements Serializable {
     private List<Card> tricks;
     private PlayerAction action;
 
-    public Player(int id, String name, List<Card> hand, List<Card> tricks, int points) {
+    public Player(int id, String name, List<Card> hand, List<Card> tricks, PlayerAction action, int points) {
         this.id = id;
         this.name = name;
         this.tricks = tricks;
         this.hand = hand;
         this.points = points;
+        this.action = action;
     }
 
     public void setAction(PlayerAction action) {
@@ -28,6 +29,10 @@ public class Player implements Serializable {
 
     public PlayerAction getAction() {
         return action;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public void takeTrick(List<Card> trick) {
