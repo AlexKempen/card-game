@@ -50,8 +50,4 @@ public class Player implements Serializable {
     private int getTrickPoints() {
         return this.tricks.stream().mapToInt(Card::getPoints).sum();
     }
-
-    public GameState getGameState() {
-        return null;
-    }
 }
