@@ -66,9 +66,10 @@ public class GameManager {
         // Remove the card from the current player's hand
         // If the current trick is full, add it to the current player and reset it
         // Update PlayerActions to match the current state
+        // Note the current turn is a property of Player.action
 
-        // If all cards have been played (all hands are empty), shouldPlayCard should become false,
-        // and calling this method should throw an error
+        // If all cards have been played (all hands are empty), shouldPlayCard should return null,
+        // and calling this method may throw an error
     }
 
     /**
@@ -85,6 +86,7 @@ public class GameManager {
     /**
      * Returns a list of the current game states, one for each player.
      */
+    // Use a GameStateBuilder
     public List<GameState> getGameStates() {
         return new ArrayList<>();
     }

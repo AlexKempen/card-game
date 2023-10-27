@@ -99,6 +99,8 @@ public class GameTest {
         List<Card> trick = Arrays.asList(Card.QUEEN_OF_SPADES, Card.TWO_OF_CLUBS, new Card(Suit.HEARTS, Rank.QUEEN));
         Card playedCard = hands.get(0).get(0);
         PlayerAction.playCard(0, playerBuilder.actions);
+
+        managerBuilder.heartsBroken = true;
         managerBuilder.currentTrick = trick;
         GameManager manager = managerBuilder.make();
         manager.playCard(playedCard);
