@@ -42,7 +42,7 @@ public class GameTest {
         stateBuilder.setHandsAndActions(hands);
         GameManager manager = managerBuilder.make();
         manager.deal(hands);
-        assertFalse(manager.shouldPass());
+        assertTrue(manager.shouldPass());
         assertEquals(stateBuilder.make(), manager.getGameStates());
     }
 
@@ -81,7 +81,9 @@ public class GameTest {
         GameManager manager = managerBuilder.make();
         manager.deal(hands);
 
+        assertEquals(0, manager.shouldPlayCard());
         manager.playCard(playedCard);
+        assertEquals(1, manager.shouldPlayCard());
 
         // Player 1 should be up
         PlayerAction.playCard(1, stateBuilder.actions);
