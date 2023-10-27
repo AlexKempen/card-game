@@ -17,6 +17,12 @@
         android:text="Begin Peer Discovery" />
 
     <Button
+        android:id="@+id/button_make_socket"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Make Socket" />
+
+    <Button
         android:id="@+id/button_send_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

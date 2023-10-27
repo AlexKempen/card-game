@@ -1,4 +1,4 @@
-package edu.utdallas.heartstohearts;
+package edu.utdallas.heartstohearts.network;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
