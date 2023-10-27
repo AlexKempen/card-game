@@ -196,7 +196,7 @@ public class Server extends Thread {
         }
 
         //based on gameState.turn(index of the player who played the last card), determine index of the winning player
-        int winner = turn - 3 + currWinningIndex;
+        int winner = gameState.turn - 3 + currWinningIndex;
         if (winner < 0) {
             winner += 4;
         }
