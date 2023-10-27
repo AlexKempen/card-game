@@ -16,6 +16,12 @@
         android:layout_height="wrap_content"
         android:text="Begin Peer Discovery" />
 
+    <Button
+        android:id="@+id/button_send_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Send Message" />
+
     <LinearLayout
         android:id="@+id/linearLayout1"
         android:layout_width="match_parent"
