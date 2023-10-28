@@ -26,6 +26,7 @@ public class Message implements Serializable{
         return objectToSend;
     }
 
+
     public static void main(String[] args) {
         ArrayList<Card> cardList = new ArrayList<Card>();
         Message msg = new Message(MSG_TYPE.GAME_STATE, cardList);

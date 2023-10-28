@@ -3,7 +3,7 @@ package edu.utdallas.hearts2hearts;
 public class Main {
     public static void main(String[] args) {
         System.out.println("(Main) Running simulation... "); 
-        int port = 8888;
+        int port = 8887;
         String address = "localhost";       
 
         Server serverThread = new Server(port);

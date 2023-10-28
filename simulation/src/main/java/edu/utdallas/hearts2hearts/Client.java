@@ -58,7 +58,7 @@ public class Client extends Thread {
             Message msg = (Message) objectInputStream.readObject(); // block until server has sent object
             if (msg.getMessageType() == MSG_TYPE.GAME_STATE){
                 gameState = (GameState) msg.getObject();
-                System.out.printf("(Client %d) Received GameState object\n", id);
+                //System.out.printf("(Client %d) Received GameState object\n", id);
             }
         }
         catch(IOException i){
@@ -110,17 +110,18 @@ public class Client extends Thread {
                     return false;
                 }
                 else {
-                    if (card.getSuit() == 3 && !gameState.areHeartsBroken) { // break Hearts if appropriate
-                        gameState.areHeartsBroken = true;
-                    }
                     return true;
                 }
             }
         }
         else { // card is being lead-> if it's a Heart, check if they're broken
+            if (gameState.trickNumber == 0) {
+                if (card.getSuit() != 0 || card.getRank() != 0) {
+                    return false;
+                }
+            }
             if (card.getSuit() == 3) {
                 if (gameState.areHeartsBroken == true) {
-                    gameState.trumpSuit = card.getSuit(); // set new trump suit and break Hearts
                     return true;
                 }
                 else {
@@ -128,7 +129,7 @@ public class Client extends Thread {
                 }
             }
             else { // not a Heart-> always a legal lead
-                gameState.trumpSuit = card.getSuit(); // set new trump suit
+                //gameState.trumpSuit = card.getSuit(); // set new trump suit
                 return true;
             }
         }
@@ -150,25 +151,40 @@ public class Client extends Thread {
 
     private void playCard(){
         GameState gameState = receiveGameStateFromServer();
-        Card cardToPlay = new Card(0,0);
-        int i = 0;
-        cardToPlay = gameState.players[id].hand.get(i); //for now, player will play first legal card in their hand
-        while (!cardIsLegal(gameState, cardToPlay, gameState.players[id].hand) && i < gameState.players[id].hand.size()) {
-            i++;
-            cardToPlay = gameState.players[id].hand.get(i);
+        if (gameState.turn != id) {
+            return;
         }
-        sendCardToPlayToServer(cardToPlay);
+        else {
+            Card cardToPlay = new Card(0,0);
+            int i = 0;
+            cardToPlay = gameState.players[id].hand.get(i); //for now, player will play first legal card in their hand
+            while (!cardIsLegal(gameState, cardToPlay, gameState.players[id].hand) && i < gameState.players[id].hand.size() - 1) {
+                i++;
+                cardToPlay = gameState.players[id].hand.get(i);
+            }
+            sendCardToPlayToServer(cardToPlay);
+        }
+        
     }
 
-    public void run(){
+    private void playRound() {
+        for (int trickNumber = 0; trickNumber < 13; trickNumber++) { // 13 tricks per round played
+            for (int i = 0; i < 4; i ++) {
+                playCard();
+                
+            }
+        }
+    }
+
+    public void run() {
 
         boolean connectedToServer = connectToServer();
         if (!connectedToServer)
             return;
         
-
         passCards();
-        playCard();
+        playRound();
+        
         closeConnection();
     }
 

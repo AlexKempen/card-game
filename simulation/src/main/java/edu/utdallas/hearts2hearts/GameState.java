@@ -19,9 +19,13 @@ public class GameState implements Serializable{
     public ArrayList<Card> currentPlay;
     public int turn;
     public int trumpSuit; //current trump suit; equals -1 at start of each trick so any suit is playable (except maybe Hearts)
+    public int rndsPlayed;
+    public int trickNumber; //only used for checking if trick 0 -> 2 of Clubs is only legal lead
 
     public GameState() {
         currentDirection = Direction.LEFT;
+        currentPlay = new ArrayList<Card>();
+        rndsPlayed = 0;
         players = new Player[4];
         for (int playerID = 0; playerID < 4; playerID++)
             players[playerID] = new Player(playerID);

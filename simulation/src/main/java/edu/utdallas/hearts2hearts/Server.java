@@ -79,6 +79,8 @@ public class Server extends Thread {
             try {
                 Message msg = new Message(Message.MSG_TYPE.GAME_STATE, gameState);
                 outputStreams[playerID].writeObject(msg);
+
+                outputStreams[playerID].reset();
             }
             catch (IOException i) {
                 System.out.println(i);
@@ -167,15 +169,14 @@ public class Server extends Thread {
                 break;
             }
 
-            // ASSIGN TURN TO WHOEVER HAS 2 OF CLUBS
-            Card twoOfClubs = new Card(0, 0);
-            for (int playerID = 0; i < 4; playerID++) {
-                for (int cardIndex = 0; cardIndex < 13; cardIndex++) {
-                    if (gameState.players[playerID].hand.get(cardIndex).equals(twoOfClubs)) {
-                        gameState.turn = playerID;
-                    }
+        }
+        // ASSIGN TURN TO WHOEVER HAS 2 OF CLUBS
+        Card twoOfClubs = new Card(0, 0);
+        for (int playerID = 0; playerID < 4; playerID++) {
+            for (int cardIndex = 0; cardIndex < 13; cardIndex++) {
+                if (gameState.players[playerID].hand.get(cardIndex).equals(twoOfClubs)) {
+                    gameState.turn = playerID;
                 }
-                
             }
         }
 
@@ -186,21 +187,24 @@ public class Server extends Thread {
     */
     private int determineWinnerOfTrick(GameState gameState) {
         //find highest card of trump suit in currentPlay list; this card is the winning card
-        Card currWinningCard = new Card(-1, -1);
-        int currWinningIndex = -1;
-        for (int cardIndex = 0; cardIndex < gameState.currentPlay.size(); cardIndex++) {
-            if (gameState.currentPlay.get(cardIndex).getSuit() == gameState.trumpSuit && gameState.currentPlay.get(cardIndex).getRank() > currWinningCard.getRank()) {
-                currWinningCard = gameState.currentPlay.get(cardIndex);
-                currWinningIndex = cardIndex;
+        int currWinningIndex = 0;
+        for (int cardIndex = 1; cardIndex < gameState.currentPlay.size(); cardIndex++) {
+            if (gameState.currentPlay.get(cardIndex).getSuit() == gameState.trumpSuit) {
+                if (currWinningIndex < 0) {
+                    currWinningIndex = cardIndex;
+                }
+                else if (gameState.currentPlay.get(cardIndex).getRank() > gameState.currentPlay.get(currWinningIndex).getRank()) {
+                    currWinningIndex = cardIndex;
+                }
             }
         }
 
-        //based on gameState.turn(index of the player who played the last card), determine index of the winning player
-        int winner = gameState.turn - 3 + currWinningIndex;
-        if (winner < 0) {
-            winner += 4;
+        //based on gameState.turn(index of the player who played the first card), determine index of the winning player
+        int winner = gameState.turn + currWinningIndex;
+        if (winner > 3) {
+            winner -= 4;
         }
-
+        System.out.printf("(Server) Winning player: %d\n", winner);
         return winner;
     }
 
@@ -213,17 +217,18 @@ public class Server extends Thread {
         for (int player = 0; player < 4; player++) {
             pointsGainedThisRound = 0;
             for (int cardIndex = 0; cardIndex < gameState.players[player].tricksTaken.size(); cardIndex++) {
-                if (gameState.players[player].tricksTaken.get(cardIndex).getRank() == 3) { // card is a Heart
+                //System.out.printf("Card in player %d's hand: %d of %d\n", player, gameState.players[player].tricksTaken.get(cardIndex).getRank(), gameState.players[player].tricksTaken.get(cardIndex).getSuit());
+                if (gameState.players[player].tricksTaken.get(cardIndex).getSuit() == 3) { // card is a Heart
                     pointsGainedThisRound += 1;
                 }
-                else if (gameState.players[player].tricksTaken.get(cardIndex).getRank() == 1gameState.players[player].tricksTaken.get(cardIndex).getSuit() == 10) { // card is Queen of Spades
+                else if (gameState.players[player].tricksTaken.get(cardIndex).getSuit() == 1 && gameState.players[player].tricksTaken.get(cardIndex).getRank() == 10) { // card is Queen of Spades
                     pointsGainedThisRound += 13;
                 }
             }
             if (pointsGainedThisRound == 26) { //player shot the moon, subtract 26 points instead
                 pointsGainedThisRound = -26;
             }
-            gameState.players[player].points += pointsGainedThisRound;
+            gameState.players[player].points = pointsGainedThisRound;
         }
     }
 
@@ -234,18 +239,31 @@ public class Server extends Thread {
      * <- 0 <-
     */
     private void playingRound(GameState gameState){
-        sendGameStateToClients(gameState);
+
         for (int trickNumber = 0; trickNumber < 13; trickNumber++) { // 13 tricks per round played
+            gameState.trickNumber = trickNumber;
             gameState.trumpSuit = -1; // there is no trump suit at the beginning of each trick
             for (int i = 0; i < 4; i ++) { // four iterations so that each player plays one card
                 int turn = gameState.turn;
-    
+                sendGameStateToClients(gameState);
+                //System.out.printf("(Server) Turn: %d\n", turn);
+
                 Card cardBeingPlayed = receiveCardToPlayFromClient(turn);
+                
+                System.out.printf("(Server) Client %d played card: %s\n", turn, cardBeingPlayed.toString());
         
                 //remove card being played from player's hand, put it in play
                 gameState.players[turn].hand.remove(cardBeingPlayed);
                 gameState.currentPlay.add(cardBeingPlayed);
-        
+                
+                if (i == 0) {
+                    gameState.trumpSuit = cardBeingPlayed.getSuit();
+                }
+                
+                if (cardBeingPlayed.getSuit() == 3 && !gameState.areHeartsBroken) { // break Hearts if appropriate
+                    gameState.areHeartsBroken = true;
+                }
+
                 // next player's turn for this trick
                 if (gameState.turn < 3) {
                     gameState.turn++;
@@ -256,12 +274,20 @@ public class Server extends Thread {
             }
     
             gameState.turn = determineWinnerOfTrick(gameState);
-            giveTrickToWinner(gameState.turn);
+            giveTrickToWinner(gameState, gameState.turn);
+            gameState.currentPlay.clear();
         }
 
         //after all cards have been played, calculate each player's points based on the tricks they took
         givePlayersPoints(gameState);
-        
+
+        //print out each player's score
+        for (int p = 0; p < 4; p++) {
+            System.out.printf("(Server) Player %d score: %d\n", p, gameState.players[p].points);
+        }
+
+        gameState.rndsPlayed += 1;
+
     }
     
 
@@ -273,6 +299,13 @@ public class Server extends Thread {
         GameState gameState = new GameState();  // initialize game
         passingRound(gameState);
         playingRound(gameState);
+        // gameState.turn = 1;
+        // System.out.printf("(Server) Turn: %d\n", gameState.turn);
+        // sendGameStateToClients(gameState);
+
+        // gameState.turn = 2;
+        // System.out.printf("(Server) Turn: %d\n", gameState.turn);
+        // sendGameStateToClients(gameState);
         
         closeClientConnections();
         closeServer();
