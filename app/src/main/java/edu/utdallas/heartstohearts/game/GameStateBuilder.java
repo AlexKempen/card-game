@@ -16,6 +16,7 @@ public class GameStateBuilder {
     public List<Card> trick = new ArrayList<>();
     //public List<PlayerAction> actions = Collections.nCopies(4, PlayerAction.CHOOSE_CARDS);
     public List<PlayerAction> actions = Stream.generate(PlayerAction.CHOOSE_CARDS).limit(4).collect(Collectors.toList());
+
     public List<Integer> points = Collections.nCopies(4, 0);
 
     public void setHandsAndActions(List<List<Card>> hands) {

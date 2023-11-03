@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GameManager {
-    private List<GameState> gameStates;
     private boolean heartsBroken;
     private List<Player> players;
     private PassDirection direction;
@@ -46,7 +45,7 @@ public class GameManager {
      * Returns true if the players should pass cards to each other.
      */
     public boolean shouldPass() {
-        return direction != PassDirection.NONE;
+      return direction != PassDirection.NONE;
     }
 
     /**
