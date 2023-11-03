@@ -1,9 +1,12 @@
 package edu.utdallas.heartstohearts.network;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -11,77 +14,81 @@ import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+
 import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Major TODO: disconnect.
- * <p>
- * Riddled with race conditions.
- */
 public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.ConnectionInfoListener {
 
-    private static final String TAG = "WifiDirect";
+    private static final String TAG = "NetworkManager";
 
     protected Context context;
-    private boolean initialized;
+
     WifiP2pManager manager;
     WifiP2pManager.Channel channel;
-    IntentFilter p2pIntents;
 
     private Set<WifiP2pManager.PeerListListener> peer_listeners;
     private Set<WifiP2pManager.ConnectionInfoListener> connection_listeners;
 
-
-    // wee woo wee woo, right here officer this one is involved in all sorts of race conditions
     private WifiP2pInfo last_connection_info = null;
 
     /**
-     * Initializes this connection manager and registers as a broadcast reciever on the
-     * provided context. Note that no attempt is made to request android services, start discovery,
-     * or anything else: initialize() must be called first.
+     * Initializes this connection manager and registers as a broadcast receiver on the
+     * provided context. Requests android services but does not start discovery.
      *
      * @param context
      */
     public NetworkManager(Context context) {
         this.context = context;
-        initialized = false;
 
         peer_listeners = new HashSet<WifiP2pManager.PeerListListener>();
         connection_listeners = new HashSet<WifiP2pManager.ConnectionInfoListener>();
 
-        p2pIntents = new IntentFilter();
+        manager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
+        channel = manager.initialize(context, context.getMainLooper(), null);
+
+        IntentFilter p2pIntents = new IntentFilter();
         p2pIntents.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
         p2pIntents.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         p2pIntents.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         p2pIntents.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        context.registerReceiver(this, p2pIntents);
 
-        register();
         addConnectionListener(this); // listen to own connection availability requests
     }
 
     /**
-     * Creates P2P managers and channels. Calling again once already initialized does nothing.
-     * <p>
-     * Unsure if this needs to be separate from the constructor.
-     * TODO: at time of writing there are a lot of locations, often involving registering the listener,
-     * where manager/channel are used without checking if initialized.
+     * Asynchronously starts a connection with a peer.
+     *
+     * @param peer
+     * @param actionListener - listens to success or failure. May be left null. Note only listens to
+     *                       success/failure of initialization of connection: use a
+     *                       WifiP2pManager.ConnectionInfoListener to track connection status.
      */
-    public void initialize() {
-        if (initialized) return;
+    @SuppressLint("MissingPermission")
+    public void connectToPeer(WifiP2pDevice peer, WifiP2pManager.ActionListener actionListener) {
+        WifiP2pConfig config = new WifiP2pConfig();
+        config.deviceAddress = peer.deviceAddress;
+        config.wps.setup = WpsInfo.PBC; // who knows what this does, it's in the tutorial
 
-        manager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
-        channel = manager.initialize(context, context.getMainLooper(), null);
-        initialized = true;
-    }
+        if (actionListener == null) {
+            actionListener = new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+                    Log.d(TAG, "Peer connection succeeded");
+                }
 
-    public void register() {
-        context.registerReceiver(this, p2pIntents);
-    }
+                @Override
+                public void onFailure(int i) {
+                    Log.e(TAG, "Peer connection failed with error code " + i);
+                }
+            };
+        }
 
-    public void unregister() {
-        context.unregisterReceiver(this);
+        manager.connect(channel, config, actionListener);
     }
 
     /**
@@ -106,16 +113,14 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
         }
     }
 
-    // TODO: Do any of these methods need to be public?
-    public void onConnectionChanged(Intent intent) {
-        if (!initialized) return;
+    protected void onConnectionChanged(Intent intent) {
         // Need to request new connection info.
-        // TODO: Tutorial has stuff about checking NetworkInfo, but this has been deprecated in favor of
-        // ConnectivityManager. Decide if extra checking is needed.
         connection_listeners.forEach((listener -> manager.requestConnectionInfo(channel, listener)));
     }
 
-    public void onPeersChanged(Intent intent) {
+    @SuppressLint("MissingPermission")
+    protected void onPeersChanged(Intent intent) {
+
         peer_listeners.forEach((listener) -> manager.requestPeers(channel, listener));
         Log.d(TAG, "Peers changed");
     }
@@ -141,9 +146,8 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
      *
      * @param listener: may be left null and a default will be used.
      */
-    public void discoverPeers(WifiP2pManager.ActionListener listener) {
-        assert initialized;
-
+    @SuppressLint("MissingPermission")
+    public void discoverPeers(@Nullable WifiP2pManager.ActionListener listener) {
         if (listener == null) {
             listener = new WifiP2pManager.ActionListener() {
                 @Override
@@ -157,6 +161,23 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
             };
         }
         manager.discoverPeers(channel, listener);
+    }
+
+    public void stopPeerDiscovery(@Nullable WifiP2pManager.ActionListener listener){
+        if (listener == null) {
+            listener = new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+                }
+
+                @Override
+                public void onFailure(int i) {
+
+                    Log.e(TAG, "Failed to stop peer discovery with code " + i);
+                }
+            };
+        }
+        manager.stopPeerDiscovery(channel, listener);
     }
 
     public void addPeerListListener(WifiP2pManager.PeerListListener listener) {
@@ -176,42 +197,12 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
     }
 
     /**
-     * Asynchronously starts a connection with a peer.
-     *
-     * @param peer
-     * @param actionListener - listens to success or failure. May be left null. Note only listens to
-     *                       success/failure of initialization of connection: use a
-     *                       WifiP2pManager.ConnectionInfoListener to track connection status.
-     */
-    public void connectToPeer(WifiP2pDevice peer, WifiP2pManager.ActionListener actionListener) {
-        WifiP2pConfig config = new WifiP2pConfig();
-        config.deviceAddress = peer.deviceAddress;
-        config.wps.setup = WpsInfo.PBC; // who knows what this does, it's in the tutorial
-
-        if (actionListener == null) {
-            actionListener = new WifiP2pManager.ActionListener() {
-                @Override
-                public void onSuccess() {
-                    Log.d(TAG, "Peer connection succeeded");
-                }
-
-                @Override
-                public void onFailure(int i) {
-                    Log.e(TAG, "Peer connection failed with error code " + i);
-                }
-            };
-        }
-
-        manager.connect(channel, config, actionListener);
-    }
-
-    /**
      * @return the last known address of the group leader. Warning: this information may be out of
      * date. Register a ConnectionInfoListener to receive events about group changes.
      * <p>
      * May return null if no address known.
      */
-    public InetAddress getGroupLeaderAddress() {
+    public  InetAddress getGroupLeaderAddress() {
         if (last_connection_info == null) {
             return null;
         }
@@ -231,4 +222,5 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
         last_connection_info = wifiP2pInfo;
     }
+
 }

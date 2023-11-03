@@ -8,13 +8,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.IOException;
 import java.io.PrintStream;
 
+import edu.utdallas.heartstohearts.network.MessageListener;
 import edu.utdallas.heartstohearts.network.NetworkManager;
 import edu.utdallas.heartstohearts.network.PeerConnection;
 import edu.utdallas.heartstohearts.network.PeerServer;
@@ -29,13 +28,13 @@ import kotlin.random.Random;
  * WiFi state related events.
  */
 public class HostGameActivity extends AppCompatActivity implements DeviceListFragment.PeerSelectionListener,
-        WifiP2pManager.ConnectionInfoListener, PeerConnection.MessageListener {
+        WifiP2pManager.ConnectionInfoListener, MessageListener {
 
     NetworkManager p2p_network_manager;
     private static final int PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION = 1001;
 
     private PrintStream message_out_stream;
-    private final int PORT = 8888;
+    private static final int PORT = 8888;
     private final String TAG = "HostGameActivity";
 
     private PeerServer peer_server;
@@ -63,14 +62,11 @@ public class HostGameActivity extends AppCompatActivity implements DeviceListFra
         p2p_network_manager.addPeerListListener((DeviceListFragment) getFragmentManager().findFragmentById(R.id.frag_list));
         p2p_network_manager.addConnectionListener(this);
 
-        Button p2p_init_button = (Button) findViewById(R.id.button_p2p_initialize);
-        p2p_init_button.setOnClickListener((View v) -> p2p_network_manager.initialize());
-
         Button p2p_discovery_button = (Button) findViewById(R.id.button_p2p_discovery);
         p2p_discovery_button.setOnClickListener((View v) -> p2p_network_manager.discoverPeers(null));
 
         Button make_socket_button = (Button) findViewById(R.id.button_make_socket);
-        make_socket_button.setOnClickListener((x) -> startClientServer());
+        make_socket_button.setOnClickListener((x) -> startClientOrServer());
 
         Button send_message_button = (Button) findViewById(R.id.button_send_message);
         send_message_button.setOnClickListener((View v) -> sendMessage("hello " + Random.Default.nextInt(1, 100)));
@@ -82,13 +78,11 @@ public class HostGameActivity extends AppCompatActivity implements DeviceListFra
     @Override
     public void onResume() {
         super.onResume();
-        p2p_network_manager.register();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        p2p_network_manager.unregister();
     }
 
     /**
@@ -118,20 +112,30 @@ public class HostGameActivity extends AppCompatActivity implements DeviceListFra
 
     }
 
-    public void startClientServer() {
+    public void startClientOrServer() {
         if (p2p_network_manager.isGroupLeader()) {
-            PeerServer.makeServerAsync(p2p_network_manager.getGroupLeaderAddress(), PORT, (peer_server) -> {
-                this.peer_server = peer_server;
-                peer_server.addPeerConnectionListener((PeerConnection client) -> setPeerConnection(client));
-                peer_server.startAcceptingConnections();
-                Log.d(TAG, "Listening for client connections");
-            });
+            PeerServer.makeServerAsync(p2p_network_manager.getGroupLeaderAddress(), PORT,
+                    (peer_server) -> {
+                        this.peer_server = peer_server;
+                        peer_server.addPeerConnectionListener((PeerConnection client) -> setPeerConnection(client));
+                        peer_server.startAcceptingConnections(null);
+                        Log.d(TAG, "Listening for client connections");
+                    },
+                    (error) -> {
+                        Log.e(TAG, "Error when operating server");
+                        Log.e(TAG, Log.getStackTraceString(error));
+                    });
         } else {
             Log.d(TAG, "Connecting to server...");
-            PeerConnection.fromAddressAsync(p2p_network_manager.getGroupLeaderAddress(), PORT, (connection) ->{
-               Log.d(TAG, "Connection created");
-               setPeerConnection(connection);
-           });
+            PeerConnection.fromAddressAsync(p2p_network_manager.getGroupLeaderAddress(), PORT,
+                    (connection) -> {
+                        Log.d(TAG, "Connection created");
+                        setPeerConnection(connection);
+                    },
+                    (error) -> {
+                        Log.e(TAG, "Could not connect to server");
+                        Log.e(TAG, Log.getStackTraceString(error));
+                    });
         }
     }
 
@@ -139,12 +143,14 @@ public class HostGameActivity extends AppCompatActivity implements DeviceListFra
         Log.d(TAG, "New client connected. Null: " + (c == null));
         peer_connection = c; // TODO close resources
         c.addMessageListener(this);
-        c.listenForMessages();
+        c.listenForMessages((error) -> {
+
+        });
     }
 
     public void sendMessage(String msg) {
-            Log.d(TAG, "Sending message: " + msg);
-            peer_connection.sendMessageAsync(msg, null);
+        Log.d(TAG, "Sending message: " + msg);
+        peer_connection.sendMessageAsync(msg, null);
     }
 
 
