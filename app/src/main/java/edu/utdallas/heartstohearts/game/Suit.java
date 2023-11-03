@@ -14,7 +14,7 @@ public enum Suit {
             case SPADES:
                 return 3;
             default:
-                return -1;
+                throw new AssertionError("Unhandled suit");
         }
     }
 

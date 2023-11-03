@@ -32,7 +32,7 @@ public enum Rank {
             case ACE:
                 return 12;
             default:
-                throw new AssertionError("Invalid rank");
+                throw new AssertionError("Unhandled rank");
         }
     }
 
