@@ -19,8 +19,11 @@ public class HandFragment extends Fragment {
         final ViewModelProvider provider = new ViewModelProvider(requireActivity(), ViewModelProvider.Factory.from(GameViewModel.initializer));
         final GameViewModel model = provider.get(GameViewModel.class);
 
+
+
         model.getGameStateData().observe(this, gameState -> {
             // Render the hand or something
+
         });
     }
 }
