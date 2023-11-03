@@ -1,19 +1,24 @@
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="240dp">
 
     <TableRow
-        android:id="@+id/spadesRow"
+        android:id="@+id/spades_row"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <ImageView
-            android:id="@+id/spadesIcon"
+            android:id="@+id/spades_icon"
             style="@style/SuiteIcon"
             android:contentDescription="@string/spadesIcon"
             app:srcCompat="@drawable/spades_icon" />
 
+        <LinearLayout
+            android:id="@+id/spades"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"></LinearLayout>
     </TableRow>
 
     <TableRow
@@ -28,6 +33,12 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/heartsIcon"
             app:srcCompat="@drawable/hearts_icon" />
+
+        <LinearLayout
+            android:id="@+id/hearts"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"></LinearLayout>
     </TableRow>
 
     <TableRow
@@ -42,6 +53,12 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/clubsIcon"
             app:srcCompat="@drawable/clubs_icon" />
+
+        <LinearLayout
+            android:id="@+id/clubs"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"></LinearLayout>
     </TableRow>
 
     <TableRow
@@ -56,6 +73,12 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/diamondsIcon"
             app:srcCompat="@drawable/diamonds_icon" />
+
+        <LinearLayout
+            android:id="@+id/diamonds"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"></LinearLayout>
     </TableRow>
 
 </TableLayout>
