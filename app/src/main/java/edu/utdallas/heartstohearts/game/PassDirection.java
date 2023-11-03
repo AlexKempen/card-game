@@ -30,7 +30,7 @@ public enum PassDirection {
             case ACROSS:
                 return (index + 2) % 4;
             case NONE:
-                return 0;
+                return 0; // why wouldn't this be 'return index' i.e. pass to self?
             default:
                 throw new AssertionError("Unhandled PassDirection");
         }
