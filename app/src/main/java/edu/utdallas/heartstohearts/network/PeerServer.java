@@ -4,6 +4,8 @@ import android.util.Log;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -18,11 +20,11 @@ public class PeerServer implements Closeable {
     Collection<PeerConnectionListener> listeners;
     Thread accept_connections_thread;
 
-    public static void makeServerAsync(int port, Callback<PeerServer> onServerCreated){
+    public static void makeServerAsync(InetAddress host, int port, Callback<PeerServer> onServerCreated){
         new Thread(()->{
             try {
                 PeerServer server = null;
-                server = new PeerServer(port);
+                server = new PeerServer(host, port);
                 onServerCreated.call(server);
 
             } catch (IOException e) {
@@ -31,8 +33,9 @@ public class PeerServer implements Closeable {
         }).start();
     }
 
-    public PeerServer(int port) throws IOException {
-        server_sock = new ServerSocket(port);
+    public PeerServer(InetAddress host, int port) throws IOException {
+        server_sock = new ServerSocket();
+        server_sock.bind(new InetSocketAddress(host, port));
         listeners = new ArrayList<>();
     }
 
@@ -42,8 +45,9 @@ public class PeerServer implements Closeable {
         accept_connections_thread = new Thread(() -> {
             while (true) {
                 try {
-                    Log.d("PeerServer","Waiting to accept");
+                    Log.d("PeerServer","Waiting to accept at " + server_sock.getLocalSocketAddress().toString());
                     Socket client = server_sock.accept();
+                    Log.d("PeerServer", "Client socket connected. Creating peer connection");
                     PeerConnection connection = new PeerConnection(client);
                     notifyPeerConnected(connection);
                 } catch (IOException e) {
@@ -62,6 +66,7 @@ public class PeerServer implements Closeable {
     }
 
     protected void notifyPeerConnected(PeerConnection connection){
+        Log.d("PeerServer", "Notifying new peer connection");
         listeners.forEach((l) -> l.peerConnected(connection));
     }
 

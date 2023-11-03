@@ -1,13 +1,15 @@
 package edu.utdallas.heartstohearts.network;
 
-import android.net.InetAddresses;
 import android.util.Log;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,10 +22,10 @@ public class PeerConnection implements Closeable {
     private Thread listening_thread = null;
     private Collection<MessageListener> listeners;
 
-    public static void connectAsync(InetAddress host, int port, Callback<PeerConnection> onConnectionAvailable){
+    public static void fromAddressAsync(InetAddress host, int port, Callback<PeerConnection> onConnectionAvailable){
         new Thread(()->{
             try {
-                PeerConnection connection = new PeerConnection(host, port);
+                PeerConnection connection = PeerConnection.fromAddress(host, port);
                 onConnectionAvailable.call(connection);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -32,14 +34,21 @@ public class PeerConnection implements Closeable {
     }
 
     /**
-     * Creates and attempts to connect a new PeerConnection
+     * Creates and attempts to connect a new PeerConnection. Blocks.
      *
      * @param host
      * @param port
      * @throws IOException
      */
-    public PeerConnection(InetAddress host, int port) throws IOException {
-        this(new Socket(host, port));
+    public static PeerConnection fromAddress(InetAddress host, int port) throws IOException {
+        Socket sock = new Socket();
+        // sock.bind(null);
+
+        InetSocketAddress address = new InetSocketAddress(host, port);
+        Log.d("PeerConnection", "Connecting to server at " +address.toString());
+        sock.connect(address);
+
+        return new PeerConnection(sock);
     }
 
     /**
@@ -49,11 +58,13 @@ public class PeerConnection implements Closeable {
      */
     public PeerConnection(Socket socket) throws IOException {
         this.socket = socket;
-        Log.d("PeerConnection", "Post-socket creation");
-        message_input_stream = new ObjectInputStream(socket.getInputStream());
-        message_output_stream = new ObjectOutputStream(socket.getOutputStream());
-
+        OutputStream out_stream = socket.getOutputStream();
+        InputStream in_stream = socket.getInputStream();
+        message_output_stream = new ObjectOutputStream(out_stream);
+        message_input_stream = new ObjectInputStream(in_stream);
         listeners = new ArrayList<MessageListener>();
+        Log.d("PeerConnection", "Peer Connection creation completed");
+
     }
 
     public void listenForMessages() {
@@ -93,6 +104,20 @@ public class PeerConnection implements Closeable {
     public void sendMessage(Object msg) throws IOException {
         message_output_stream.writeObject(msg);
         message_output_stream.flush();
+    }
+
+    public void sendMessageAsync(Object msg, Callback<IOException> onError) {
+        new Thread(()-> {
+            try{
+                sendMessage(msg);
+            } catch (IOException e){
+                if(onError == null){
+                    throw new RuntimeException(e);
+                } else {
+                    onError.call(e);
+                }
+            }
+        }).start();
     }
 
     @Override

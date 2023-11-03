@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.Socket;
 
 import edu.utdallas.heartstohearts.network.NetworkManager;
 import edu.utdallas.heartstohearts.network.PeerConnection;
@@ -36,7 +35,7 @@ public class HostGameActivity extends AppCompatActivity implements DeviceListFra
     private static final int PERMISSIONS_REQUEST_CODE_ACCESS_FINE_LOCATION = 1001;
 
     private PrintStream message_out_stream;
-    private final int PORT = 8984;
+    private final int PORT = 8888;
     private final String TAG = "HostGameActivity";
 
     private PeerServer peer_server;
@@ -121,7 +120,7 @@ public class HostGameActivity extends AppCompatActivity implements DeviceListFra
 
     public void startClientServer() {
         if (p2p_network_manager.isGroupLeader()) {
-            PeerServer.makeServerAsync(PORT, (peer_server) -> {
+            PeerServer.makeServerAsync(p2p_network_manager.getGroupLeaderAddress(), PORT, (peer_server) -> {
                 this.peer_server = peer_server;
                 peer_server.addPeerConnectionListener((PeerConnection client) -> setPeerConnection(client));
                 peer_server.startAcceptingConnections();
@@ -129,7 +128,7 @@ public class HostGameActivity extends AppCompatActivity implements DeviceListFra
             });
         } else {
             Log.d(TAG, "Connecting to server...");
-            PeerConnection.connectAsync(p2p_network_manager.getGroupLeaderAddress(), PORT, (connection) ->{
+            PeerConnection.fromAddressAsync(p2p_network_manager.getGroupLeaderAddress(), PORT, (connection) ->{
                Log.d(TAG, "Connection created");
                setPeerConnection(connection);
            });
@@ -137,17 +136,15 @@ public class HostGameActivity extends AppCompatActivity implements DeviceListFra
     }
 
     public void setPeerConnection(PeerConnection c) {
-        Log.d(TAG, "New client connected");
+        Log.d(TAG, "New client connected. Null: " + (c == null));
         peer_connection = c; // TODO close resources
         c.addMessageListener(this);
+        c.listenForMessages();
     }
 
     public void sendMessage(String msg) {
-        try {
-            peer_connection.sendMessage(msg);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+            Log.d(TAG, "Sending message: " + msg);
+            peer_connection.sendMessageAsync(msg, null);
     }
 
 
@@ -155,6 +152,6 @@ public class HostGameActivity extends AppCompatActivity implements DeviceListFra
     public void messageReceived(Object o) {
         String s = (String) o;
         Log.d(TAG, "Message received: " + s);
-        Toast.makeText(this, s, Toast.LENGTH_SHORT);
+//        Toast.makeText(this, s, Toast.LENGTH_SHORT);
     }
 }

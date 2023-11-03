@@ -34,7 +34,7 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
     private Set<WifiP2pManager.ConnectionInfoListener> connection_listeners;
 
 
-    // wee woo wee woo, right here officer this this one is involved in all sorts of race conditions
+    // wee woo wee woo, right here officer this one is involved in all sorts of race conditions
     private WifiP2pInfo last_connection_info = null;
 
     /**
