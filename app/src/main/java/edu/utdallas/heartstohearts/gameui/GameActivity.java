@@ -8,11 +8,18 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import edu.utdallas.heartstohearts.game.Card;
+
 /**
  * An activity representing the main game screen.
  */
 public class GameActivity extends AppCompatActivity {
     public static final String TAG = "Game";
+
+    private List<Card> selectedCards = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -31,5 +38,9 @@ public class GameActivity extends AppCompatActivity {
             // List<Card> chosenCards = Arrays.asList(0, 1, 5).stream().map(hand::get).collect(Collectors.toList());
             // model.chooseCards(chosenCards);
         });
+    }
+
+    public List<Card> getSelectedCards() {
+        return selectedCards;
     }
 }

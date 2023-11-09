@@ -36,6 +36,14 @@ public class Card implements Serializable {
         this.playable = playable;
     }
 
+    public Suit getSuit() {
+        return suit;
+    }
+
+    public Rank getRank() {
+        return rank;
+    }
+
     /**
      * Returns the point value of the card.
      */
