@@ -2,6 +2,7 @@ package edu.utdallas.heartstohearts.game;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GameState {
     private List<Card> hand;
