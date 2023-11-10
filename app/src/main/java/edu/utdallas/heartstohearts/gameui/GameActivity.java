@@ -7,10 +7,14 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import edu.utdallas.heartstohearts.R;
 import edu.utdallas.heartstohearts.game.Card;
+import edu.utdallas.heartstohearts.game.Rank;
+import edu.utdallas.heartstohearts.game.Suit;
 
 /**
  * An activity representing the main game screen.
@@ -29,6 +33,7 @@ public class GameActivity extends AppCompatActivity {
 
         final HandView handView = findViewById(R.id.hand_view);
         final SubmitButton submitButton = findViewById(R.id.submit_button);
+        final TrickView trickView = findViewById(R.id.trick_view);
 
         final ViewModelProvider provider = new ViewModelProvider(this, ViewModelProvider.Factory.from(GameViewModel.initializer));
         final GameViewModel model = provider.get(GameViewModel.class);
@@ -38,6 +43,7 @@ public class GameActivity extends AppCompatActivity {
 
         model.getGameStateData().observe(this, gameState -> {
             handView.displayHand(gameState.getHand());
+            trickView.displayTrick(gameState.getTrick());
             submitButton.update();
         });
 
