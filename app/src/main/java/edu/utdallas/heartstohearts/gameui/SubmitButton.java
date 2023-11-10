@@ -19,11 +19,6 @@ public class SubmitButton extends AppCompatButton {
         super(context, attrs);
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-    }
-
     public void registerModel(GameViewModel model) {
         this.model = model;
     }

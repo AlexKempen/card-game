@@ -47,11 +47,6 @@ public class HandView extends TableLayout {
         }
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-    }
-
     public void registerModel(GameViewModel model) {
         suitRowMap.values().forEach(adapter -> adapter.registerModel(model));
     }
