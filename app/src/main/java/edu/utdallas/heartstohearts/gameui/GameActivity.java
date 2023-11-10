@@ -8,6 +8,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import edu.utdallas.heartstohearts.R;
+
 /**
  * An activity representing the main game screen.
  */
@@ -17,6 +19,8 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.game_view);
+
         Intent intent = getIntent();
         String socketPort = (String) intent.getExtras().get("socket");
         Log.d(TAG, socketPort);
