@@ -16,7 +16,7 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
     private Rank rank;
     private boolean playable;
 
-    public Card(Suit suit, Rank rank, Boolean playable) {
+    public Card(Suit suit, Rank rank, boolean playable) {
         this.suit = suit;
         this.rank = rank;
         this.playable = playable;
