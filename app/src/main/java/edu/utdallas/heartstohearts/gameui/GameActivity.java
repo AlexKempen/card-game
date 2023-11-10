@@ -2,6 +2,7 @@ package edu.utdallas.heartstohearts.gameui;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ViewStub;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,37 +20,30 @@ import edu.utdallas.heartstohearts.game.GameState;
 public class GameActivity extends AppCompatActivity {
     public static final String TAG = "Game";
 
-    private HandView handView;
-    private GameViewModel model;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.game_main);
-
-        handView = (HandView) findViewById(R.id.hand_view);
 
 //        Intent intent = getIntent();
 //        String socketPort = (String) intent.getExtras().get("socket");
 //        Log.d(TAG, socketPort);
 
+        HandView handView = findViewById(R.id.hand_view);
+
         final ViewModelProvider provider = new ViewModelProvider(this, ViewModelProvider.Factory.from(GameViewModel.initializer));
-        model = provider.get(GameViewModel.class);
+        final GameViewModel model = provider.get(GameViewModel.class);
+
+        handView.registerModel(model);
 
         model.getGameStateData().observe(this, gameState -> {
-            displayHand(gameState, model.getSelectedCardsData().getValue());
+            handView.displayHand(gameState.getHand());
         });
 
         model.getSelectedCardsData().observe(this, selectedCards -> {
-            displayHand(model.getGameStateData().getValue(), selectedCards);
+            List<Card> hand = model.getGameStateData().getValue().getHand();
+            handView.displayHand(hand);
         });
         Log.d(TAG, "Init complete");
-    }
-
-    public void displayHand(GameState gameState, List<Card> selectedCards) {
-        Log.d(TAG, "Update hand");
-        List<Card> selectableCards = gameState.selectableCards(selectedCards);
-        handView.displayHand(model, gameState.getHand(), selectableCards);
     }
 }

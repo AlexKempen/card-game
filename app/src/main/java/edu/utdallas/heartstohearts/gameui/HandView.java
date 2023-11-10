@@ -9,6 +9,7 @@ import android.widget.TableLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,11 +52,15 @@ public class HandView extends TableLayout {
         super.onDraw(canvas);
     }
 
-    public void displayHand(GameViewModel model, List<Card> hand, List<Card> selectableCards) {
+    public void registerModel(GameViewModel model) {
+        suitRowMap.values().forEach(adapter -> adapter.registerModel(model));
+    }
+
+    public void displayHand(List<Card> hand) {
         for (Suit suit : Suit.values()) {
             List<Card> suitCards = hand.stream().filter(card -> card.getSuit() == suit).sorted().collect(Collectors.toList());
             HandCardAdapter adapter = suitRowMap.get(suit);
-            adapter.update(model, suitCards, selectableCards);
+            adapter.update(suitCards);
         }
     }
 }

@@ -44,16 +44,4 @@ public class GameState {
     public int getPoints() {
         return points;
     }
-
-    /**
-     * Returns a list of cards which are currently selectable in the context of one or more already selected cards.
-     */
-    public List<Card> selectableCards(List<Card> selectedCards) {
-        if (action == PlayerAction.PLAY_CARD && selectedCards.isEmpty()) {
-            return hand.stream().filter(Card::isPlayable).collect(Collectors.toList());
-        } else if (action == PlayerAction.CHOOSE_CARDS && selectedCards.size() < 3) {
-            return new ArrayList<>(hand);
-        }
-        return new ArrayList<>();
-    }
 }

@@ -21,20 +21,17 @@ import edu.utdallas.heartstohearts.game.Card;
  */
 public class HandCardAdapter extends RecyclerView.Adapter<HandCardAdapter.HandCardViewHolder> {
     private List<Card> cards = new ArrayList<>();
-    private List<Card> selectableCards = new ArrayList<>();
     private GameViewModel model;
 
-
-    public HandCardAdapter() {
+    public void registerModel(GameViewModel model) {
+        this.model = model;
     }
 
     /**
      * Updates the data displayed by the adapter.
      */
-    public void update(GameViewModel model, List<Card> cards, List<Card> selectableCards) {
-        this.model = model;
+    public void update(List<Card> cards) {
         this.cards = cards;
-        this.selectableCards = selectableCards;
         notifyDataSetChanged();
     }
 
@@ -88,7 +85,7 @@ public class HandCardAdapter extends RecyclerView.Adapter<HandCardAdapter.HandCa
                 button.setOnClickListener(view -> {
                     model.deselectCard(card);
                 });
-            } else if (selectableCards.contains(card)) {
+            } else if (card.isPlayable()) {
                 button.setEnabled(true);
                 button.setBackground(null);
 
