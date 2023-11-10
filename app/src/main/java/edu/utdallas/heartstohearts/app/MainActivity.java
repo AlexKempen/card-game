@@ -1,4 +1,4 @@
-package edu.utdallas.heartstohearts;
+package edu.utdallas.heartstohearts.app;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -8,16 +8,13 @@ import android.view.View;
 import android.widget.Button;
 import android.util.Log;
 
+import edu.utdallas.heartstohearts.R;
+
 public class MainActivity extends AppCompatActivity {
 
     private View.OnClickListener handleHostGameClick = v -> {
         Log.d("Main", "Host game");
-        startActivity(new Intent(MainActivity.this, HostGameActivity.class));
-    };
-
-    private View.OnClickListener handleJoinGameClick = v -> {
-        Log.d("Main", "Join game");
-        startActivity(new Intent(MainActivity.this, JoinGameActivity.class));
+        startActivity(new Intent(MainActivity.this, FormLobbyActivity.class));
     };
 
     @Override
@@ -27,8 +24,5 @@ public class MainActivity extends AppCompatActivity {
 
         final Button hostGameButton = findViewById(R.id.host_game);
         hostGameButton.setOnClickListener(handleHostGameClick);
-
-        final Button joinGameButton = findViewById(R.id.join_game);
-        joinGameButton.setOnClickListener(handleJoinGameClick);
     }
 }

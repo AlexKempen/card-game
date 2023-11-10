@@ -120,9 +120,13 @@ public class PeerConnection implements Closeable {
     }
 
     public void stopListening(){
-        if (listening_thread != null && listening_thread.isAlive()){
+        if (isListening()){
             listening_thread.interrupt();
         }
+    }
+
+    public boolean isListening(){
+        return (listening_thread != null && listening_thread.isAlive());
     }
 
     /**
@@ -185,9 +189,7 @@ public class PeerConnection implements Closeable {
      */
     @Override
     public void close() throws IOException {
-        if (listening_thread != null && listening_thread.isAlive()) {
-            listening_thread.interrupt();
-        }
+        stopListening();
         message_output_stream.close();
         message_input_stream.close();
         // closing the streams is supposed to close the socket, but hey- doesn't hurt to check
