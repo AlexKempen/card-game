@@ -1,84 +1,94 @@
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="240dp">
+    android:layout_height="250dp">
 
     <TableRow
         android:id="@+id/spades_row"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:measureWithLargestChild="true">
 
         <ImageView
             android:id="@+id/spades_icon"
             style="@style/SuiteIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:contentDescription="@string/spadesIcon"
             app:srcCompat="@drawable/spades_icon" />
 
-        <LinearLayout
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/spades"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"></LinearLayout>
+            android:name="edu.utdallas.heartstohearts.gameui.HandCardAdapter"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
     </TableRow>
 
     <TableRow
         android:id="@+id/hearts_row"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:measureWithLargestChild="true">
 
         <ImageView
             android:id="@+id/hearts_icon"
             style="@style/SuiteIcon"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:contentDescription="@string/heartsIcon"
             app:srcCompat="@drawable/hearts_icon" />
 
-        <LinearLayout
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/hearts"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"></LinearLayout>
+            android:name="edu.utdallas.heartstohearts.gameui.HandCardAdapter"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
     </TableRow>
 
     <TableRow
         android:id="@+id/clubs_row"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:measureWithLargestChild="true">
 
         <ImageView
             android:id="@+id/clubs_icon"
             style="@style/SuiteIcon"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:contentDescription="@string/clubsIcon"
             app:srcCompat="@drawable/clubs_icon" />
 
-        <LinearLayout
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/clubs"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"></LinearLayout>
+            android:name="edu.utdallas.heartstohearts.gameui.HandCardAdapter"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
     </TableRow>
 
     <TableRow
         android:id="@+id/diamonds_row"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:measureWithLargestChild="true">
 
         <ImageView
             android:id="@+id/diamonds_icon"
             style="@style/SuiteIcon"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:contentDescription="@string/diamondsIcon"
             app:srcCompat="@drawable/diamonds_icon" />
 
-        <LinearLayout
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/diamonds"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"></LinearLayout>
+            android:name="edu.utdallas.heartstohearts.gameui.HandCardAdapter"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
     </TableRow>
 
 </TableLayout>

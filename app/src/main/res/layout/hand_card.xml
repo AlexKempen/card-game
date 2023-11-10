@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.AppCompatButton xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/hand_card"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="60dp"
+    android:layout_height="match_parent"
+    android:textSize="18dp">
 
 </androidx.appcompat.widget.AppCompatButton>

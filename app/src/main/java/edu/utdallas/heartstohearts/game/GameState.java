@@ -52,7 +52,7 @@ public class GameState {
         if (action == PlayerAction.PLAY_CARD && selectedCards.isEmpty()) {
             return hand.stream().filter(Card::isPlayable).collect(Collectors.toList());
         } else if (action == PlayerAction.CHOOSE_CARDS && selectedCards.size() < 3) {
-            return hand;
+            return new ArrayList<>(hand);
         }
         return new ArrayList<>();
     }

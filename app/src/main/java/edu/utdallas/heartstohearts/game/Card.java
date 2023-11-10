@@ -9,16 +9,21 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Card implements Serializable {
+public class Card implements Serializable, Comparable<Card>, Cloneable {
     public static Card QUEEN_OF_SPADES = new Card(Suit.SPADES, Rank.QUEEN);
     public static Card TWO_OF_CLUBS = new Card(Suit.CLUBS, Rank.TWO);
     private Suit suit;
     private Rank rank;
     private boolean playable;
 
-    public Card(Suit suit, Rank rank) {
+    public Card(Suit suit, Rank rank, Boolean playable) {
         this.suit = suit;
         this.rank = rank;
+        this.playable = playable;
+    }
+
+    public Card(Suit suit, Rank rank) {
+        this(suit, rank, true);
     }
 
     /**
@@ -84,5 +89,18 @@ public class Card implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(suit, rank);
+    }
+
+    /**
+     * Cards are sorted by rank.
+     */
+    @Override
+    public int compareTo(Card card) {
+        return this.rank.toInt() - card.rank.toInt();
+    }
+
+    @Override
+    protected Card clone() {
+        return new Card(this.suit, this.rank, this.playable);
     }
 }
