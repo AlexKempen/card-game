@@ -15,30 +15,31 @@ import edu.utdallas.heartstohearts.network.Callback;
 public class DeviceDetailAdapter extends ArrayAdapter<WifiP2pDevice> {
 
 
-    boolean show_invite_button;
-    Callback<WifiP2pDevice> on_select;
-    public DeviceDetailAdapter(@NonNull Context context, boolean show_invite_button) {
+    boolean showInviteButton;
+    Callback<WifiP2pDevice> onSelect;
+
+    public DeviceDetailAdapter(@NonNull Context context, boolean showInviteButton) {
         super(context, 0);
-        this.show_invite_button = show_invite_button;
-        on_select = (x) -> {};
+        this.showInviteButton = showInviteButton;
+        onSelect = (x) -> {};
     }
 
-    public void onDeviceSelected(Callback<WifiP2pDevice> callback){
-        on_select = callback;
+    public void onDeviceSelected(Callback<WifiP2pDevice> callback) {
+        onSelect = callback;
     }
 
-    private void deviceSelected(WifiP2pDevice device){
-        if (on_select != null) on_select.call(device);
+    private void deviceSelected(WifiP2pDevice device) {
+        if (onSelect != null) onSelect.call(device);
     }
 
     @Override
-    public View getView(int position, View convert_view, ViewGroup parent){
+    public View getView(int position, View convertView, ViewGroup parent) {
 
         // Either use convert view or create a fresh one
         DeviceDetailView view;
-        if(convert_view != null){
-            assert convert_view instanceof DeviceDetailView;
-            view = (DeviceDetailView) convert_view;
+        if (convertView != null) {
+            assert convertView instanceof DeviceDetailView;
+            view = (DeviceDetailView) convertView;
         } else {
             view = new DeviceDetailView(getContext());
         }
@@ -46,22 +47,22 @@ public class DeviceDetailAdapter extends ArrayAdapter<WifiP2pDevice> {
         // Update view with device
         WifiP2pDevice device = getItem(position);
         view.setDevice(device);
-        view.showInviteButton(show_invite_button);
-        view.getInviteButton().setOnClickListener((View v)->{
+        view.showInviteButton(showInviteButton);
+        view.getInviteButton().setOnClickListener((View v) -> {
             deviceSelected(device);
         });
 
         return view;
     }
 
-    public void updateList(ArrayList<WifiP2pDevice> new_list){
-        new_list.sort((a, b) ->{
+    public void updateList(ArrayList<WifiP2pDevice> updatedList) {
+        updatedList.sort((a, b) -> {
             if (a.deviceName.isEmpty() && !b.deviceName.isEmpty()) return 1;
             else if (!a.deviceName.isEmpty() && b.deviceName.isEmpty()) return -1;
             else return a.status - b.status;
         });
         this.clear();
-        this.addAll(new_list);
+        this.addAll(updatedList);
         this.notifyDataSetChanged();
     }
 }

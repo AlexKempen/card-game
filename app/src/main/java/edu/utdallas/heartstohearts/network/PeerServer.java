@@ -6,8 +6,8 @@ import androidx.annotation.Nullable;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -18,14 +18,28 @@ import java.util.Collection;
  * ServerSocket
  */
 public class PeerServer implements Closeable {
-    ServerSocket server_sock;
+    ServerSocket serverSocket;
     Collection<PeerConnectionListener> listeners;
-    Thread accept_connections_thread;
+    Thread acceptConnectionsThread;
 
-    // TODO is host necessary?
+    /**
+     * Synchronously creates a server but does NOT start listening for connections.
+     * <p>
+     * Do not use on main thread, as it performs networking operations.
+     *
+     * @param host
+     * @param port
+     * @throws IOException
+     */
+    public PeerServer(InetAddress host, int port) throws IOException {
+        serverSocket = new ServerSocket();
+        serverSocket.bind(new InetSocketAddress(host, port));
+        listeners = new ArrayList<>();
+    }
 
     /**
      * Asynchronously creates a server but does NOT start listing for connections.
+     *
      * @param host
      * @param port
      * @param onServerCreated
@@ -47,30 +61,16 @@ public class PeerServer implements Closeable {
     }
 
     /**
-     * Synchronously creates a server but does NOT start listining for connections.
-     *
-     * Do not use on main thread, as it performs networking operations.
-     * @param host
-     * @param port
-     * @throws IOException
-     */
-    public PeerServer(InetAddress host, int port) throws IOException {
-        server_sock = new ServerSocket();
-        server_sock.bind(new InetSocketAddress(host, port));
-        listeners = new ArrayList<>();
-    }
-
-    /**
      * Starts accepting client connections. Non-blocking: can be called on any thread.
      */
     public void startAcceptingConnections(@Nullable Callback<IOException> onError) {
-        if (accept_connections_thread != null && accept_connections_thread.isAlive()) return;
+        if (acceptConnectionsThread != null && acceptConnectionsThread.isAlive()) return;
 
-        accept_connections_thread = new Thread(() -> {
+        acceptConnectionsThread = new Thread(() -> {
             while (true) {
                 try {
-                    Log.d("PeerServer", "Waiting to accept at " + server_sock.getLocalSocketAddress().toString());
-                    Socket client = server_sock.accept();
+                    Log.d("PeerServer", "Waiting to accept at " + serverSocket.getLocalSocketAddress().toString());
+                    Socket client = serverSocket.accept();
                     Log.d("PeerServer", "Client socket connected. Creating peer connection");
                     PeerConnection connection = new PeerConnection(client);
                     notifyPeerConnected(connection);
@@ -79,11 +79,12 @@ public class PeerServer implements Closeable {
                 }
             }
         });
-        accept_connections_thread.start();
+        acceptConnectionsThread.start();
     }
 
     /**
      * Listens for any incoming client connections.
+     *
      * @param l
      */
     public void addPeerConnectionListener(PeerConnectionListener l) {
@@ -96,6 +97,7 @@ public class PeerServer implements Closeable {
 
     /**
      * Notifies all listeners of new connection, using the callers thread.
+     *
      * @param connection
      */
     protected void notifyPeerConnected(PeerConnection connection) {
@@ -110,10 +112,10 @@ public class PeerServer implements Closeable {
      */
     @Override
     public void close() throws IOException {
-        if (accept_connections_thread != null && accept_connections_thread.isAlive()) {
-            accept_connections_thread.interrupt();
+        if (acceptConnectionsThread != null && acceptConnectionsThread.isAlive()) {
+            acceptConnectionsThread.interrupt();
         }
-        server_sock.close();
+        serverSocket.close();
     }
 }
 
