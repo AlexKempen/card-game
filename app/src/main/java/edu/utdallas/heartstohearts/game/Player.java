@@ -23,6 +23,24 @@ public class Player implements Serializable {
         this.action = action;
     }
 
+    /*
+    public void setHand(List<Card> hand) {
+        this.hand = hand;
+    }
+    */
+
+    public void addToHand(List<Card> cards) {
+        this.hand.addAll(cards);
+    }
+
+    public void removeFromHand(List<Card> cards) {
+        this.hand.removeAll(cards);
+    }
+
+    public void removeFromHand(Card card) {
+        this.hand.remove(card);
+    }
+
     public void setAction(PlayerAction action) {
         this.action = action;
     }
