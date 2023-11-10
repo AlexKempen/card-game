@@ -1,6 +1,7 @@
 package edu.utdallas.heartstohearts.game;
 
 import java.io.Serializable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -8,16 +9,21 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Card implements Serializable {
+public class Card implements Serializable, Comparable<Card>, Cloneable {
     public static Card QUEEN_OF_SPADES = new Card(Suit.SPADES, Rank.QUEEN);
     public static Card TWO_OF_CLUBS = new Card(Suit.CLUBS, Rank.TWO);
     private Suit suit;
     private Rank rank;
     private boolean playable;
 
-    public Card(Suit suit, Rank rank) {
+    public Card(Suit suit, Rank rank, boolean playable) {
         this.suit = suit;
         this.rank = rank;
+        this.playable = playable;
+    }
+
+    public Card(Suit suit, Rank rank) {
+        this(suit, rank, true);
     }
 
     /**
@@ -35,6 +41,14 @@ public class Card implements Serializable {
         this.playable = playable;
     }
 
+    public Suit getSuit() {
+        return suit;
+    }
+
+    public Rank getRank() {
+        return rank;
+    }
+
     /**
      * Returns the point value of the card.
      */
@@ -45,18 +59,6 @@ public class Card implements Serializable {
             return 1;
         }
         return 0;
-    }
-
-    public Suit getSuit() {
-        return suit;
-    }
-
-    public Rank getRank() {
-        return rank;
-    }
-
-    public String toString() {
-        return rank.toString() + " of " + suit.toString();
     }
 
     /**
@@ -87,5 +89,18 @@ public class Card implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(suit, rank);
+    }
+
+    /**
+     * Cards are sorted by rank.
+     */
+    @Override
+    public int compareTo(Card card) {
+        return this.rank.toInt() - card.rank.toInt();
+    }
+
+    @Override
+    protected Card clone() {
+        return new Card(this.suit, this.rank, this.playable);
     }
 }

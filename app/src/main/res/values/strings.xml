@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Hearts to hearts</string>
+
+
+    <!-- For adding image descriptions for accessibility -->
+    <string name="heartsIcon">Hearts Suite Icon</string>
+    <string name="clubsIcon">Clubs Suite Icon</string>
+    <string name="spadesIcon">Clubs Suite Icon</string>
+    <string name="diamondsIcon">Diamonds Suite Icon</string>
+    <string name="emptystring"></string> <!-- Use for images with pure visible flair and no information -->
 </resources>
