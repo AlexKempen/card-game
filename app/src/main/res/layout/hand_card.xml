@@ -3,6 +3,4 @@
     android:id="@+id/hand_card"
     android:layout_width="60dp"
     android:layout_height="match_parent"
-    android:textSize="18dp">
-
-</androidx.appcompat.widget.AppCompatButton>
+    android:textSize="18dp" />

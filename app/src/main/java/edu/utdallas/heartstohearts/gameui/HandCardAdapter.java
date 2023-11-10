@@ -1,13 +1,11 @@
 package edu.utdallas.heartstohearts.gameui;
 
 import android.graphics.Color;
-import android.util.Log;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -15,6 +13,7 @@ import java.util.List;
 
 import edu.utdallas.heartstohearts.R;
 import edu.utdallas.heartstohearts.game.Card;
+import edu.utdallas.heartstohearts.game.PlayerAction;
 
 /**
  * Displays a suite of cards as a horizontal list.
@@ -74,28 +73,26 @@ public class HandCardAdapter extends RecyclerView.Adapter<HandCardAdapter.HandCa
         }
 
         public void bind(Card card) {
+            PlayerAction action = model.getGameStateData().getValue().getAction();
             List<Card> selectedCards = model.getSelectedCardsData().getValue();
 
             button.setText(card.getRank().toString());
-
+            boolean enabled = true;
+            int color = 0;
             if (selectedCards.contains(card)) {
-                button.setEnabled(true);
-                button.setBackgroundColor(Color.BLUE);
-
+                color = Color.BLUE;
                 button.setOnClickListener(view -> {
                     model.deselectCard(card);
                 });
-            } else if (card.isPlayable()) {
-                button.setEnabled(true);
-                button.setBackground(null);
-
+            } else if (card.isPlayable() && selectedCards.size() < action.getSelectionLimit()) {
                 button.setOnClickListener(view -> {
                     model.selectCard(card);
                 });
             } else {
-                button.setEnabled(false);
-                button.setBackground(null);
+                enabled = false;
             }
+            button.setEnabled(enabled);
+            button.setBackgroundColor(color);
         }
     }
 }
