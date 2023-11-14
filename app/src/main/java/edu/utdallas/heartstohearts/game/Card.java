@@ -13,7 +13,7 @@ public class Card implements Serializable {
     public static Card TWO_OF_CLUBS = new Card(Suit.CLUBS, Rank.TWO);
     private Suit suit;
     private Rank rank;
-    private boolean playable;
+    private boolean selectable;
 
     public Card(Suit suit, Rank rank) {
         this.suit = suit;
@@ -27,12 +27,12 @@ public class Card implements Serializable {
         this(Suit.fromInt(id / 13), Rank.fromInt(id % 13));
     }
 
-    public boolean isPlayable() {
-        return playable;
+    public boolean isSelectable() {
+        return selectable;
     }
 
-    public void setPlayable(boolean playable) {
-        this.playable = playable;
+    public void setSelectable(boolean selectable) {
+        this.selectable = selectable;
     }
 
     /**
@@ -71,7 +71,7 @@ public class Card implements Serializable {
     public static List<List<Card>> dealHands(List<Card> deck) {
         List<List<Card>> hands = new ArrayList<>();
         for (int i = 0; i < 4; ++i) {
-            hands.add(deck.subList(i * 13, (i + 1) * 13));
+            hands.add(new ArrayList<>(deck.subList(i * 13, (i + 1) * 13)));
         }
         return hands;
     }

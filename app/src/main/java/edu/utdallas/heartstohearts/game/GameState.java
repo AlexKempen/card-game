@@ -8,16 +8,20 @@ public class GameState {
     private List<Card> trick;
     private PlayerAction action;
     private int points;
+    private Suit trumpSuit;
 
-    public GameState(List<Card> hand, List<Card> trick, PlayerAction action, int points) {
+    // To-do : Add a list of scores and a list of names so every player can know all players' scores
+
+    public GameState(List<Card> hand, List<Card> trick, PlayerAction action, int points, Suit trumpSuit) {
         this.hand = hand;
         this.trick = trick;
         this.action = action;
         this.points = points;
+        this.trumpSuit = trumpSuit;
     }
 
     public GameState(List<Card> hand, PlayerAction action) {
-        this(hand, new ArrayList<>(), action, 0);
+        this(hand, new ArrayList<>(), action, 0, null);
     }
 
     @Override
@@ -43,4 +47,5 @@ public class GameState {
     public int getPoints() {
         return points;
     }
+    public Suit getTrumpSuit() { return trumpSuit; }
 }

@@ -1,3 +1,4 @@
+/*
 package edu.utdallas.heartstohearts;
 import java.util.Random;
 import java.util.Scanner;
@@ -170,10 +171,12 @@ public class Game {
 		}
 		System.out.println();
 		
-		/* ---------------------------------
+		*/
+/* ---------------------------------
 		 * START THE FIRST ROUND *
 		 * ---------------------------------
-		 */
+		 *//*
+
 		
 		int round = 0;
 
@@ -229,7 +232,8 @@ public class Game {
             (listOfHeldCards.get(i)).add(p.getCurrHand().get(index));
         }
 		
-		/*
+		*/
+/*
 		// TESTING THAT CARDS ARE STORED PROPERLY; THEY ARE
 		for (int i = 0; i < listOfHeldCards.size(); i ++) {
 			for (int j = 0; j < listOfHeldCards.get(i).size(); j ++) {
@@ -237,7 +241,8 @@ public class Game {
 				System.out.println(temp.getRank() + "," + temp.getSuit());
 			}
 		}
-		*/
+		*//*
+
 
         // pass the stored cards to the correct players
         // pass right
@@ -306,3 +311,4 @@ public class Game {
 
     }
 }
+*/
