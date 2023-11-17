@@ -1,4 +1,4 @@
-package edu.utdallas.heartstohearts.app;
+package edu.utdallas.heartstohearts.networkui;
 
 import android.content.pm.PackageManager;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.ArrayList;
 
 import edu.utdallas.heartstohearts.R;
+import edu.utdallas.heartstohearts.appui.BaseActivity;
 import edu.utdallas.heartstohearts.network.NetworkManager;
 import edu.utdallas.heartstohearts.network.SelfDeviceListener;
 
@@ -23,7 +24,7 @@ import edu.utdallas.heartstohearts.network.SelfDeviceListener;
 /**
  * Stage before the game starts where the 4 player devices find each other.
  */
-public class FormLobbyActivity extends AppCompatActivity implements WifiP2pManager.PeerListListener, SelfDeviceListener {
+public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.PeerListListener, SelfDeviceListener {
 
     NetworkManager networkManager;
 
@@ -49,18 +50,18 @@ public class FormLobbyActivity extends AppCompatActivity implements WifiP2pManag
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.form_lobby_activity);
+        setContentView(R.layout.activity_form_lobby);
 
         // Set up lists
         connectedDevices = (ListView) findViewById(R.id.connected_devices_list);
         nearbyDevices = (ListView) findViewById(R.id.nearby_devices_list);
-        connectedDevicesAdapter = new DeviceDetailAdapter(getApplicationContext(), false);
-        nearbyDevicesAdapter = new DeviceDetailAdapter(getApplicationContext(), true);
+        connectedDevicesAdapter = new DeviceDetailAdapter(getContext(), false);
+        nearbyDevicesAdapter = new DeviceDetailAdapter(getContext(), true);
         nearbyDevices.setAdapter(nearbyDevicesAdapter);
         connectedDevices.setAdapter(connectedDevicesAdapter);
 
         // Set up this device view
-        thisDeviceView = new DeviceDetailView(getApplicationContext());
+        thisDeviceView = new DeviceDetailView(getContext());
         thisDeviceView.showInviteButton(false);
         // swap out
         View placeholder = findViewById(R.id.this_device_details_placeholder);
@@ -69,7 +70,8 @@ public class FormLobbyActivity extends AppCompatActivity implements WifiP2pManag
         parent.removeView(placeholder);
         parent.addView(thisDeviceView, index);
 
-        // set up networking
+        // set up networking. Use application context since the network needs to exist accross
+        // multiplce activities
         networkManager = NetworkManager.getInstance(getApplicationContext());
         networkManager.addPeerListListener(this);
         networkManager.addSelfDeviceListener(this);
@@ -91,7 +93,7 @@ public class FormLobbyActivity extends AppCompatActivity implements WifiP2pManag
 
             @Override
             public void onFailure(int i) {
-                Toast.makeText(getApplicationContext(), "Unable to search for nearby devices!", Toast.LENGTH_LONG);
+                Toast.makeText(getContext(), "Unable to search for nearby devices!", Toast.LENGTH_LONG);
             }
         });
     }
@@ -100,6 +102,14 @@ public class FormLobbyActivity extends AppCompatActivity implements WifiP2pManag
     public void onPause() {
         networkManager.stopPeerDiscovery(null);
         super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        // Need to deregister this as a listener to avoid potential null pointer issues
+        networkManager.removePeerListListener(this);
+        networkManager.removeSelfDeviceListener(this);
+        super.onDestroy();
     }
 
     @Override
