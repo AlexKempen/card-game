@@ -4,24 +4,24 @@ import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.util.List;
 
 import edu.utdallas.heartstohearts.R;
+import edu.utdallas.heartstohearts.appui.BaseActivity;
 import edu.utdallas.heartstohearts.game.Card;
 
 /**
  * An activity representing the main game screen.
  */
-public class GameActivity extends AppCompatActivity {
+public class GameActivity extends BaseActivity {
     public static final String TAG = "Game";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.game_main);
+        setContentView(R.layout.activity_game_main);
 
 //        Intent intent = getIntent();
 //        String socketPort = (String) intent.getExtras().get("socket");

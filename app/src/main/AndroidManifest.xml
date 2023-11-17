@@ -47,10 +47,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".JoinGameActivity"
+            android:name=".gameui.GameActivity"
             android:exported="true" />
         <activity
-            android:name=".gameui.GameActivity"
+            android:name=".networkui.FormLobbyActivity"
             android:exported="true" />
     </application>
 

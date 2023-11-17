@@ -1,4 +1,4 @@
-package edu.utdallas.heartstohearts.app;
+package edu.utdallas.heartstohearts.networkui;
 
 import android.content.pm.PackageManager;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.ArrayList;
 
 import edu.utdallas.heartstohearts.R;
+import edu.utdallas.heartstohearts.appui.BaseActivity;
 import edu.utdallas.heartstohearts.network.NetworkManager;
 import edu.utdallas.heartstohearts.network.SelfDeviceListener;
 
@@ -23,7 +24,7 @@ import edu.utdallas.heartstohearts.network.SelfDeviceListener;
 /**
  * Stage before the game starts where the 4 player devices find each other.
  */
-public class FormLobbyActivity extends AppCompatActivity implements WifiP2pManager.PeerListListener, SelfDeviceListener {
+public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.PeerListListener, SelfDeviceListener {
 
     NetworkManager networkManager;
 
@@ -49,7 +50,7 @@ public class FormLobbyActivity extends AppCompatActivity implements WifiP2pManag
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.form_lobby_activity);
+        setContentView(R.layout.activity_form_lobby);
 
         // Set up lists
         connectedDevices = (ListView) findViewById(R.id.connected_devices_list);
