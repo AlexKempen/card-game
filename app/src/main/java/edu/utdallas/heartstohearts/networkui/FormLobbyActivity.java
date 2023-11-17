@@ -55,13 +55,13 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
         // Set up lists
         connectedDevices = (ListView) findViewById(R.id.connected_devices_list);
         nearbyDevices = (ListView) findViewById(R.id.nearby_devices_list);
-        connectedDevicesAdapter = new DeviceDetailAdapter(getApplicationContext(), false);
-        nearbyDevicesAdapter = new DeviceDetailAdapter(getApplicationContext(), true);
+        connectedDevicesAdapter = new DeviceDetailAdapter(getContext(), false);
+        nearbyDevicesAdapter = new DeviceDetailAdapter(getContext(), true);
         nearbyDevices.setAdapter(nearbyDevicesAdapter);
         connectedDevices.setAdapter(connectedDevicesAdapter);
 
         // Set up this device view
-        thisDeviceView = new DeviceDetailView(getApplicationContext());
+        thisDeviceView = new DeviceDetailView(getContext());
         thisDeviceView.showInviteButton(false);
         // swap out
         View placeholder = findViewById(R.id.this_device_details_placeholder);
@@ -70,7 +70,8 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
         parent.removeView(placeholder);
         parent.addView(thisDeviceView, index);
 
-        // set up networking
+        // set up networking. Use application context since the network needs to exist accross
+        // multiplce activities
         networkManager = NetworkManager.getInstance(getApplicationContext());
         networkManager.addPeerListListener(this);
         networkManager.addSelfDeviceListener(this);
@@ -92,7 +93,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
 
             @Override
             public void onFailure(int i) {
-                Toast.makeText(getApplicationContext(), "Unable to search for nearby devices!", Toast.LENGTH_LONG);
+                Toast.makeText(getContext(), "Unable to search for nearby devices!", Toast.LENGTH_LONG);
             }
         });
     }
@@ -101,6 +102,14 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
     public void onPause() {
         networkManager.stopPeerDiscovery(null);
         super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        // Need to deregister this as a listener to avoid potential null pointer issues
+        networkManager.removePeerListListener(this);
+        networkManager.removeSelfDeviceListener(this);
+        super.onDestroy();
     }
 
     @Override
