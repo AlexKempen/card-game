@@ -1,4 +1,4 @@
-package edu.utdallas.heartstohearts;
+package edu.utdallas.heartstohearts.game;
 
 import java.util.List;
 import java.util.function.Supplier;

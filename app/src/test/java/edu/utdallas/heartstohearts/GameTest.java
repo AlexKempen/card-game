@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -16,6 +15,7 @@ import edu.utdallas.heartstohearts.game.Card;
 import edu.utdallas.heartstohearts.game.GameManager;
 import edu.utdallas.heartstohearts.game.GameManagerBuilder;
 import edu.utdallas.heartstohearts.game.GameStateBuilder;
+import edu.utdallas.heartstohearts.game.ListUtils;
 import edu.utdallas.heartstohearts.game.PassDirection;
 import edu.utdallas.heartstohearts.game.PlayerAction;
 import edu.utdallas.heartstohearts.game.PlayerBuilder;

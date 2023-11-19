@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".gameui.TrickFragment">
+
+    <ImageView
+        android:id="@+id/trick_image_view_0"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/trick_horizontal_guideline_2"
+        app:layout_constraintEnd_toStartOf="@+id/trick_vertical_guideline_1"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0"
+        app:srcCompat="@android:color/transparent"
+        tools:srcCompat="@android:color/transparent" />
+
+    <ImageView
+        android:id="@+id/trick_image_view_1"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/trick_horizontal_guideline_3"
+        app:layout_constraintEnd_toStartOf="@+id/trick_vertical_guideline_2"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/trick_vertical_guideline_0"
+        app:layout_constraintTop_toTopOf="@+id/trick_horizontal_guideline_0"
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@android:color/transparent"
+        tools:srcCompat="@android:color/transparent" />
+
+    <ImageView
+        android:id="@+id/trick_image_view_2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/trick_horizontal_guideline_4"
+        app:layout_constraintEnd_toStartOf="@+id/trick_vertical_guideline_3"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/trick_vertical_guideline_1"
+        app:layout_constraintTop_toTopOf="@+id/trick_horizontal_guideline_1"
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@android:color/transparent"
+        tools:srcCompat="@android:color/transparent" />
+
+    <ImageView
+        android:id="@+id/trick_image_view_3"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/trick_vertical_guideline_2"
+        app:layout_constraintTop_toTopOf="@+id/trick_horizontal_guideline_2"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@android:color/transparent"
+        tools:srcCompat="@android:color/transparent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/trick_vertical_guideline_0"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.20" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/trick_vertical_guideline_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.40" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/trick_vertical_guideline_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.60" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/trick_vertical_guideline_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.80" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/trick_horizontal_guideline_0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.166" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/trick_horizontal_guideline_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.333" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/trick_horizontal_guideline_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.50" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/trick_horizontal_guideline_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.666" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/trick_horizontal_guideline_4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.833" />
+</androidx.constraintlayout.widget.ConstraintLayout>

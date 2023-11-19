@@ -1,6 +1,7 @@
 package edu.utdallas.heartstohearts.game;
 
 import java.io.Serializable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -8,23 +9,29 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Card implements Serializable {
+public class Card implements Serializable, Comparable<Card>, Cloneable {
     public static Card QUEEN_OF_SPADES = new Card(Suit.SPADES, Rank.QUEEN);
     public static Card TWO_OF_CLUBS = new Card(Suit.CLUBS, Rank.TWO);
     private Suit suit;
     private Rank rank;
     private boolean selectable;
+    private boolean playable;
 
-    public Card(Suit suit, Rank rank) {
+    public Card(Suit suit, Rank rank, boolean playable) {
         this.suit = suit;
         this.rank = rank;
+        this.playable = playable;
+    }
+
+    public Card(Suit suit, Rank rank){
+        this(suit, rank, true);
     }
 
     /**
      * @param id : A card id, ranging from 0 to 51.
      */
     public Card(int id) {
-        this(Suit.fromInt(id / 13), Rank.fromInt(id % 13));
+        this(Suit.fromInt(id / 13), Rank.fromInt(id % 13), true);
     }
 
     public boolean isSelectable() {
@@ -33,6 +40,13 @@ public class Card implements Serializable {
 
     public void setSelectable(boolean selectable) {
         this.selectable = selectable;
+    }
+    public Suit getSuit() {
+        return suit;
+    }
+
+    public Rank getRank() {
+        return rank;
     }
 
     /**
@@ -45,18 +59,6 @@ public class Card implements Serializable {
             return 1;
         }
         return 0;
-    }
-
-    public Suit getSuit() {
-        return suit;
-    }
-
-    public Rank getRank() {
-        return rank;
-    }
-
-    public String toString() {
-        return rank.toString() + " of " + suit.toString();
     }
 
     /**
@@ -87,5 +89,22 @@ public class Card implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(suit, rank);
+    }
+
+    /**
+     * Cards are sorted by rank.
+     */
+    @Override
+    public int compareTo(Card card) {
+        return this.rank.toInt() - card.rank.toInt();
+    }
+
+    @Override
+    protected Card clone() {
+        return new Card(this.suit, this.rank);
+    }
+
+    public boolean isPlayable() {
+        return playable;
     }
 }
