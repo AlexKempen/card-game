@@ -58,8 +58,10 @@ public class BaseActivity extends AppCompatActivity {
         if (id < navigation_activities.size())
         {
             // Switch Activities
-            Intent nav_intent = new Intent(this, navigation_activities.get(id));
-            startActivity(nav_intent);
+            if (this.getClass() != navigation_activities.get(id)) {
+                Intent nav_intent = new Intent(this, navigation_activities.get(id));
+                startActivity(nav_intent);
+            }
             return true;
         }
         return super.onOptionsItemSelected(item);
