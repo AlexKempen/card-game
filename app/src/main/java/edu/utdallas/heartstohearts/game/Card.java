@@ -14,6 +14,7 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
     public static Card TWO_OF_CLUBS = new Card(Suit.CLUBS, Rank.TWO);
     private Suit suit;
     private Rank rank;
+    private boolean selectable;
     private boolean playable;
 
     public Card(Suit suit, Rank rank, boolean playable) {
@@ -22,7 +23,7 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
         this.playable = playable;
     }
 
-    public Card(Suit suit, Rank rank) {
+    public Card(Suit suit, Rank rank){
         this(suit, rank, true);
     }
 
@@ -30,17 +31,16 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
      * @param id : A card id, ranging from 0 to 51.
      */
     public Card(int id) {
-        this(Suit.fromInt(id / 13), Rank.fromInt(id % 13));
+        this(Suit.fromInt(id / 13), Rank.fromInt(id % 13), true);
     }
 
-    public boolean isPlayable() {
-        return playable;
+    public boolean isSelectable() {
+        return selectable;
     }
 
-    public void setPlayable(boolean playable) {
-        this.playable = playable;
+    public void setSelectable(boolean selectable) {
+        this.selectable = selectable;
     }
-
     public Suit getSuit() {
         return suit;
     }
@@ -73,7 +73,7 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
     public static List<List<Card>> dealHands(List<Card> deck) {
         List<List<Card>> hands = new ArrayList<>();
         for (int i = 0; i < 4; ++i) {
-            hands.add(deck.subList(i * 13, (i + 1) * 13));
+            hands.add(new ArrayList<>(deck.subList(i * 13, (i + 1) * 13)));
         }
         return hands;
     }
@@ -101,6 +101,10 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
 
     @Override
     protected Card clone() {
-        return new Card(this.suit, this.rank, this.playable);
+        return new Card(this.suit, this.rank);
+    }
+
+    public boolean isPlayable() {
+        return playable;
     }
 }

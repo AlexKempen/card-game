@@ -16,9 +16,10 @@ public class GameManagerBuilder {
     public PlayerBuilder playerBuilder;
     public PassDirection direction = PassDirection.LEFT;
     public List<Card> currentTrick = new ArrayList<>();
+    public Suit trumpSuit;
 
     public GameManager make() {
-        return new GameManager(playerBuilder.make(), direction, currentTrick, heartsBroken);
+        return new GameManager(playerBuilder.make(), direction, currentTrick, heartsBroken, trumpSuit);
     }
 
 }
