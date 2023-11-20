@@ -31,7 +31,7 @@ public class PlayerStateBuilder {
         actions = ListUtils.fourCopies(() -> PlayerAction.WAIT);
     }
 
-    public List<PlayerState> make() {
+    public List<PlayerState> build() {
         return IntStream.range(0, 4).mapToObj(i -> new PlayerState(hands.get(i), trick, actions.get(i), points.get(i))).collect(Collectors.toList());
     }
 }
