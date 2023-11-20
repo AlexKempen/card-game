@@ -1,6 +1,5 @@
 package edu.utdallas.heartstohearts.game;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class GameManager {
@@ -8,7 +7,14 @@ public class GameManager {
     private List<Player> players;
     private PassDirection direction;
     private List<Card> currentTrick;
-    private Suit trumpSuit = null;
+    private Suit trumpSuit;
+
+    /**
+     * Creates a GameManager suitable for starting a new game.
+     */
+    public static GameManager startGame() {
+        return new GameManagerBuilder().make();
+    }
 
     public GameManager(List<Player> players, PassDirection direction, List<Card> currentTrick, boolean heartsBroken, Suit trumpSuit) {
         this.players = players;
@@ -52,7 +58,7 @@ public class GameManager {
      * Returns true if the players should pass cards to each other.
      */
     public boolean shouldPass() {
-      return direction != PassDirection.NONE;
+        return direction != PassDirection.NONE;
     }
 
     /**
@@ -65,7 +71,7 @@ public class GameManager {
                 // player p passes playerChoices.get(p) to player this.direction.mapPassIndex(p)
                 // and those cards are removed from p's hand
                 players.get(p).removeFromHand(playerChoices.get(p));
-                players.get(p).addToHand(playerChoices.get(direction.mapPassIndex(p)));
+                players.get(p).addToHand(playerChoices.get(direction.getPassId(p)));
             }
         }
 
@@ -80,8 +86,7 @@ public class GameManager {
             }
             if (hasTwoOfClubs == playerId) {
                 players.get(playerId).setAction(PlayerAction.PLAY_CARD, trumpSuit, heartsBroken);
-            }
-            else {
+            } else {
                 players.get(playerId).setAction(PlayerAction.WAIT, trumpSuit, heartsBroken);
             }
 
@@ -148,8 +153,7 @@ public class GameManager {
             players.get(currPlayer).setAction(PlayerAction.WAIT, trumpSuit, heartsBroken);
             if (currPlayer < 3) {
                 players.get(currPlayer + 1).setAction(PlayerAction.PLAY_CARD, trumpSuit, heartsBroken);
-            }
-            else players.get(0).setAction(PlayerAction.PLAY_CARD, trumpSuit, heartsBroken);
+            } else players.get(0).setAction(PlayerAction.PLAY_CARD, trumpSuit, heartsBroken);
         }
 
 
@@ -221,7 +225,7 @@ public class GameManager {
      * Returns a list of the current game states, one for each player.
      */
     // Maybe use GameStateBuilder
-    public List<GameState> getGameStates() {
+    public List<PlayerState> getGameStates() {
         GameStateBuilder builder = new GameStateBuilder();
         for (int i = 0; i < 4; i++) {
             builder.actions.set(i, players.get(i).getAction());
@@ -229,8 +233,6 @@ public class GameManager {
             builder.points.set(i, players.get(i).getPoints());
         }
         builder.trick = currentTrick;
-        builder.trumpSuit = trumpSuit;
-
         return builder.make();
     }
 }

@@ -1,7 +1,6 @@
 package edu.utdallas.heartstohearts.gameui;
 
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -73,7 +72,7 @@ public class HandCardAdapter extends RecyclerView.Adapter<HandCardAdapter.HandCa
         }
 
         public void bind(Card card) {
-            PlayerAction action = model.getGameStateData().getValue().getAction();
+            PlayerAction action = model.getPlayerStateData().getValue().getAction();
             List<Card> selectedCards = model.getSelectedCardsData().getValue();
 
             button.setText(card.getRank().toString());

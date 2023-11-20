@@ -37,9 +37,6 @@ public class GameTest {
         hands = Card.dealHands(Card.makeDeck());
     }
 
-    /**
-     * PASSES
-     */
     @Test
     public void testSimpleDeal() {
         stateBuilder.hands = hands;
@@ -50,9 +47,6 @@ public class GameTest {
     }
 
 
-    /**
-     * PASSES
-     */
     @Test
     public void testPassingPhase() {
         List<List<Card>> cardsToPass = ListUtils.fourCopies(ArrayList::new);
@@ -61,15 +55,17 @@ public class GameTest {
 
         // pass cards directly across in the stateBuilder to compare to the manager
         for (int i = 0; i < 2; i += 1) {
-            int oppositeIndex = PassDirection.ACROSS.mapPassIndex(i);
+            int oppositeIndex = PassDirection.ACROSS.getPassId(i);
             List<Card> hand = hands.get(i);
             List<Card> oppositeHand = hands.get(oppositeIndex);
+
+            // Slice cards from hand and add them to the opposite
             cardsToPass.set(i, new ArrayList<>(hand.subList(0, 3)));
             cardsToPass.set(oppositeIndex, new ArrayList<>(oppositeHand.subList(0, 3)));
 
-
             hand.addAll(cardsToPass.get(oppositeIndex));
             oppositeHand.addAll(cardsToPass.get(i));
+
             hand.removeAll(cardsToPass.get(i));
             oppositeHand.removeAll(cardsToPass.get(oppositeIndex));
 
@@ -100,7 +96,6 @@ public class GameTest {
     public void testPlayCard() {
         // Mark player 0 as current player
         PlayerAction.setToPlayCard(0, playerBuilder.actions);
-        //hands.get(0).set(0, new Card(Suit.SPADES, Rank.SEVEN));
         Card playedCard = new Card(Suit.SPADES, Rank.SEVEN);
 
         managerBuilder.heartsBroken = true; // Ensure test is deterministic

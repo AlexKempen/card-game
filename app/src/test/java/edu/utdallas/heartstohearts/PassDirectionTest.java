@@ -16,7 +16,7 @@ public class PassDirectionTest {
     @Test
     public void testPassDirection() {
         for (PassDirection direction : PassDirection.values()) {
-            List<Integer> actual = IntStream.range(0, 4).mapToObj(direction::mapPassIndex).collect(Collectors.toList());
+            List<Integer> actual = IntStream.range(0, 4).mapToObj(direction::getPassId).collect(Collectors.toList());
             List<Integer> expected;
             switch (direction) {
                 case LEFT:

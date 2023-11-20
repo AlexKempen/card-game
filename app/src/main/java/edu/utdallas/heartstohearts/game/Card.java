@@ -23,7 +23,7 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
         this.playable = playable;
     }
 
-    public Card(Suit suit, Rank rank){
+    public Card(Suit suit, Rank rank) {
         this(suit, rank, true);
     }
 
@@ -41,6 +41,7 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
     public void setSelectable(boolean selectable) {
         this.selectable = selectable;
     }
+
     public Suit getSuit() {
         return suit;
     }
@@ -70,6 +71,10 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
         return deck;
     }
 
+    /**
+     * Divides a deck of cards into four hands equally.
+     * The deck is assumed to be 52 cards.
+     */
     public static List<List<Card>> dealHands(List<Card> deck) {
         List<List<Card>> hands = new ArrayList<>();
         for (int i = 0; i < 4; ++i) {
@@ -78,6 +83,9 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
         return hands;
     }
 
+    /**
+     * Note equality for cards does not depend on playability.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -92,7 +100,7 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
     }
 
     /**
-     * Cards are sorted by rank.
+     * Cards are sorted by rank to facilitate UI display.
      */
     @Override
     public int compareTo(Card card) {

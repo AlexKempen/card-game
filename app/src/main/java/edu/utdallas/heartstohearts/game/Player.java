@@ -1,10 +1,7 @@
 package edu.utdallas.heartstohearts.game;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Player implements Serializable {
     private String name;
@@ -30,8 +27,8 @@ public class Player implements Serializable {
     //sets action and determines legality of all cards
     public void setAction(PlayerAction action, Suit trumpSuit, boolean heartsBroken) {
         this.action = action;
-        switch(action) {
-            case WAIT : // if not player's turn to play or pass cards, player can't select any card
+        switch (action) {
+            case WAIT: // if not player's turn to play or pass cards, player can't select any card
                 for (Card c : hand) {
                     c.setSelectable(false);
                 }
@@ -56,8 +53,7 @@ public class Player implements Serializable {
                         for (Card c : hand) {
                             if (c.equals(Card.TWO_OF_CLUBS)) {
                                 c.setSelectable(true);
-                            }
-                            else c.setSelectable(false);
+                            } else c.setSelectable(false);
                         }
                     }
 
@@ -67,13 +63,11 @@ public class Player implements Serializable {
                         for (Card c : hand) {
                             c.setSelectable(true);
                         }
-                    }
-                    else {
+                    } else {
                         for (Card c : hand) {
                             if (!c.getSuit().equals(Suit.HEARTS)) {
                                 c.setSelectable(true);
-                            }
-                            else c.setSelectable(false);
+                            } else c.setSelectable(false);
                         }
                     }
                 }
@@ -91,8 +85,7 @@ public class Player implements Serializable {
                         for (Card c : hand) {
                             if (c.getSuit() == trumpSuit) {
                                 c.setSelectable(true);
-                            }
-                            else c.setSelectable(false);
+                            } else c.setSelectable(false);
                         }
                     }
                     // player has no trump, all cards are playable
@@ -108,9 +101,6 @@ public class Player implements Serializable {
 
     public List<Card> getHand() {
         return hand;
-    }
-    public List<Card> getTrickCards() {
-        return tricks;
     }
 
     public int getPoints() {
@@ -146,6 +136,7 @@ public class Player implements Serializable {
             points += getTrickPoints();
         }
     }
+
     public void clearTricks() {
         tricks.clear();
     }
@@ -159,6 +150,7 @@ public class Player implements Serializable {
 
     /**
      * Currently only used for shooting the moon and adding 26 points
+     *
      * @param toAdd could be removed and method could just be add26Points()
      */
     public void addSpecificPoints(int toAdd) {

@@ -36,13 +36,13 @@ public class GameActivity extends BaseActivity {
         handView.registerModel(model);
         submitButton.registerModel(model);
 
-        model.getGameStateData().observe(this, gameState -> {
+        model.getPlayerStateData().observe(this, gameState -> {
             handView.displayHand(gameState.getHand());
             submitButton.update();
         });
 
         model.getSelectedCardsData().observe(this, selectedCards -> {
-            List<Card> hand = model.getGameStateData().getValue().getHand();
+            List<Card> hand = model.getPlayerStateData().getValue().getHand();
             handView.displayHand(hand);
             submitButton.update();
         });

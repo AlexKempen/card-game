@@ -24,11 +24,4 @@ public enum PlayerAction {
             actions.set(i, action);
         }
     }
-
-    public static void setToChooseCards(int playerId, List<PlayerAction> actions) {
-        for (int i = 0; i < 4; ++i) {
-            PlayerAction action = PlayerAction.CHOOSE_CARDS;
-            actions.set(i, action);
-        }
-    }
 }

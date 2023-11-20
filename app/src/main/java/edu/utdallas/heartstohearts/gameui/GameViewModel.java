@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import edu.utdallas.heartstohearts.game.Card;
-import edu.utdallas.heartstohearts.game.GameState;
+import edu.utdallas.heartstohearts.game.PlayerState;
 import edu.utdallas.heartstohearts.game.PlayerAction;
 import edu.utdallas.heartstohearts.game.Rank;
 import edu.utdallas.heartstohearts.game.Suit;
@@ -27,22 +27,23 @@ public class GameViewModel extends ViewModel {
         for (Rank rank : Rank.values()) {
             cards.add(new Card(Suit.DIAMONDS, rank));
         }
-        GameState gameState = new GameState(cards, PlayerAction.CHOOSE_CARDS);
-        return new GameViewModel(gameState);
+
+        PlayerState playerState = new PlayerState(cards, new ArrayList<>(), PlayerAction.CHOOSE_CARDS, 0);
+        return new GameViewModel(playerState);
     });
-    private final MutableLiveData<GameState> gameStateData;
+    private final MutableLiveData<PlayerState> playerStateData;
     private final MutableLiveData<List<Card>> selectedCardsData = new MutableLiveData<>(new ArrayList<>());
 
-    public GameViewModel(GameState gameState) {
-        gameStateData = new MutableLiveData<>(gameState);
+    public GameViewModel(PlayerState playerState) {
+        playerStateData = new MutableLiveData<>(playerState);
     }
 
-    public void setGameState(GameState gameState) {
-        gameStateData.setValue(gameState);
+    public void setPlayerState(PlayerState playerState) {
+        playerStateData.setValue(playerState);
     }
 
-    public LiveData<GameState> getGameStateData() {
-        return gameStateData;
+    public LiveData<PlayerState> getPlayerStateData() {
+        return playerStateData;
     }
 
     public LiveData<List<Card>> getSelectedCardsData() {

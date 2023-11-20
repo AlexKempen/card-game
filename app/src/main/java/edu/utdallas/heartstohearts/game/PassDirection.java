@@ -20,17 +20,20 @@ public enum PassDirection {
         }
     }
 
-    public int mapPassIndex(int index) {
+    /**
+     * Returns the playerId the given playerId should pass to.
+     */
+    public int getPassId(int playerId) {
         switch (this) {
             // Assume clockwise seating (and turn order)
             case LEFT:
-                return Arrays.asList(1, 2, 3, 0).get(index);
+                return Arrays.asList(1, 2, 3, 0).get(playerId);
             case RIGHT:
-                return Arrays.asList(3, 0, 1, 2).get(index);
+                return Arrays.asList(3, 0, 1, 2).get(playerId);
             case ACROSS:
-                return (index + 2) % 4;
+                return (playerId + 2) % 4;
             case NONE:
-                return 0; // why wouldn't this be 'return index' i.e. pass to self?
+                return 0;
             default:
                 throw new AssertionError("Unhandled PassDirection");
         }
