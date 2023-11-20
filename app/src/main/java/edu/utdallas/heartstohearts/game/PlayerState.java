@@ -1,5 +1,6 @@
 package edu.utdallas.heartstohearts.game;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -24,7 +25,20 @@ public class PlayerState {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PlayerState playerState = (PlayerState) o;
-        return hand.equals(playerState.hand) && trick.equals(playerState.trick) && action == playerState.action;
+
+        Iterator<Card> otherIterator = playerState.hand.iterator();
+        Iterator<Card> iterator = hand.iterator();
+        while (otherIterator.hasNext() && iterator.hasNext()) {
+            if (otherIterator.next().isSelectable() != iterator.next().isSelectable()) {
+                return false;
+            }
+        }
+        return !otherIterator.hasNext() && !iterator.hasNext() &&
+                hand.equals(playerState.hand) &&
+                trick.equals(playerState.trick) &&
+                // TODO: Convert to .equals() once points has been modified to list
+                points == playerState.points &&
+                action == playerState.action;
     }
 
     public List<Card> getHand() {

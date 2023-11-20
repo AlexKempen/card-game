@@ -84,7 +84,7 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
     }
 
     /**
-     * Note equality for cards does not depend on playability.
+     * Note equality for cards does not depend on selectable.
      */
     @Override
     public boolean equals(Object o) {
@@ -110,9 +110,5 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
     @Override
     protected Card clone() {
         return new Card(this.suit, this.rank);
-    }
-
-    public boolean isPlayable() {
-        return playable;
     }
 }

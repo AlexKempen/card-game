@@ -83,7 +83,7 @@ public class HandCardAdapter extends RecyclerView.Adapter<HandCardAdapter.HandCa
                 button.setOnClickListener(view -> {
                     model.deselectCard(card);
                 });
-            } else if (card.isPlayable() && selectedCards.size() < action.getSelectionLimit()) {
+            } else if (card.isSelectable() && selectedCards.size() < action.getSelectionLimit()) {
                 button.setOnClickListener(view -> {
                     model.selectCard(card);
                 });

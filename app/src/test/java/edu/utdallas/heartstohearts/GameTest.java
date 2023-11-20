@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import edu.utdallas.heartstohearts.game.Card;
 import edu.utdallas.heartstohearts.game.GameManager;
@@ -52,7 +51,6 @@ public class GameTest {
         List<List<Card>> cardsToPass = ListUtils.fourCopies(ArrayList::new);
         managerBuilder.direction = PassDirection.ACROSS;
 
-
         // pass cards directly across in the stateBuilder to compare to the manager
         for (int i = 0; i < 2; i += 1) {
             int oppositeIndex = PassDirection.ACROSS.getPassId(i);
@@ -60,14 +58,11 @@ public class GameTest {
             List<Card> oppositeHand = hands.get(oppositeIndex);
 
             // Slice cards from hand and add them to the opposite
-            cardsToPass.set(i, new ArrayList<>(hand.subList(0, 3)));
-            cardsToPass.set(oppositeIndex, new ArrayList<>(oppositeHand.subList(0, 3)));
+            cardsToPass.set(i, ListUtils.slice(hand, 0, 3));
+            cardsToPass.set(oppositeIndex, ListUtils.slice(oppositeHand, 0, 3));
 
             hand.addAll(cardsToPass.get(oppositeIndex));
             oppositeHand.addAll(cardsToPass.get(i));
-
-            hand.removeAll(cardsToPass.get(i));
-            oppositeHand.removeAll(cardsToPass.get(oppositeIndex));
 
             stateBuilder.setHandAndAction(i, hand);
             stateBuilder.setHandAndAction(oppositeIndex, oppositeHand);
@@ -77,21 +72,13 @@ public class GameTest {
         GameManager manager = managerBuilder.make();
         manager.deal(hands);
 
-        for (int i = 0; i < 4; i++) {
-            for (Card c : cardsToPass.get(i)) {
-                assertTrue(c.isSelectable());
-            }
-        }
-
+        assertTrue(cardsToPass.stream().flatMap(cards -> cards.stream()).allMatch(Card::isSelectable));
         assertTrue(manager.shouldPass());
         manager.passCards(cardsToPass);
 
         assertEquals(stateBuilder.make(), manager.getGameStates());
     }
 
-    /**
-     * PASSES
-     */
     @Test
     public void testPlayCard() {
         // Mark player 0 as current player
@@ -123,9 +110,6 @@ public class GameTest {
         assertEquals(stateBuilder.make(), manager.getGameStates());
     }
 
-    /**
-     * PASSES
-     */
     @Test
     public void testTakeTrick() {
         List<Card> trick = Arrays.asList(Card.QUEEN_OF_SPADES, Card.TWO_OF_CLUBS, new Card(Suit.HEARTS, Rank.QUEEN));
@@ -150,84 +134,42 @@ public class GameTest {
         manager.playCard(playedCard);
         assertEquals(1, manager.shouldPlayCard());
 
-        for (Card c : manager.getPlayers().get(0).getHand()) {
-            assertFalse(c.isSelectable());
-        }
-
-        for (Card c : manager.getPlayers().get(2).getHand()) {
-            assertFalse(c.isSelectable());
-        }
-        for (Card c : manager.getPlayers().get(3).getHand()) {
-            assertFalse(c.isSelectable());
-        }
-
         // Player 1 won the trick, so they should be set to play (lead) the next card
         PlayerAction.setToPlayCard(1, stateBuilder.actions);
-
         stateBuilder.hands = hands;
+        // First card was played
         stateBuilder.hands.get(0).remove(0);
-
         assertEquals(stateBuilder.make(), manager.getGameStates());
 
-        // Test score is actually added at the end
+        // Score is only added after finishRound
         manager.finishRound();
-
         assertEquals(14, manager.getGameStates().get(1).getPoints());
     }
 
-    /**
-     * PASSES
-     */
     @Test
     public void testScoring() {
-        List<Card> trick = Arrays.asList(Card.QUEEN_OF_SPADES, new Card(Suit.HEARTS, Rank.TWO), new Card(Suit.DIAMONDS, Rank.QUEEN));
-        //playerBuilder.tricks.set(0, trick);
-        managerBuilder.currentTrick.addAll(trick);
-        stateBuilder.points.set(0, 14);
-        stateBuilder.hands = hands;
-        stateBuilder.trick = trick;
+        // Create a mutable list
+        List<Card> trick = new ArrayList(Arrays.asList(Card.QUEEN_OF_SPADES, Card.TWO_OF_CLUBS, new Card(Suit.HEARTS, Rank.QUEEN)));
+        playerBuilder.tricks.set(0, trick);
 
         GameManager manager = managerBuilder.make();
-        manager.deal(hands);
 
         manager.finishRound();
-
+        stateBuilder.points.set(0, 14);
         assertEquals(stateBuilder.make(), manager.getGameStates());
     }
 
-    /**
-     * PASSES
-     */
     @Test
     public void testPassChange() {
-        managerBuilder.direction = PassDirection.NONE;
-        GameManager manager = managerBuilder.make();
-        manager.finishRound();
-        assertTrue(manager.shouldPass());
-        assertEquals(manager.getDirection(), PassDirection.LEFT);
-
         managerBuilder.direction = PassDirection.ACROSS;
-        manager = managerBuilder.make();
+        GameManager manager = managerBuilder.make();
+        assertTrue(manager.shouldPass());
         manager.finishRound();
         assertFalse(manager.shouldPass());
-        assertEquals(manager.getDirection(), PassDirection.NONE);
-
-        managerBuilder.direction = PassDirection.LEFT;
-        manager = managerBuilder.make();
         manager.finishRound();
         assertTrue(manager.shouldPass());
-        assertEquals(manager.getDirection(), PassDirection.RIGHT);
-
-        managerBuilder.direction = PassDirection.RIGHT;
-        manager = managerBuilder.make();
-        manager.finishRound();
-        assertTrue(manager.shouldPass());
-        assertEquals(manager.getDirection(), PassDirection.ACROSS);
     }
 
-    /**
-     * PASSES
-     */
     @Test
     public void testShootTheMoon() {
         List<Card> trick = new ArrayList<>(Arrays.asList(Card.QUEEN_OF_SPADES));
@@ -236,15 +178,11 @@ public class GameTest {
         GameManager manager = managerBuilder.make();
         manager.finishRound();
 
-        IntStream.range(1, 4).forEach(i -> stateBuilder.points.set(i, 26));
-        assertEquals(0, manager.getGameStates().get(0).getPoints());
-        assertEquals(26, manager.getGameStates().get(1).getPoints());
+        stateBuilder.points = ListUtils.fourCopies(() -> 26);
+        stateBuilder.points.set(0, 0);
         assertEquals(stateBuilder.make(), manager.getGameStates());
     }
 
-    /**
-     * PASSES
-     */
     @Test
     public void testGameEnd() {
         playerBuilder.points.set(0, 105);

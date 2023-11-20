@@ -28,10 +28,6 @@ public class GameManager {
         return players;
     }
 
-    public PassDirection getDirection() {
-        return direction;
-    }
-
     /**
      * Deals a random deck of 52 cards to each player.
      */
@@ -41,6 +37,7 @@ public class GameManager {
 
     /**
      * Begins a round by assigning the given hands to each player.
+     * Also initializes each player's actions.
      */
     public void deal(List<List<Card>> hands) {
         // assign cards
@@ -48,7 +45,6 @@ public class GameManager {
             this.players.get(p).setHand(hands.get(p));
         }
 
-        // update PlayerActions - TO DO
         for (int i = 0; i < 4; i++) {
             this.players.get(i).setAction(PlayerAction.CHOOSE_CARDS, trumpSuit, heartsBroken);
         }
@@ -68,8 +64,6 @@ public class GameManager {
     public void passCards(List<List<Card>> playerChoices) {
         if (shouldPass()) {
             for (int p = 0; p < 4; p++) {
-                // player p passes playerChoices.get(p) to player this.direction.mapPassIndex(p)
-                // and those cards are removed from p's hand
                 players.get(p).removeFromHand(playerChoices.get(p));
                 players.get(p).addToHand(playerChoices.get(direction.getPassId(p)));
             }
@@ -89,7 +83,6 @@ public class GameManager {
             } else {
                 players.get(playerId).setAction(PlayerAction.WAIT, trumpSuit, heartsBroken);
             }
-
         }
     }
 
@@ -165,8 +158,8 @@ public class GameManager {
      * Returns id of player who won the trick
      * Requires knowledge of player who played most recent card (recentPlayer) to determine who played the winning card
      */
-    public int determineTrickWinner(List<Card> trick, int recentPlayer) {
-        //find highest card of trump suit in currentPlay list; this card is the winning card
+    public int determineTrickWinner(List<Card> trick, int recentPlayerId) {
+        // find highest card of trump suit in currentPlay list; this card is the winning card
         int currWinningIndex = 0;
         for (int cardIndex = 0; cardIndex < trick.size(); cardIndex++) {
             if (trick.get(cardIndex).getSuit().equals(trumpSuit) && trick.get(cardIndex).getRank().toInt() >= trick.get(currWinningIndex).getRank().toInt()) {
@@ -174,11 +167,11 @@ public class GameManager {
             }
         }
 
-        int winner = recentPlayer - 3 + currWinningIndex;
-        if (winner < 0) {
-            winner += 4;
+        int winnerId = recentPlayerId - 3 + currWinningIndex;
+        if (winnerId < 0) {
+            winnerId += 4;
         }
-        return winner;
+        return winnerId;
     }
 
     /**
@@ -189,36 +182,16 @@ public class GameManager {
      */
     public boolean finishRound() {
         direction = direction.nextPassDirection();
-        boolean shotTheMoon = false;
-        //check for if someone shot the moon
-        for (int playerId = 0; playerId < 4; playerId++) {
-            if (players.get(playerId).getTrickPoints() == 26) {
-                shotTheMoon = true;
-
-                // all other players gain 26 points
-                for (int j = 0; j < 4; j++) {
-                    if (j != playerId) {
-                        players.get(j).addSpecificPoints(26);
-                    }
-                }
-            }
+        boolean shotTheMoon = players.stream().anyMatch(player -> player.getTrickPoints() == 26);
+        if (shotTheMoon) {
+            players.forEach(player -> player.addPoints(player.getTrickPoints() == 26 ? 0 : 26));
+        } else {
+            // update scores
+            players.forEach(Player::addTrickPoints);
         }
+        players.forEach(Player::clearTricks);
 
-        // update scores and reset tricks
-        if (!shotTheMoon) {
-            for (int playerId = 0; playerId < 4; playerId++) {
-                players.get(playerId).addTrickPoints(); //sums points and clears tricks
-                players.get(playerId).clearTricks();
-            }
-        }
-
-        // if game is completely over
-        for (int playerId = 0; playerId < 4; playerId++) {
-            if (players.get(playerId).getPoints() >= 100) {
-                return true;
-            }
-        }
-        return false;
+        return players.stream().anyMatch(player -> player.getPoints() >= 100);
     }
 
     /**
