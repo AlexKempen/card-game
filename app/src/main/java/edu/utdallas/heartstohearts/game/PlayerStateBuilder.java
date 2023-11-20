@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
-public class GameStateBuilder {
+public class PlayerStateBuilder {
     public List<List<Card>> hands = ListUtils.fourCopies(ArrayList::new);
 
     // Trick is shared
@@ -22,6 +22,13 @@ public class GameStateBuilder {
     public void setHandAndAction(int playerId, List<Card> hand) {
         hands.set(playerId, hand);
         actions.set(playerId, hand.contains(Card.TWO_OF_CLUBS) ? PlayerAction.PLAY_CARD : PlayerAction.WAIT);
+    }
+
+    /**
+     * Sets the actions to PlayerAction.WAIT.
+     */
+    public void setWait() {
+        actions = ListUtils.fourCopies(() -> PlayerAction.WAIT);
     }
 
     public List<PlayerState> make() {

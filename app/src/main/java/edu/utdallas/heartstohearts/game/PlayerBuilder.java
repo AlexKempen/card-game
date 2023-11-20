@@ -10,9 +10,8 @@ public class PlayerBuilder {
     public List<String> names = ListUtils.fourCopies(() -> "");
     public List<List<Card>> hands = ListUtils.fourCopies(ArrayList::new);
     public List<List<Card>> tricks = ListUtils.fourCopies(ArrayList::new);
-    public List<PlayerAction> actions = ListUtils.fourCopies(() -> PlayerAction.CHOOSE_CARDS);
 
     public List<Player> make() {
-        return IntStream.range(0, 4).mapToObj(i -> new Player(i, names.get(i), hands.get(i), tricks.get(i), actions.get(i), points.get(i))).collect(Collectors.toList());
+        return IntStream.range(0, 4).mapToObj(i -> new Player(i, names.get(i), hands.get(i), tricks.get(i), points.get(i))).collect(Collectors.toList());
     }
 }

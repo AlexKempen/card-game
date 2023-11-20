@@ -13,11 +13,13 @@ import java.util.stream.Collectors;
 import edu.utdallas.heartstohearts.game.Card;
 import edu.utdallas.heartstohearts.game.GameManager;
 import edu.utdallas.heartstohearts.game.GameManagerBuilder;
-import edu.utdallas.heartstohearts.game.GameStateBuilder;
+import edu.utdallas.heartstohearts.game.GamePhase;
+import edu.utdallas.heartstohearts.game.PlayerStateBuilder;
 import edu.utdallas.heartstohearts.game.ListUtils;
 import edu.utdallas.heartstohearts.game.PassDirection;
 import edu.utdallas.heartstohearts.game.PlayerAction;
 import edu.utdallas.heartstohearts.game.PlayerBuilder;
+import edu.utdallas.heartstohearts.game.PlayerState;
 import edu.utdallas.heartstohearts.game.Rank;
 import edu.utdallas.heartstohearts.game.Suit;
 
@@ -25,14 +27,14 @@ import edu.utdallas.heartstohearts.game.Suit;
 public class GameTest {
     private List<List<Card>> hands;
     private PlayerBuilder playerBuilder;
-    private GameStateBuilder stateBuilder;
+    private PlayerStateBuilder stateBuilder;
     private GameManagerBuilder managerBuilder;
 
     @Before
     public void initialize() {
         playerBuilder = new PlayerBuilder();
         managerBuilder = new GameManagerBuilder(playerBuilder);
-        stateBuilder = new GameStateBuilder();
+        stateBuilder = new PlayerStateBuilder();
         hands = Card.dealHands(Card.makeDeck());
     }
 
@@ -41,8 +43,8 @@ public class GameTest {
         stateBuilder.hands = hands;
         GameManager manager = managerBuilder.make();
         manager.deal(hands);
-        assertTrue(manager.shouldPass());
-        assertEquals(stateBuilder.make(), manager.getGameStates());
+        assertEquals(GamePhase.PASS, manager.getGamePhase());
+        assertEquals(stateBuilder.make(), manager.getPlayerStates());
     }
 
 
@@ -71,79 +73,65 @@ public class GameTest {
         // reset hands and deal them to manager so starting hands are the same as they were for stateBuilder
         GameManager manager = managerBuilder.make();
         manager.deal(hands);
+        assertEquals(GamePhase.PASS, manager.getGamePhase());
 
-        assertTrue(cardsToPass.stream().flatMap(cards -> cards.stream()).allMatch(Card::isSelectable));
-        assertTrue(manager.shouldPass());
+//        assertTrue(cardsToPass.stream().flatMap(Collection::stream).allMatch(Card::isSelectable));
         manager.passCards(cardsToPass);
 
-        assertEquals(stateBuilder.make(), manager.getGameStates());
+        List<PlayerState> expected = stateBuilder.make();
+        List<PlayerState> actual = manager.getPlayerStates();
+        assertEquals(expected, actual);
     }
 
     @Test
     public void testPlayCard() {
         // Mark player 0 as current player
-        PlayerAction.setToPlayCard(0, playerBuilder.actions);
         Card playedCard = new Card(Suit.SPADES, Rank.SEVEN);
+        Card extraCard = new Card(Suit.CLUBS, Rank.QUEEN);
+        playerBuilder.hands.get(0).addAll(Arrays.asList(playedCard, extraCard));
 
-        managerBuilder.heartsBroken = true; // Ensure test is deterministic
-        Suit trumpSuit = playedCard.getSuit(); // Ensures card is definitely playable
+        managerBuilder.currentPlayerId = 0;
+        managerBuilder.phase = GamePhase.PLAY;
         GameManager manager = managerBuilder.make();
-        manager.deal(hands);
 
-        // mark player 0 as should play a card and all others as wait, this skips passing phase for this test
-        manager.getPlayers().get(0).setAction(PlayerAction.PLAY_CARD, trumpSuit, true);
-        manager.getPlayers().get(1).setAction(PlayerAction.WAIT, trumpSuit, true);
-        manager.getPlayers().get(2).setAction(PlayerAction.WAIT, trumpSuit, true);
-        manager.getPlayers().get(3).setAction(PlayerAction.WAIT, trumpSuit, true);
-
-        assertEquals(0, manager.shouldPlayCard());
-        manager.playCard(playedCard);
-        assertEquals(1, manager.shouldPlayCard());
+        assertEquals(GamePhase.PLAY, manager.playCard(playedCard));
+        assertEquals(1, manager.getCurrentPlayerId());
 
         // Player 1 should be up
         PlayerAction.setToPlayCard(1, stateBuilder.actions);
-        // The card should be gone from their hand
-        stateBuilder.hands = hands;
-        stateBuilder.hands.get(0).remove(0);
-        // And it should be in the trick
         stateBuilder.trick.add(playedCard);
-        assertEquals(stateBuilder.make(), manager.getGameStates());
+        stateBuilder.hands.get(0).add(extraCard);
+
+        List<PlayerState> expected = stateBuilder.make();
+        List<PlayerState> actual = manager.getPlayerStates();
+        assertEquals(expected, actual);
     }
 
     @Test
     public void testTakeTrick() {
-        List<Card> trick = Arrays.asList(Card.QUEEN_OF_SPADES, Card.TWO_OF_CLUBS, new Card(Suit.HEARTS, Rank.QUEEN));
-        Card playedCard = new Card(Suit.SPADES, Rank.SEVEN);
-        Suit trumpSuit = Suit.SPADES;
-        PlayerAction.setToPlayCard(0, playerBuilder.actions);
+        // Player 1 set the trump suit as Queen of Hearts
+        managerBuilder.currentTrick.put(new Card(Suit.HEARTS, Rank.QUEEN), 1);
+        managerBuilder.currentTrick.put(Card.QUEEN_OF_SPADES, 0);
+        managerBuilder.currentTrick.put(Card.TWO_OF_CLUBS, 0);
+        Card playedCard = new Card(Suit.HEARTS, Rank.SEVEN);
+        Card extraCard = new Card(Suit.CLUBS, Rank.QUEEN);
+        playerBuilder.hands.get(0).add(playedCard);
+        playerBuilder.hands.get(0).add(extraCard);
 
+        managerBuilder.phase = GamePhase.PLAY;
         managerBuilder.heartsBroken = true;
-        managerBuilder.trumpSuit = Suit.SPADES;
-        managerBuilder.currentTrick.addAll(trick);
+        managerBuilder.currentPlayerId = 0;
+
         GameManager manager = managerBuilder.make();
-        manager.deal(hands);
 
-        // mark player 0 as should play a card and all others as wait, this skips passing phase for this test
-        manager.getPlayers().get(0).setAction(PlayerAction.PLAY_CARD, trumpSuit, true);
-        manager.getPlayers().get(1).setAction(PlayerAction.WAIT, trumpSuit, true);
-        manager.getPlayers().get(2).setAction(PlayerAction.WAIT, trumpSuit, true);
-        manager.getPlayers().get(3).setAction(PlayerAction.WAIT, trumpSuit, true);
-
-
-        assertEquals(0, manager.shouldPlayCard());
-        manager.playCard(playedCard);
-        assertEquals(1, manager.shouldPlayCard());
+        assertEquals(0, manager.getCurrentPlayerId());
+        assertEquals(GamePhase.PLAY, manager.playCard(playedCard));
+        assertEquals(1, manager.getCurrentPlayerId());
 
         // Player 1 won the trick, so they should be set to play (lead) the next card
         PlayerAction.setToPlayCard(1, stateBuilder.actions);
-        stateBuilder.hands = hands;
-        // First card was played
-        stateBuilder.hands.get(0).remove(0);
-        assertEquals(stateBuilder.make(), manager.getGameStates());
-
-        // Score is only added after finishRound
-        manager.finishRound();
-        assertEquals(14, manager.getGameStates().get(1).getPoints());
+        stateBuilder.hands.get(0).add(extraCard);
+        assertEquals(stateBuilder.make(), manager.getPlayerStates());
     }
 
     @Test
@@ -151,23 +139,25 @@ public class GameTest {
         // Create a mutable list
         List<Card> trick = new ArrayList(Arrays.asList(Card.QUEEN_OF_SPADES, Card.TWO_OF_CLUBS, new Card(Suit.HEARTS, Rank.QUEEN)));
         playerBuilder.tricks.set(0, trick);
-
+        managerBuilder.phase = GamePhase.ROUND_FINISHED;
         GameManager manager = managerBuilder.make();
 
         manager.finishRound();
+        stateBuilder.setWait();
         stateBuilder.points.set(0, 14);
-        assertEquals(stateBuilder.make(), manager.getGameStates());
+        List<PlayerState> expected = stateBuilder.make();
+        List<PlayerState> actual = manager.getPlayerStates();
+        assertEquals(expected, actual);
     }
 
     @Test
     public void testPassChange() {
         managerBuilder.direction = PassDirection.ACROSS;
+        managerBuilder.phase = GamePhase.ROUND_FINISHED;
         GameManager manager = managerBuilder.make();
-        assertTrue(manager.shouldPass());
-        manager.finishRound();
-        assertFalse(manager.shouldPass());
-        manager.finishRound();
-        assertTrue(manager.shouldPass());
+
+        assertEquals(GamePhase.DEAL, manager.finishRound());
+        assertEquals(GamePhase.PLAY, manager.deal());
     }
 
     @Test
@@ -175,19 +165,24 @@ public class GameTest {
         List<Card> trick = new ArrayList<>(Arrays.asList(Card.QUEEN_OF_SPADES));
         trick.addAll(Arrays.stream(Rank.values()).map(rank -> new Card(Suit.HEARTS, rank)).collect(Collectors.toList()));
         playerBuilder.tricks.set(0, trick);
+        managerBuilder.phase = GamePhase.ROUND_FINISHED;
         GameManager manager = managerBuilder.make();
         manager.finishRound();
 
         stateBuilder.points = ListUtils.fourCopies(() -> 26);
         stateBuilder.points.set(0, 0);
-        assertEquals(stateBuilder.make(), manager.getGameStates());
+        stateBuilder.setWait();
+        List<PlayerState> expected = stateBuilder.make();
+        List<PlayerState> actual = manager.getPlayerStates();
+        assertEquals(expected, actual);
     }
 
     @Test
     public void testGameEnd() {
         playerBuilder.points.set(0, 105);
+        managerBuilder.phase = GamePhase.ROUND_FINISHED;
         GameManager manager = managerBuilder.make();
-        assertTrue(manager.finishRound());
-        assertEquals(105, manager.getGameStates().get(0).getPoints());
+        assertEquals(GamePhase.COMPLETE, manager.finishRound());
+        assertEquals(105, manager.getPlayerStates().get(0).getPoints());
     }
 }

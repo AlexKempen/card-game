@@ -9,15 +9,13 @@ public class Player implements Serializable {
     private int points;
     private List<Card> hand;
     private List<Card> tricks;
-    private PlayerAction action;
 
-    public Player(int id, String name, List<Card> hand, List<Card> tricks, PlayerAction action, int points) {
+    public Player(int id, String name, List<Card> hand, List<Card> tricks, int points) {
         this.id = id;
         this.name = name;
         this.tricks = tricks;
         this.hand = hand;
         this.points = points;
-        this.action = action;
     }
 
     public void setHand(List<Card> hand) {
@@ -26,8 +24,6 @@ public class Player implements Serializable {
 
     //sets action and determines legality of all cards
     public void setAction(PlayerAction action, Suit trumpSuit, boolean heartsBroken) {
-        this.action = action;
-
         switch (action) {
             case WAIT: // if not player's turn to play or pass cards, player can't select any card
                 hand.forEach(c -> c.setSelectable(false));
@@ -84,10 +80,6 @@ public class Player implements Serializable {
         this.hand.remove(card);
     }
 
-    public PlayerAction getAction() {
-        return action;
-    }
-
     public int getId() {
         return id;
     }
@@ -96,10 +88,16 @@ public class Player implements Serializable {
         this.tricks.addAll(trick);
     }
 
+    /**
+     * Adds a set amount of points to player.
+     */
     public void addPoints(int points) {
         this.points += points;
     }
 
+    /**
+     * Adds the value of the trick to the player.
+     */
     public void addTrickPoints() {
         this.points += this.getTrickPoints();
     }
