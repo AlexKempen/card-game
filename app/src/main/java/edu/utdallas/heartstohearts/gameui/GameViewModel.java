@@ -21,12 +21,13 @@ public class GameViewModel extends ViewModel {
         // TODO: Use creationExtras to get initial state from server
         GameActivity gameActivity = (GameActivity) creationExtras.get(SavedStateHandleSupport.VIEW_MODEL_STORE_OWNER_KEY);
 
-        List<Card> cards = new ArrayList<>(Arrays.asList(Card.QUEEN_OF_SPADES, Card.TWO_OF_CLUBS, new Card(Suit.CLUBS, Rank.ACE), new Card(Suit.CLUBS, Rank.FIVE)));
+        List<Card> hand = new ArrayList<>(Arrays.asList(Card.QUEEN_OF_SPADES, Card.TWO_OF_CLUBS, new Card(Suit.CLUBS, Rank.ACE), new Card(Suit.CLUBS, Rank.FIVE)));
+        List<Card> trick = new ArrayList<>(Arrays.asList(new Card(Suit.HEARTS, Rank.KING), new Card(Suit.DIAMONDS, Rank.ACE), new Card(Suit.SPADES, Rank.JACK)));
         for (Rank rank : Rank.values()) {
-            cards.add(new Card(Suit.DIAMONDS, rank));
+            hand.add(new Card(Suit.DIAMONDS, rank));
         }
 
-        PlayerState playerState = new PlayerState(cards, new ArrayList<>(), PlayerAction.CHOOSE_CARDS, 0);
+        PlayerState playerState = new PlayerState(hand, trick, PlayerAction.CHOOSE_CARDS, 0);
         return new GameViewModel(playerState);
     });
     private final MutableLiveData<PlayerState> playerStateData;

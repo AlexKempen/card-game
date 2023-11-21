@@ -33,6 +33,7 @@ public class GameActivity extends BaseActivity {
 
         final HandView handView = findViewById(R.id.hand_view);
         final SubmitButton submitButton = findViewById(R.id.submit_button);
+        final TrickView trickView = findViewById(R.id.trick_view);
 
         final ViewModelProvider provider = new ViewModelProvider(this, ViewModelProvider.Factory.from(GameViewModel.initializer));
         final GameViewModel model = provider.get(GameViewModel.class);
@@ -42,6 +43,7 @@ public class GameActivity extends BaseActivity {
 
         model.getPlayerStateData().observe(this, gameState -> {
             handView.displayHand(gameState.getHand());
+            trickView.displayTrick(gameState.getTrick());
             submitButton.update();
         });
 
