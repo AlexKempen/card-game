@@ -23,11 +23,12 @@ public class GameViewModel extends ViewModel {
 //        String socketPort = (String) gameActivity.getIntent().getExtras().get("socket");
 //        Log.d(GameActivity.TAG, "View model init port: " + socketPort);
 
-        List<Card> cards = new ArrayList<>(Arrays.asList(Card.QUEEN_OF_SPADES, Card.TWO_OF_CLUBS, new Card(Suit.CLUBS, Rank.ACE), new Card(Suit.CLUBS, Rank.FIVE)));
+        List<Card> hand = new ArrayList<>(Arrays.asList(Card.QUEEN_OF_SPADES, Card.TWO_OF_CLUBS, new Card(Suit.CLUBS, Rank.ACE), new Card(Suit.CLUBS, Rank.FIVE)));
+        List<Card> trick = new ArrayList<>(Arrays.asList(new Card(Suit.HEARTS, Rank.KING), new Card(Suit.DIAMONDS, Rank.ACE), new Card(Suit.SPADES, Rank.JACK)));
         for (Rank rank : Rank.values()) {
-            cards.add(new Card(Suit.DIAMONDS, rank));
+            hand.add(new Card(Suit.DIAMONDS, rank));
         }
-        GameState gameState = new GameState(cards, PlayerAction.CHOOSE_CARDS);
+        GameState gameState = new GameState(hand, trick, PlayerAction.CHOOSE_CARDS, 0);
         return new GameViewModel(gameState);
     });
     private final MutableLiveData<GameState> gameStateData;
