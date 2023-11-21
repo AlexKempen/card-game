@@ -23,7 +23,7 @@ public class GameManager {
      * Creates a GameManager set up to start a new game.
      */
     public static GameManager startGame() {
-        return new GameManagerBuilder().make();
+        return new GameManagerBuilder().build();
     }
 
     public GameManager(List<Player> players, PassDirection direction, LinkedHashMap<Card, Integer> currentTrick, GamePhase phase, Integer currentPlayerId, boolean heartsBroken, boolean firstTrick) {
@@ -177,7 +177,7 @@ public class GameManager {
             players.forEach(Player::addTrickPoints);
         }
         players.forEach(Player::clearTricks);
-        firstTrick = true;
+        firstTrick = false;
         heartsBroken = false;
         direction = direction.nextPassDirection();
         return changeGamePhase(players.stream().anyMatch(player -> player.getPoints() >= 100) ? GamePhase.COMPLETE : GamePhase.DEAL);
@@ -224,6 +224,6 @@ public class GameManager {
         }
 
         builder.trick = new ArrayList<>(currentTrick.keySet());
-        return builder.make();
+        return builder.build();
     }
 }

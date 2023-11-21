@@ -1,9 +1,6 @@
 package edu.utdallas.heartstohearts.game;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.SortedMap;
 
 public class GameManagerBuilder {
     public GameManagerBuilder(PlayerBuilder playerBuilder) {
@@ -23,8 +20,8 @@ public class GameManagerBuilder {
 
     public GamePhase phase = GamePhase.DEAL;
 
-    public GameManager make() {
-        return new GameManager(playerBuilder.make(), direction, currentTrick, phase, currentPlayerId, heartsBroken, firstTrick);
+    public GameManager build() {
+        return new GameManager(playerBuilder.build(), direction, currentTrick, phase, currentPlayerId, heartsBroken, firstTrick);
     }
 
 }

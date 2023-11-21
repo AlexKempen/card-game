@@ -11,7 +11,7 @@ public class PlayerBuilder {
     public List<List<Card>> hands = ListUtils.fourCopies(ArrayList::new);
     public List<List<Card>> tricks = ListUtils.fourCopies(ArrayList::new);
 
-    public List<Player> make() {
+    public List<Player> build() {
         return IntStream.range(0, 4).mapToObj(i -> new Player(i, names.get(i), hands.get(i), tricks.get(i), points.get(i))).collect(Collectors.toList());
     }
 }
