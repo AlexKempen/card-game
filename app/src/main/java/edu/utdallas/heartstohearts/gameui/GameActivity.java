@@ -54,12 +54,12 @@ public class GameActivity extends BaseActivity {
 
         // TODO fix this, assumes that the network has already been established and goes against the event-based structure
         WifiP2pInfo group_info = NetworkManager.getInstance(getApplicationContext()).getLastConnectionInfo();
-        GameClient.createGameClientAsync(group_info.groupOwnerAddress, group_info.isGroupOwner, (client)->{
+        GameClient.createGameClientAsync(group_info.groupOwnerAddress, group_info.isGroupOwner, (client) -> {
             GameActivity.this.client = client;
-            model.setOnPass(()->{
+            model.setOnPass(() -> {
                 client.passCards(model.getSelectedCardsData().getValue()); // TODO probably butchering the livedata philosophy
             });
-            model.setOnPlay(()->{
+            model.setOnPlay(() -> {
                 client.playCard(model.getSelectedCardsData().getValue());
             });
 

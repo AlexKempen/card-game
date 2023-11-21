@@ -37,8 +37,10 @@ public class GameViewModel extends ViewModel {
 
     public GameViewModel(PlayerState playerState) {
         playerStateData = new MutableLiveData<>(playerState);
-        onPass = ()->{}; // do nothing by default
-        onPlay = ()->{};
+        onPass = () -> {
+        }; // do nothing by default
+        onPlay = () -> {
+        };
     }
 
     public void setPlayerState(PlayerState playerState) {
@@ -69,6 +71,7 @@ public class GameViewModel extends ViewModel {
      * Choose three cards to pass.
      */
     public void passCards() {
+        List<Card> cards = selectedCardsData.getValue();
         onPass.run();
         selectedCardsData.setValue(new ArrayList<>());
     }
@@ -77,23 +80,26 @@ public class GameViewModel extends ViewModel {
      * Choose a card to play from your hand.
      */
     public void playCard() {
+        Card card = selectedCardsData.getValue().get(0);
         onPlay.run();
         selectedCardsData.setValue(new ArrayList<>());
     }
 
     /**
      * Set the action to take when passing
+     *
      * @param r
      */
-    public void setOnPass(Runnable r){
+    public void setOnPass(Runnable r) {
         this.onPlay = r;
     }
 
     /**
      * Set the action to take when playing a card
+     *
      * @param r
      */
-    public void setOnPlay(Runnable r){
+    public void setOnPlay(Runnable r) {
         this.onPass = r;
     }
 }
