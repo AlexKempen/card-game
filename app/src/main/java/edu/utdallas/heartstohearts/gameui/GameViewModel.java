@@ -20,8 +20,6 @@ public class GameViewModel extends ViewModel {
     static final ViewModelInitializer<GameViewModel> initializer = new ViewModelInitializer<>(GameViewModel.class, creationExtras -> {
         // TODO: Use creationExtras to get initial state from server
         GameActivity gameActivity = (GameActivity) creationExtras.get(SavedStateHandleSupport.VIEW_MODEL_STORE_OWNER_KEY);
-//        String socketPort = (String) gameActivity.getIntent().getExtras().get("socket");
-//        Log.d(GameActivity.TAG, "View model init port: " + socketPort);
 
         List<Card> cards = new ArrayList<>(Arrays.asList(Card.QUEEN_OF_SPADES, Card.TWO_OF_CLUBS, new Card(Suit.CLUBS, Rank.ACE), new Card(Suit.CLUBS, Rank.FIVE)));
         for (Rank rank : Rank.values()) {
@@ -34,8 +32,13 @@ public class GameViewModel extends ViewModel {
     private final MutableLiveData<PlayerState> playerStateData;
     private final MutableLiveData<List<Card>> selectedCardsData = new MutableLiveData<>(new ArrayList<>());
 
+    private Runnable onPass;
+    private Runnable onPlay;
+
     public GameViewModel(PlayerState playerState) {
         playerStateData = new MutableLiveData<>(playerState);
+        onPass = ()->{}; // do nothing by default
+        onPlay = ()->{};
     }
 
     public void setPlayerState(PlayerState playerState) {
@@ -66,7 +69,7 @@ public class GameViewModel extends ViewModel {
      * Choose three cards to pass.
      */
     public void passCards() {
-        // Send cards to socket
+        onPass.run();
         selectedCardsData.setValue(new ArrayList<>());
     }
 
@@ -74,7 +77,23 @@ public class GameViewModel extends ViewModel {
      * Choose a card to play from your hand.
      */
     public void playCard() {
-        // send card to socket
+        onPlay.run();
         selectedCardsData.setValue(new ArrayList<>());
+    }
+
+    /**
+     * Set the action to take when passing
+     * @param r
+     */
+    public void setOnPass(Runnable r){
+        this.onPlay = r;
+    }
+
+    /**
+     * Set the action to take when playing a card
+     * @param r
+     */
+    public void setOnPlay(Runnable r){
+        this.onPass = r;
     }
 }

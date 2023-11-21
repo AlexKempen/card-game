@@ -41,7 +41,7 @@ public class PeerConnection implements Closeable {
                 PeerConnection connection = PeerConnection.fromAddress(host, port);
                 onConnectionAvailable.call(connection);
             } catch (IOException e) {
-                CallbackUtils.callOrThrow(onError, e);
+                Callback.callOrThrow(onError, e);
             }
         }).start();
     }
@@ -102,10 +102,10 @@ public class PeerConnection implements Closeable {
                         broadcastMessageRead(msg);
                     } catch (Exception e) {
                         if (e instanceof IOException || e instanceof ClassNotFoundException) {
-                            CallbackUtils.callOrThrow(onError, e);
+                            Callback.callOrThrow(onError, e);
                         } else if (e instanceof InterruptedException) {
                             break;
-                        }
+                        } else
                         {
                             // Wrong type, rethrow
                             throw new RuntimeException(e);
@@ -125,6 +125,10 @@ public class PeerConnection implements Closeable {
 
     public boolean isListening() {
         return (listeningThread != null && listeningThread.isAlive());
+    }
+
+    public boolean isOpen(){
+        return socket.isConnected();
     }
 
     /**
@@ -162,6 +166,7 @@ public class PeerConnection implements Closeable {
      * @throws IOException
      */
     public void sendMessage(Object msg) throws IOException {
+        Log.d(TAG, "Sending Message: " + msg);
         messageOutputStream.writeObject(msg);
         messageOutputStream.flush();
     }
@@ -177,11 +182,7 @@ public class PeerConnection implements Closeable {
             try {
                 sendMessage(msg);
             } catch (IOException e) {
-                if (onError == null) {
-                    throw new RuntimeException(e);
-                } else {
-                    onError.call(e);
-                }
+                Callback.callOrThrow(onError, e);
             }
         }).start();
     }

@@ -12,18 +12,7 @@ import androidx.annotation.Nullable;
  */
 public interface Callback<ArgType> {
     void call(ArgType x);
-}
 
-class CallbackUtils {
-
-    /**
-     * If an error-handling callback is not null, call it; otherwise rethrow the error as a
-     * runtime exception.
-     *
-     * @param cb
-     * @param e
-     * @param <T> type of the exception. In most cases can be left implicit.
-     */
     public static <T extends Exception> void callOrThrow(@Nullable Callback<T> cb, T e) {
         if (cb == null) {
             throw new RuntimeException(e);
@@ -32,3 +21,4 @@ class CallbackUtils {
         }
     }
 }
+

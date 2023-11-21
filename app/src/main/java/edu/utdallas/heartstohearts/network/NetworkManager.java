@@ -220,6 +220,10 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
         selfDeviceListeners.remove(l);
     }
 
+    public WifiP2pInfo getLastConnectionInfo(){
+        return lastConnectionInfo;
+    }
+
     /**
      * @return the last known address of the group leader. Warning: this information may be out of
      * date. Register a ConnectionInfoListener to receive events about group changes.

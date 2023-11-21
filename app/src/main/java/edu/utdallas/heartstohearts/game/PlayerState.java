@@ -1,5 +1,7 @@
 package edu.utdallas.heartstohearts.game;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -7,15 +9,16 @@ import java.util.List;
  * An immutable state holder containing a snapshot of game state for a single player.
  * Includes an action the player should take (if any) and all the information pertinent to said action.
  */
-public class PlayerState {
-    private List<Card> hand;
-    private List<Card> trick;
+public class PlayerState implements Serializable {
+    public static final long serialVersionUID = 6774190515566769539L;
+    private ArrayList<Card> hand;
+    private ArrayList<Card> trick;
     private PlayerAction action;
     private int points;
 
     public PlayerState(List<Card> hand, List<Card> trick, PlayerAction action, int points) {
-        this.hand = hand;
-        this.trick = trick;
+        this.hand = new ArrayList<>(hand);
+        this.trick = new ArrayList<>(trick);
         this.action = action;
         this.points = points;
     }
@@ -55,5 +58,15 @@ public class PlayerState {
 
     public int getPoints() {
         return points;
+    }
+
+    /**
+     * Returns true if all cards in the parameter list are in the players hand
+     * @param cards
+     * @return
+     */
+    public boolean holdsAll(List<Card> cards){
+        // Not necessarily the most performant for large lists but we should never deal with more than 13
+        return cards.stream().allMatch(card -> hand.contains(card));
     }
 }

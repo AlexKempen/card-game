@@ -55,7 +55,7 @@ public class PeerServer implements Closeable {
                 onServerCreated.call(server);
 
             } catch (IOException e) {
-                CallbackUtils.callOrThrow(onError, e);
+                Callback.callOrThrow(onError, e);
             }
         }).start();
     }
@@ -75,7 +75,7 @@ public class PeerServer implements Closeable {
                     PeerConnection connection = new PeerConnection(client);
                     notifyPeerConnected(connection);
                 } catch (IOException e) {
-                    CallbackUtils.callOrThrow(onError, e);
+                    Callback.callOrThrow(onError, e);
                 }
             }
         });

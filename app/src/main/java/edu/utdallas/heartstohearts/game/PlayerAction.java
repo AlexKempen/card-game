@@ -1,8 +1,9 @@
 package edu.utdallas.heartstohearts.game;
 
+import java.io.Serializable;
 import java.util.List;
 
-public enum PlayerAction {
+public enum PlayerAction implements Serializable {
     PLAY_CARD, CHOOSE_CARDS, WAIT;
 
     public int getSelectionLimit() {
