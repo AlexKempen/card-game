@@ -36,10 +36,6 @@ public class GameManager {
         this.firstTrick = firstTrick;
     }
 
-    public List<Player> getPlayers() {
-        return players;
-    }
-
     /**
      * Returns the current phase of the game.
      */
@@ -53,7 +49,6 @@ public class GameManager {
 
     /**
      * Changes the phase of the game to nextPhase.
-     * Handles logic which is dependent on multiple potential previous phases.
      */
     private GamePhase changeGamePhase(GamePhase nextPhase) {
         this.phase = nextPhase;
