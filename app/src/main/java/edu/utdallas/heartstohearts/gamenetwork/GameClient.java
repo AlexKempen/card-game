@@ -1,7 +1,5 @@
 package edu.utdallas.heartstohearts.gamenetwork;
 
-import android.net.wifi.p2p.WifiP2pInfo;
-import android.os.Message;
 import android.util.Log;
 
 import java.io.IOException;
@@ -19,7 +17,7 @@ import edu.utdallas.heartstohearts.network.PeerConnection;
 /**
  * Class for communicating with the game server.
  * <p>
- * Every device in the group will think itself a client. Upon instanciating a GameClient, if the
+ * Every device in the group will think itself a client. Upon instantiating a GameClient, if the
  * device is the group owner, it will additionally launch a GameServer in the background, and then
  * connect to that server. If it is not the group owner, it will attempt to connect to the server
  * launched  by the group owner
@@ -54,7 +52,7 @@ public class GameClient implements MessageListener {
 
     private GameClient(InetAddress hostAddress, boolean isGroupOwner) throws IOException {
         if (isGroupOwner) {
-            server = GameServer.getSingleton(hostAddress, PORT);
+            this.server = GameServer.getSingleton(hostAddress, PORT);
             server.startAcceptingConnections(null);
             server.startGame(); // TODO figure out if there's a better time to start this.
         }

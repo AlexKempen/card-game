@@ -131,7 +131,7 @@ public class PeerConnection implements Closeable {
     }
 
     /**
-     * Notifies all message listeners that a new message has been recieved
+     * Notifies all message listeners that a new message has been received.
      *
      * @param msg
      */
