@@ -12,7 +12,6 @@ import java.util.List;
 import edu.utdallas.heartstohearts.R;
 import edu.utdallas.heartstohearts.appui.BaseActivity;
 import edu.utdallas.heartstohearts.game.Card;
-import edu.utdallas.heartstohearts.game.Player;
 import edu.utdallas.heartstohearts.game.PlayerState;
 import edu.utdallas.heartstohearts.gamenetwork.GameClient;
 import edu.utdallas.heartstohearts.gamenetwork.MockClient;

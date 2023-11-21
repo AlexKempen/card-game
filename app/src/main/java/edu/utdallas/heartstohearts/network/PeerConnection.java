@@ -164,7 +164,7 @@ public class PeerConnection implements Closeable {
      * @param msg
      * @throws IOException
      */
-    public void sendMessage(Object msg) throws IOException {
+    public synchronized void sendMessage(Object msg) throws IOException {
         Log.d(TAG, "Sending Message: " + msg);
         messageOutputStream.writeObject(msg);
         messageOutputStream.flush();

@@ -11,8 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import edu.utdallas.heartstohearts.game.Card;
-import edu.utdallas.heartstohearts.game.PlayerState;
 import edu.utdallas.heartstohearts.game.PlayerAction;
+import edu.utdallas.heartstohearts.game.PlayerState;
 import edu.utdallas.heartstohearts.game.Rank;
 import edu.utdallas.heartstohearts.game.Suit;
 
@@ -44,7 +44,7 @@ public class GameViewModel extends ViewModel {
     }
 
     public void setPlayerState(PlayerState playerState) {
-        playerStateData.setValue(playerState);
+        playerStateData.postValue(playerState);
     }
 
     public LiveData<PlayerState> getPlayerStateData() {
@@ -91,7 +91,7 @@ public class GameViewModel extends ViewModel {
      * @param r
      */
     public void setOnPass(Runnable r) {
-        this.onPlay = r;
+        this.onPass = r;
     }
 
     /**
@@ -100,6 +100,6 @@ public class GameViewModel extends ViewModel {
      * @param r
      */
     public void setOnPlay(Runnable r) {
-        this.onPass = r;
+        this.onPlay = r;
     }
 }

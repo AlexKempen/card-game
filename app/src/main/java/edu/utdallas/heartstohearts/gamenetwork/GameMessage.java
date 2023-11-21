@@ -22,6 +22,10 @@ public class GameMessage implements Serializable {
      */
     public GameMessage(PlayerAction action, List<Card> actionItems) {
         this.action = action;
-        this.actionItems = new ArrayList<>(actionItems);
+        if (actionItems != null) {
+            this.actionItems = new ArrayList<>(actionItems);
+        } else {
+            this.actionItems = null;
+        }
     }
 }
