@@ -36,12 +36,9 @@ public class PlayerState implements Serializable {
                 return false;
             }
         }
-        return !otherIterator.hasNext() && !iterator.hasNext() &&
-                hand.equals(playerState.hand) &&
-                trick.equals(playerState.trick) &&
+        return !otherIterator.hasNext() && !iterator.hasNext() && hand.equals(playerState.hand) && trick.equals(playerState.trick) &&
                 // TODO: Convert to .equals() once points has been modified to list
-                points == playerState.points &&
-                action == playerState.action;
+                points == playerState.points && action == playerState.action;
     }
 
     public List<Card> getHand() {
@@ -58,15 +55,5 @@ public class PlayerState implements Serializable {
 
     public int getPoints() {
         return points;
-    }
-
-    /**
-     * Returns true if all cards in the parameter list are in the players hand
-     * @param cards
-     * @return
-     */
-    public boolean holdsAll(List<Card> cards){
-        // Not necessarily the most performant for large lists but we should never deal with more than 13
-        return cards.stream().allMatch(card -> hand.contains(card));
     }
 }

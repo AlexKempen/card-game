@@ -80,7 +80,7 @@ public class PeerConnection implements Closeable {
         // This may block until the other end of the connection creates the ObjectOutputStream
         messageInputStream = new ObjectInputStream(inputStream);
 
-        listeners = new ArrayList<MessageListener>();
+        listeners = new ArrayList<>();
         Log.d(TAG, "Peer Connection creation");
     }
 
@@ -105,8 +105,7 @@ public class PeerConnection implements Closeable {
                             Callback.callOrThrow(onError, e);
                         } else if (e instanceof InterruptedException) {
                             break;
-                        } else
-                        {
+                        } else {
                             // Wrong type, rethrow
                             throw new RuntimeException(e);
                         }
@@ -127,7 +126,7 @@ public class PeerConnection implements Closeable {
         return (listeningThread != null && listeningThread.isAlive());
     }
 
-    public boolean isOpen(){
+    public boolean isOpen() {
         return socket.isConnected();
     }
 
