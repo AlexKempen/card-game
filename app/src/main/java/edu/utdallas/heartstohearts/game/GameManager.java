@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GameManager {
     private boolean heartsBroken;
@@ -198,8 +199,13 @@ public class GameManager {
 
                 // Leading a trick
                 if (currentTrick.isEmpty()) {
-                    // Can't lead with queen or hearts in first round
-                    hand.forEach(card -> card.setSelectable(!firstTrick || card.getPoints() == 0));
+                    if (firstTrick) {
+                        // Can only lead first trick with two of clubs
+                        hand.forEach(card -> card.setSelectable(card.equals(Card.TWO_OF_CLUBS)));
+                    } else {
+                        // Cannot lead with hearts unless hearts broken
+                        hand.forEach(card -> card.setSelectable(heartsBroken || card.getPoints() == 0));
+                    }
                 } else {
                     // Trump suit cards must be played
                     Suit trumpSuit = getTrumpSuit();
