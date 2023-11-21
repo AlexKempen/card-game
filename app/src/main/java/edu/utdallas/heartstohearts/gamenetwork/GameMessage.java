@@ -8,7 +8,7 @@ import edu.utdallas.heartstohearts.game.Card;
 import edu.utdallas.heartstohearts.game.PlayerAction;
 
 public class GameMessage implements Serializable {
-    private static final long serialVersionUID = -7860268870820163182L;
+    private static final long serialVersionUID = 7860268870820163182L;
 
     public PlayerAction action;
     public ArrayList<Card> actionItems;
@@ -21,6 +21,10 @@ public class GameMessage implements Serializable {
      */
     public GameMessage(PlayerAction action, List<Card> actionItems){
         this.action = action;
-        this.actionItems = new ArrayList<>(actionItems);
+        if (actionItems!= null) {
+            this.actionItems = new ArrayList<>(actionItems);
+        } else {
+            this.actionItems = null;
+        }
     }
 }

@@ -99,6 +99,10 @@ public class GameServer extends PeerServer implements PeerConnectionListener {
         }
     }
 
+    private boolean hasPassed(int player){
+        return passSelections.get(player) != null;
+    }
+
     @Override
     public void peerConnected(PeerConnection connection) {
         final int index = getLowestOpenPlayerSlot();
@@ -118,50 +122,52 @@ public class GameServer extends PeerServer implements PeerConnectionListener {
             });
             connection.listenForMessages(null);
             Log.d(TAG, "Player " + index + " Connected");
-            // broadcast game state in case this is a re-connection and they need the updated version
-//            sendGameState(index);
+            sendGameState(index);
         }
     }
 
     /**
      * Called when a message is received.
-     * @param author - index of the connection where the message originated
+     * @param playerId - index of the connection where the message originated
      * @param o - the message object
      */
-    private synchronized void messageReceived(int author, Object o) {
-        Log.d(TAG, "Message received from player "+ author);
+    private synchronized void messageReceived(int playerId, Object o) {
+        Log.d(TAG, "Message received from player "+ playerId);
         try {
-            assert game != null;
+            assertGameState(game != null, "Game has not begun");
 
             GameMessage msg = (GameMessage) o;
 
             // null action is a request for game state
             if(msg.action == null){
-                sendGameState(author);
+                sendGameState(playerId);
                 return;
             }
 
-            PlayerState playerState = game.getPlayerStates().get(author);
+            PlayerState playerState = game.getPlayerStates().get(playerId);
             // check received correct number of cards
-            assert msg.actionItems.size() == msg.action.getSelectionLimit();
+            assertGameState(msg.actionItems.size() == msg.action.getSelectionLimit(), "Unexpected number of cards");
             // check that the player is playing cards that are in fact in their hand
-            assert playerState.holdsAll(msg.actionItems);
+            assertGameState(playerState.holdsAll(msg.actionItems), "Player using cards not in hand");
 
             if (game.getGamePhase() == GamePhase.PASS){
-                assert msg.action == PlayerAction.CHOOSE_CARDS;
-                Log.d(TAG, "Processing pass from player " + author);
-                partialPass(author, msg.actionItems);
+                assertGameState(msg.action == PlayerAction.CHOOSE_CARDS, "Player taking invalid action");
+                assertGameState(!hasPassed(playerId), "Player has already passed");
+                Log.d(TAG, "Processing pass from player " + playerId);
+                partialPass(playerId, msg.actionItems);
             } else if(game.getGamePhase() == GamePhase.PLAY){
-                assert game.getCurrentPlayerId().equals(author);
-                assert msg.action == PlayerAction.PLAY_CARD;
-                Log.d(TAG, "Processing play from player" + author);
+                assertGameState(game.getCurrentPlayerId().equals(playerId), "Player playing out of turn");
+                assertGameState(msg.action == PlayerAction.PLAY_CARD, "Player taking invalid action");
+                Log.d(TAG, "Processing play from player" + playerId);
                 game.playCard(msg.actionItems.get(0));
             }
 
             stateChangedClosure();
 
+        } catch (GameStateException e){
+            Log.d(TAG, "Game State error when handling message: " + e);
         } catch (Exception e){
-            Log.e(TAG, "Error when handling message: " + e);
+            Log.e(TAG, "Other error when handling message: " + e);
         }
     }
 
@@ -171,7 +177,7 @@ public class GameServer extends PeerServer implements PeerConnectionListener {
      * Checks for necessary state transitions for the game manager and broadcasts the new states
      * to each player.
      *
-     * // TODO Warning: 99% sure this will not let anyone see the last card played per trick
+     * TODO Warning: 99% sure this will not let anyone see the last card played per trick
      */
     private void stateChangedClosure() {
         if (game.getGamePhase() == GamePhase.DEAL){
@@ -186,7 +192,7 @@ public class GameServer extends PeerServer implements PeerConnectionListener {
         } else {
             for (int i = 0; i < MAX_PLAYERS; i++) {
                 sendGameState(i);
-            };
+            }
         }
     }
 
@@ -202,5 +208,20 @@ public class GameServer extends PeerServer implements PeerConnectionListener {
            PlayerState state = game.getPlayerStates().get(playerTo);
            playerConnections.get(playerTo).sendMessageAsync(state, null);
        }
+    }
+
+    private void assertGameState(boolean condition) throws GameStateException {
+        assertGameState(condition, "Illegal game action");
+    }
+    private void assertGameState(boolean condition, String errorMessage) throws GameStateException {
+        if(!condition){
+            throw new GameStateException(errorMessage);
+        }
+    }
+}
+
+class GameStateException extends Exception{
+    public GameStateException(String msg){
+        super(msg);
     }
 }
