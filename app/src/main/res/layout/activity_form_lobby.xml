@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:theme="@android:style/Theme.Holo">
+
+    <TextView
+        android:id="@+id/label_my_device"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="My Device" />
+
+    <View
+        android:id="@+id/this_device_details_placeholder"
+        android:layout_width="match_parent"
+        android:layout_height="10dp" />
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider" />
+
+    <TextView
+        android:id="@+id/label_connected_devices"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Connected Devices" />
+
+    <ListView
+        android:id="@+id/connected_devices_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <View
+        android:id="@+id/divider2"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider" />
+
+    <TextView
+        android:id="@+id/label_nearby_devices"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nearby Devices" />
+
+    <ListView
+        android:id="@+id/nearby_devices_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</LinearLayout>
