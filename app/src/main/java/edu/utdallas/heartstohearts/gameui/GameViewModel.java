@@ -11,8 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import edu.utdallas.heartstohearts.game.Card;
-import edu.utdallas.heartstohearts.game.PlayerState;
 import edu.utdallas.heartstohearts.game.PlayerAction;
+import edu.utdallas.heartstohearts.game.PlayerState;
 import edu.utdallas.heartstohearts.game.Rank;
 import edu.utdallas.heartstohearts.game.Suit;
 

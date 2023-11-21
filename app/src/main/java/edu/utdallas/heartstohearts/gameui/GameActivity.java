@@ -12,7 +12,6 @@ import java.util.List;
 import edu.utdallas.heartstohearts.R;
 import edu.utdallas.heartstohearts.appui.BaseActivity;
 import edu.utdallas.heartstohearts.game.Card;
-import edu.utdallas.heartstohearts.game.Player;
 import edu.utdallas.heartstohearts.game.PlayerState;
 import edu.utdallas.heartstohearts.gamenetwork.GameClient;
 import edu.utdallas.heartstohearts.gamenetwork.MockClient;
@@ -57,7 +56,8 @@ public class GameActivity extends BaseActivity {
         GameClient.createGameClientAsync(group_info.groupOwnerAddress, group_info.isGroupOwner, (client) -> {
             GameActivity.this.client = client;
             model.setOnPass(() -> {
-                client.passCards(model.getSelectedCardsData().getValue()); // TODO probably butchering the livedata philosophy
+                // TODO probably butchering the livedata philosophy
+                client.passCards(model.getSelectedCardsData().getValue());
             });
             model.setOnPlay(() -> {
                 client.playCard(model.getSelectedCardsData().getValue());

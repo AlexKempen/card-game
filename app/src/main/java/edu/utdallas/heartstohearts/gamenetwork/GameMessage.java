@@ -16,12 +16,13 @@ public class GameMessage implements Serializable {
     /**
      * Sends a player action to the server. A null action indicates the client wants a copy of the
      * game state re-broadcast.
+     *
      * @param action
      * @param actionItems
      */
-    public GameMessage(PlayerAction action, List<Card> actionItems){
+    public GameMessage(PlayerAction action, List<Card> actionItems) {
         this.action = action;
-        if (actionItems!= null) {
+        if (actionItems != null) {
             this.actionItems = new ArrayList<>(actionItems);
         } else {
             this.actionItems = null;
