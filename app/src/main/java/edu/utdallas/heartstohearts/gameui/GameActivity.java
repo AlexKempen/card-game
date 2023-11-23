@@ -42,7 +42,7 @@ public class GameActivity extends BaseActivity {
 
         NetworkManager manager = NetworkManager.getInstance(getApplicationContext());
         InetAddress gameHost = manager.getGroupLeaderAddress();
-        client = new GameClient(Switchboard.getDefault(), gameHost);
+        client = GameClient.getActiveClient();
 
         final ViewModelProvider provider = new ViewModelProvider(this, ViewModelProvider.Factory.from(GameViewModel.initializer));
 
@@ -63,7 +63,7 @@ public class GameActivity extends BaseActivity {
             submitButton.update();
         });
 
-
+        client.requestState();
         Log.d(TAG, "Init complete");
     }
 }

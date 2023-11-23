@@ -2,7 +2,6 @@ package edu.utdallas.heartstohearts.gamenetwork;
 
 import android.util.Log;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
@@ -13,7 +12,6 @@ import edu.utdallas.heartstohearts.game.PlayerState;
 import edu.utdallas.heartstohearts.network.Callback;
 import edu.utdallas.heartstohearts.network.MessageFilter;
 import edu.utdallas.heartstohearts.network.MessageListener;
-import edu.utdallas.heartstohearts.network.PeerConnection;
 import edu.utdallas.heartstohearts.network.Switchboard;
 
 /**
@@ -27,16 +25,26 @@ import edu.utdallas.heartstohearts.network.Switchboard;
 public class GameClient implements MessageListener {
 
     private static final String TAG = "GameClient";
+
+    // Wanted quick and dirty way to pass client from lobby to game activity. Feel free to change
+    private static GameClient activeClient;
+    public static void setActiveClient(GameClient client){
+        activeClient = client;
+    }
+    public static GameClient getActiveClient(){
+        return activeClient;
+    }
+
     private PlayerState lastPlayerState = null;
     private Switchboard switchboard;
     private InetAddress gameHost;
-    private MessageFilter gameMessages;
+    private MessageFilter stateMessages;
 
     public GameClient(Switchboard switchboard, InetAddress gameHost){
         this.switchboard = switchboard;
         this.gameHost = gameHost;
-        gameMessages = new MessageFilter(GameMessage.class).addChildren(this);
-        switchboard.addListener(gameHost, gameMessages);
+        stateMessages = new MessageFilter(PlayerState.class).addChildren(this);
+        switchboard.addListener(gameHost, stateMessages);
     }
 
     /**
@@ -83,12 +91,12 @@ public class GameClient implements MessageListener {
      *
      * @param l
      */
-    public synchronized void addPlayerStateListener(MessageListener... l) {
-        gameMessages.addChildren(l);
+    public synchronized void addPlayerStateListener(Callback<PlayerState> l) {
+        stateMessages.addChildren((msg, author) -> l.call((PlayerState) msg));
     }
 
     @Override
-    public void messageReceived(Object o) {
+    public void messageReceived(Object o, InetAddress author) {
         Log.d(TAG, "State Received");
         PlayerState msg = (PlayerState) o;
         lastPlayerState = msg;

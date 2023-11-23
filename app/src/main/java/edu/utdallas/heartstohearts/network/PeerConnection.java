@@ -184,7 +184,7 @@ public class PeerConnection implements Closeable {
      */
     private void broadcastMessageRead(Object msg) {
         synchronized (listenersLock){
-            listeners.forEach((MessageListener l) -> l.messageReceived(msg));
+            listeners.forEach((MessageListener l) -> l.messageReceived(msg, getRemoteAddress()));
         }
     }
 

@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 /**
  * TODO synchronization
  */
-public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.ConnectionInfoListener, WifiP2pManager.PeerListListener {
+public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.ConnectionInfoListener {
 
     private static NetworkManager instance = null;
 
@@ -78,7 +78,6 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
         context.registerReceiver(this, p2pIntents);
 
         addConnectionListener(this); // listen to own connection availability requests
-        addPeerListListener(this);
     }
 
     /**
@@ -260,18 +259,9 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
         return lastSelfDevice;
     }
 
-    public List<WifiP2pDevice> getLastConnectedDevices(){
-        return lastPeerList.getDeviceList().stream().filter((device -> device.status == WifiP2pDevice.CONNECTED)).collect(Collectors.toList());
-    }
 
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
         lastConnectionInfo = wifiP2pInfo;
-    }
-
-    @Override
-    public void onPeersAvailable(WifiP2pDeviceList wifiP2pDeviceList) {
-        Log.d(TAG, "Recieved peer list of " + wifiP2pDeviceList.getDeviceList().size() + " devices");
-        lastPeerList = wifiP2pDeviceList;
     }
 }

@@ -1,4 +1,4 @@
-package edu.utdallas.heartstohearts.networkui;
+package edu.utdallas.heartstohearts.lobbyui;
 
 import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;

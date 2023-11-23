@@ -14,17 +14,20 @@ public class ServerBot {
     GameServer parent;
     int playerID;
 
+    PlayerAction previousAction; // disallow pass --> pass since the game state doesn't handle this for us
+
     public ServerBot(GameServer parent, int playerID) {
         this.parent = parent;
         this.playerID = playerID;
-
+        previousAction = PlayerAction.WAIT;
     }
 
-    public void notifyState(PlayerState state) {
-        if (state.getAction() != PlayerAction.WAIT) {
+    public synchronized void notifyState(PlayerState state) {
+        if (state.getAction() == PlayerAction.PLAY_CARD || (state.getAction() == PlayerAction.CHOOSE_CARDS && previousAction != PlayerAction.CHOOSE_CARDS)) {
             GameMessage message = new GameMessage(state.getAction(), getSelection(state));
             parent.messageReceived(playerID, message);
         }
+        previousAction = state.getAction();
     }
 
     private List<Card> getSelection(PlayerState state) {

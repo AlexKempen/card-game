@@ -33,7 +33,15 @@
     <ListView
         android:id="@+id/connected_devices_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content" >
+
+    </ListView>
+
+    <Button
+        android:id="@+id/button_start_game"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start Game" />
 
     <View
         android:id="@+id/divider2"
