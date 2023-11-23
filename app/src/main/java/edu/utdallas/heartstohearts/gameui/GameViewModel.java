@@ -15,6 +15,7 @@ import edu.utdallas.heartstohearts.game.PlayerAction;
 import edu.utdallas.heartstohearts.game.PlayerState;
 import edu.utdallas.heartstohearts.game.Rank;
 import edu.utdallas.heartstohearts.game.Suit;
+import edu.utdallas.heartstohearts.gamenetwork.GameClient;
 
 public class GameViewModel extends ViewModel {
     static final ViewModelInitializer<GameViewModel> initializer = new ViewModelInitializer<>(GameViewModel.class, creationExtras -> {
@@ -28,20 +29,17 @@ public class GameViewModel extends ViewModel {
         }
 
         PlayerState playerState = new PlayerState(hand, trick, PlayerAction.CHOOSE_CARDS, 0);
-        return new GameViewModel(playerState);
+        return new GameViewModel(playerState, gameActivity.client);
     });
     private final MutableLiveData<PlayerState> playerStateData;
     private final MutableLiveData<List<Card>> selectedCardsData = new MutableLiveData<>(new ArrayList<>());
 
-    private Runnable onPass;
-    private Runnable onPlay;
+    private GameClient client;
 
-    public GameViewModel(PlayerState playerState) {
+    public GameViewModel(PlayerState playerState, GameClient client) {
         playerStateData = new MutableLiveData<>(playerState);
-        onPass = () -> {
-        }; // do nothing by default
-        onPlay = () -> {
-        };
+        this.client = client;
+        client.addPlayerStateListener((msg) -> this.setPlayerState((PlayerState) msg));
     }
 
     public void setPlayerState(PlayerState playerState) {
@@ -73,7 +71,7 @@ public class GameViewModel extends ViewModel {
      */
     public void passCards() {
         List<Card> cards = selectedCardsData.getValue();
-        onPass.run();
+        client.passCards(cards);
         selectedCardsData.setValue(new ArrayList<>());
     }
 
@@ -82,25 +80,7 @@ public class GameViewModel extends ViewModel {
      */
     public void playCard() {
         Card card = selectedCardsData.getValue().get(0);
-        onPlay.run();
+        client.playCard(card);
         selectedCardsData.setValue(new ArrayList<>());
-    }
-
-    /**
-     * Set the action to take when passing
-     *
-     * @param r
-     */
-    public void setOnPass(Runnable r) {
-        this.onPass = r;
-    }
-
-    /**
-     * Set the action to take when playing a card
-     *
-     * @param r
-     */
-    public void setOnPlay(Runnable r) {
-        this.onPlay = r;
     }
 }

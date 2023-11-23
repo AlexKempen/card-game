@@ -1,140 +1,138 @@
 package edu.utdallas.heartstohearts.gamenetwork;
 
+import android.app.Service;
+import android.content.Intent;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.os.IBinder;
 import android.util.Log;
+import android.util.Pair;
 
-import java.io.IOException;
+import androidx.annotation.Nullable;
+
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.SynchronousQueue;
+import java.util.stream.Collectors;
 
 import edu.utdallas.heartstohearts.game.Card;
 import edu.utdallas.heartstohearts.game.GameManager;
 import edu.utdallas.heartstohearts.game.GamePhase;
 import edu.utdallas.heartstohearts.game.PlayerAction;
 import edu.utdallas.heartstohearts.game.PlayerState;
-import edu.utdallas.heartstohearts.network.PeerConnection;
-import edu.utdallas.heartstohearts.network.PeerConnectionListener;
-import edu.utdallas.heartstohearts.network.PeerServer;
+import edu.utdallas.heartstohearts.network.MessageFilter;
+import edu.utdallas.heartstohearts.network.NetworkManager;
+import edu.utdallas.heartstohearts.network.Switchboard;
 
-public class GameServer extends PeerServer implements PeerConnectionListener {
+/**
+ * Listens for messages from either the network or bots and processes them sequentially in another thread.
+ */
+public class GameServer extends Service {
 
-    private static GameServer singleton;
-
+    private Switchboard switchboard;
     private static final String TAG = "GameServer";
     private static final int MAX_PLAYERS = 4;
 
-    private GameManager game;
-    private List<PeerConnection> playerConnections;
+    private GameManager game = null;
+    private List<InetAddress> players;
+    private List<ServerBot> bots;
+
+    // Queue messages to process them one by one. Integer represents playerID
+    private SynchronousQueue<Pair<Integer, GameMessage>> messages;
 
     private List<List<Card>> passSelections;
 
+    private Thread messageProcessor;
+
+    @Override
+    public void onCreate(){
+        super.onCreate();
+        messages = new SynchronousQueue<>();
+        bots = new ArrayList<>();
+        switchboard = Switchboard.getDefault();
+    }
+
+    // Android lifecycle stuff
+
     /**
-     * Creates (synchronously!!) a GameServer instance or returns a previously created instance.
-     *
-     * @param host
-     * @param port
+     * @param intent - Must contain as an extra a list of InetAddress by the name of "players". If less
+     *               than 4, a list of bots must also be provided.
+     * @param flags
+     * @param startID
      * @return
      */
-    public static GameServer getSingleton(InetAddress host, int port) throws IOException {
-        if (singleton == null) {
-            singleton = new GameServer(host, port);
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startID){
+        if (game == null){
+            int playerId = 0;
+
+            players = new ArrayList<>();
+            for(WifiP2pDevice peer : NetworkManager.getInstance(getApplicationContext()).getLastConnectedDevices()){
+                try {
+                    players.add(InetAddress.getByName(peer.deviceAddress));
+                } catch (UnknownHostException e) {
+                    Log.e(TAG, "Unable to build player list: unknown host for " + peer.deviceAddress);
+                }
+            }
+
+            if (players.size() > 4){
+                Log.e(TAG, "Received too many players! Limiting to 4");
+                players = players.stream().limit(4).collect(Collectors.toList());
+            }
+
+            for(InetAddress player: players){
+                int id = playerId;
+                playerId++;
+                switchboard.addListener(player, new MessageFilter(GameMessage.class).addChildren((msg)->{
+                    messageReceived(id, (GameMessage) msg );
+                }));
+            }
+            while (playerId < 4){
+                    int id = playerId;
+                    playerId++;
+                    this.bots.add(new ServerBot(this, id));
+            }
+            startGame();
         }
-        return singleton;
+
+        messageProcessor = new Thread(()->{
+            while(true){
+                while(!messages.isEmpty()){
+                    Pair<Integer, GameMessage> p = messages.poll();
+                    processMessage(p.first, p.second);
+                }
+                try {
+                    wait(200);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        });
+
+        return START_NOT_STICKY;
     }
 
-    /**
-     * Synchronously creates a server but does NOT start listening for connections.
-     * <p>
-     * Do not use on main thread, as it performs networking operations.
-     *
-     * @param host
-     * @param port
-     * @throws IOException
-     */
-    private GameServer(InetAddress host, int port) throws IOException {
-        super(host, port);
-        playerConnections = Arrays.asList(new PeerConnection[MAX_PLAYERS]);
-        resetPassSelections();
-        addPeerConnectionListener(this);
+    // No binding
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
 
-        Log.d(TAG, "Game Server Launched");
+        return null;
     }
+
 
     public void startGame() {
         Log.d(TAG, "Starting new game");
         game = GameManager.startGame();
+        resetPassSelections();
         stateChangedClosure();
     }
 
-    /**
-     * Find the lowest open index or -1 if not found.
-     */
-    private int getLowestOpenPlayerSlot() {
-        for (int i = 0; i < playerConnections.size(); i++) {
-            if (!isPlayerConnected(i)) {
-                return i;
-            }
-        }
-        // no slot found
-        return -1;
-    }
-
-    private boolean isPlayerConnected(int i) {
-        PeerConnection c = playerConnections.get(i);
-        return (c != null && c.isOpen());
-    }
-
-    private void resetPassSelections() {
-        passSelections = Arrays.asList(new List[MAX_PLAYERS]);
-    }
-
-    private void partialPass(int player, List<Card> selection) {
-        passSelections.set(player, selection);
-        if (!passSelections.contains(null)) {
-            game.passCards(passSelections);
-            resetPassSelections();
-        }
-    }
-
-    private boolean hasPassed(int player) {
-        return passSelections.get(player) != null;
-    }
-
-    @Override
-    public void peerConnected(PeerConnection connection) {
-        final int index = getLowestOpenPlayerSlot();
-        if (index == -1) {
-            // Too many players, refuse connection
-            try {
-                connection.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            Log.d(TAG, "Too many connections, rejecting.");
-        } else {
-            // Add connection to player list
-            playerConnections.set(index, connection);
-            connection.addMessageListener((obj) -> {
-                messageReceived(index, obj);
-            });
-            connection.listenForMessages(null);
-            Log.d(TAG, "Player " + index + " Connected");
-            sendGameState(index);
-        }
-    }
-
-    /**
-     * Called when a message is received.
-     *
-     * @param playerId - index of the connection where the message originated
-     * @param o        - the message object
-     */
-    private synchronized void messageReceived(int playerId, Object o) {
-        Log.d(TAG, "Message received from player " + playerId);
+    private void processMessage(int playerId, GameMessage msg){
         try {
             assertGameState(game != null, "Game has not begun");
-
-            GameMessage msg = (GameMessage) o;
 
             // null action is a request for game state
             if (msg.action == null) {
@@ -164,9 +162,36 @@ public class GameServer extends PeerServer implements PeerConnectionListener {
 
         } catch (GameStateException e) {
             Log.d(TAG, "Game State error when handling message: " + e);
-        } catch (Exception e) {
-            Log.e(TAG, "Other error when handling message: " + e);
         }
+    }
+
+    private void resetPassSelections() {
+        passSelections = Arrays.asList(new List[MAX_PLAYERS]);
+    }
+
+    private void partialPass(int player, List<Card> selection) {
+        passSelections.set(player, selection);
+        if (!passSelections.contains(null)) {
+            game.passCards(passSelections);
+            resetPassSelections();
+        }
+    }
+
+    private boolean hasPassed(int player) {
+        return passSelections.get(player) != null;
+    }
+
+    /**
+     * Called when a message is received.
+     *
+     * @param playerId - index of the connection where the message originated
+     * @param o        - the message object. This should be filtered to only include game messages.
+     */
+    protected void messageReceived(int playerId, GameMessage msg) {
+        Log.d(TAG, "Message received from player " + playerId);
+        messages.add(new Pair<>(playerId, msg));
+        // wake processing thread
+        messageProcessor.notify();
     }
 
     /**
@@ -180,6 +205,7 @@ public class GameServer extends PeerServer implements PeerConnectionListener {
     private void stateChangedClosure() {
         if (game.getGamePhase() == GamePhase.DEAL) {
             game.deal();
+            // Check if passes from the bots are needed
             // state changed, so naturally need to call closure again
             stateChangedClosure();
         } else if (game.getGamePhase() == GamePhase.ROUND_FINISHED) {
@@ -198,14 +224,20 @@ public class GameServer extends PeerServer implements PeerConnectionListener {
      * Sends the current game state to the corresponding connection. Handles if the player is not
      * connected.
      *
-     * @param to - index of player to send to.
+     * @param playerTo - index of player to send to.
      */
     private void sendGameState(int playerTo) {
         // Done with transitions. Dispatch messages
-        if (isPlayerConnected(playerTo) && game != null) {
+        if(game == null) return;
+        PlayerState state = game.getPlayerStates().get(playerTo);
+
+        if (playerTo < players.size()) {
             Log.d(TAG, "Sending state to player" + playerTo);
-            PlayerState state = game.getPlayerStates().get(playerTo);
-            playerConnections.get(playerTo).sendMessageAsync(state, null);
+            switchboard.sendMessageAsync(players.get(playerTo), state,
+                    (e) -> Log.d(TAG, "Unable to send state to player " + playerTo + ": " + e));
+        } else {
+            int botId = playerTo - players.size();
+            bots.get(botId).notifyState(state);
         }
     }
 
@@ -219,9 +251,9 @@ public class GameServer extends PeerServer implements PeerConnectionListener {
         }
     }
 }
-
-class GameStateException extends Exception {
+ class GameStateException extends Exception {
     public GameStateException(String msg) {
         super(msg);
     }
 }
+

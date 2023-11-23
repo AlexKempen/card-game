@@ -3,11 +3,9 @@ package edu.utdallas.heartstohearts;
 import android.os.Bundle;
 import android.util.Pair;
 
-import java.text.Normalizer;
-
 import edu.utdallas.heartstohearts.appui.BaseActivity;
 import edu.utdallas.heartstohearts.gameui.GameActivity;
-import edu.utdallas.heartstohearts.networkui.FormLobbyActivity;
+import edu.utdallas.heartstohearts.lobbyui.FormLobbyActivity;
 
 public class MainActivity extends BaseActivity {
 

@@ -11,8 +11,10 @@ import edu.utdallas.heartstohearts.game.Card;
 import edu.utdallas.heartstohearts.game.PlayerAction;
 import edu.utdallas.heartstohearts.game.PlayerState;
 import edu.utdallas.heartstohearts.network.Callback;
+import edu.utdallas.heartstohearts.network.MessageFilter;
 import edu.utdallas.heartstohearts.network.MessageListener;
 import edu.utdallas.heartstohearts.network.PeerConnection;
+import edu.utdallas.heartstohearts.network.Switchboard;
 
 /**
  * Class for communicating with the game server.
@@ -25,41 +27,16 @@ import edu.utdallas.heartstohearts.network.PeerConnection;
 public class GameClient implements MessageListener {
 
     private static final String TAG = "GameClient";
-    private static final int PORT = 8888;
-    private GameServer server;
-    private PeerConnection connection;
     private PlayerState lastPlayerState = null;
+    private Switchboard switchboard;
+    private InetAddress gameHost;
+    private MessageFilter gameMessages;
 
-    public static void createGameClientAsync(InetAddress hostAddress, boolean isGroupOwner, Callback<GameClient> onSuccess, Callback<IOException> onError) {
-        new Thread(() -> {
-            try {
-                GameClient client = new GameClient(hostAddress, isGroupOwner);
-                onSuccess.call(client);
-            } catch (IOException e) {
-                // TODO remove this hack. Retry after a second or so
-                try {
-                    Thread.sleep(1000);
-                    GameClient client = new GameClient(hostAddress, isGroupOwner);
-                    onSuccess.call(client);
-                } catch (IOException e2) {
-                    Callback.callOrThrow(onError, e2);
-                } catch (Exception e2) {
-                    // pass
-                }
-            }
-        }).start();
-    }
-
-    private GameClient(InetAddress hostAddress, boolean isGroupOwner) throws IOException {
-        if (isGroupOwner) {
-            this.server = GameServer.getSingleton(hostAddress, PORT);
-            server.startAcceptingConnections(null);
-            server.startGame(); // TODO figure out if there's a better time to start this.
-        }
-        connection = PeerConnection.fromAddress(hostAddress, PORT);
-        addPlayerStateListener(this);
-        connection.listenForMessages(null);
-        requestState();
+    public GameClient(Switchboard switchboard, InetAddress gameHost){
+        this.switchboard = switchboard;
+        this.gameHost = gameHost;
+        gameMessages = new MessageFilter(GameMessage.class).addChildren(this);
+        switchboard.addListener(gameHost, gameMessages);
     }
 
     /**
@@ -79,7 +56,7 @@ public class GameClient implements MessageListener {
     public void playCard(List<Card> card) {
         assert card.size() == 1;
         GameMessage message = new GameMessage(PlayerAction.PLAY_CARD, card);
-        connection.sendMessageAsync(message, null); // TODO error handling
+        switchboard.sendMessageAsync(gameHost, message, null); // TODO error handling
     }
 
     /**
@@ -89,14 +66,14 @@ public class GameClient implements MessageListener {
      */
     public void passCards(List<Card> cards) {
         GameMessage message = new GameMessage(PlayerAction.CHOOSE_CARDS, cards);
-        connection.sendMessageAsync(message, null); // TODO error handling
+        switchboard.sendMessageAsync(gameHost, message, null); // TODO error handling
     }
 
     /**
      * Sends a message to request the game state, which will be handled through the appropriate listeners
      */
     public void requestState() {
-        connection.sendMessageAsync(new GameMessage(null, null), null);
+        switchboard.sendMessageAsync(gameHost, new GameMessage(null, null), null);
     }
 
     /**
@@ -106,11 +83,8 @@ public class GameClient implements MessageListener {
      *
      * @param l
      */
-    public synchronized void addPlayerStateListener(MessageListener l) {
-        connection.addMessageListener(l);
-        if (lastPlayerState != null) {
-            l.messageReceived(lastPlayerState);
-        }
+    public synchronized void addPlayerStateListener(MessageListener... l) {
+        gameMessages.addChildren(l);
     }
 
     @Override

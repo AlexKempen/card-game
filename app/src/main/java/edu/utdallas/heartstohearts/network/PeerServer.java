@@ -27,31 +27,28 @@ public class PeerServer implements Closeable {
      * <p>
      * Do not use on main thread, as it performs networking operations.
      *
-     * @param host
      * @param port
      * @throws IOException
      */
-    public PeerServer(InetAddress host, int port) throws IOException {
-        serverSocket = new ServerSocket();
-        serverSocket.bind(new InetSocketAddress(host, port));
+    public PeerServer(int port) throws IOException {
+        serverSocket = new ServerSocket(port);
         listeners = new ArrayList<>();
     }
 
     /**
      * Asynchronously creates a server but does NOT start listing for connections.
      *
-     * @param host
      * @param port
      * @param onServerCreated
      * @param onError
      */
-    public static void makeServerAsync(InetAddress host, int port,
+    public static void makeServerAsync(int port,
                                        Callback<PeerServer> onServerCreated,
                                        @Nullable Callback<IOException> onError) {
         new Thread(() -> {
             try {
                 PeerServer server = null;
-                server = new PeerServer(host, port);
+                server = new PeerServer(port);
                 onServerCreated.call(server);
 
             } catch (IOException e) {
@@ -93,6 +90,10 @@ public class PeerServer implements Closeable {
 
     public void removePeerConnectionListener(PeerConnectionListener l) {
         listeners.remove(l);
+    }
+
+    public boolean isActive(){
+        return acceptConnectionsThread.isAlive();
     }
 
     /**
