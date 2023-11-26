@@ -18,6 +18,7 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,6 +53,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
     Button startGameButton;
 
     LimitedLinkedHashMap<String, InetAddress> macToAddress;
+    List<String> connectedMacs;
 
     private final String TAG = "FormLobbyActivity";
 
@@ -72,6 +74,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
         setContentView(R.layout.activity_form_lobby);
 
         macToAddress = new LimitedLinkedHashMap<>(3); // Only three peers allowed!;
+        connectedMacs = new ArrayList<>();
 
         // Set up lists
         connectedDevices = (ListView) findViewById(R.id.connected_devices_list);
@@ -154,20 +157,27 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
     public void onPeersAvailable(WifiP2pDeviceList devices) {
         ArrayList<WifiP2pDevice> connectedList = new ArrayList<>();
         ArrayList<WifiP2pDevice> nearbyList = new ArrayList<>();
+        connectedMacs = new ArrayList<>();
 
         devices.getDeviceList().forEach((device) -> {
             if (device.status == WifiP2pDevice.CONNECTED) {
                 connectedList.add(device);
+                connectedMacs.add(device.deviceAddress);
             } else {
                 nearbyList.add(device);
             }
         });
 
-        // only allow game start if we have a connected peer
-        startGameButton.setEnabled(connectedList.size() > 0);
+        // Maybe enable/disable game start button
+        checkReadyForStart();
 
         connectedDevicesAdapter.updateList(connectedList);
         nearbyDevicesAdapter.updateList(nearbyList);
+    }
+
+    private void checkReadyForStart(){
+        boolean ready = connectedMacs.stream().allMatch((mac) -> macToAddress.containsKey(mac));
+        startGameButton.setActivated(ready);
     }
 
     public void startGame() {
@@ -187,6 +197,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
             }
 
             macToAddress.forEach((mac, address) -> {
+                Log.d(TAG, "Notifying player " + mac + " at address " + address + " of game start.");
                 playerAddresses.add(address.getHostAddress());
                 switchboard.sendMessageAsync(address, new StartGame(),
                         (e) -> Log.e(TAG, "Could not notify player of game start: " + e));
@@ -242,8 +253,10 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
                 });
             }
 
+            checkReadyForStart();
+
         } else if (o instanceof StartGame) {
-            joinGame(author);
+                joinGame(author);
         }
     }
 

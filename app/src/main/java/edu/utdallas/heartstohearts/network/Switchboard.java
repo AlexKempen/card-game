@@ -11,29 +11,46 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import kotlin.NotImplementedError;
+
 /**
  * A central mailbox for sending and receiving messages. Handles all server and client setup.
- * <p>
+ *
+ * Connections are created at need: when a message needs to be sent, if no active connections
+ * currently exist, the switchboard will attempt to create one. As this may fail at any time, when
+ * creating a connection the switchboard will attempt a specified number of retry times separated
+ * by a retry interval. If this cannot be done, or if an error occurs in the process of sending a
+ * message over an active connection, the callback registered with the message will be called.
+ *
+ * All public methods are thread-safe.
+ *
  * Not scalable: this class focuses on simplicity rather than scalability, since we should only be
  * working with small connection groups. For instance, we retain a list of all addresses forever,
  * creating a potential memory leak that doesn't occur in our use case, and do operations one at a time.
  */
 public class Switchboard implements Closeable {
 
-    private static final String TAG = "Switchboard";
+    private static final String TAG = "Switchboard"; // debug tag
 
     private static int defaultPort = 8888;
     private static final Object defaultSwitchboardWriteLock = new Object();
     private static Switchboard defaultSwitchboard;
 
-    private final int port;
+    private final int port; // port to listen on and connect to.
 
     private Object connectionsLock = new Object();
+
+    // More than one connection to the same address may be active at a given time, for example if
+    // both try connecting at the same time. We need to listen to either but only need to send
+    // messages over one
     private Map<InetAddress, List<PeerConnection>> connections;
 
     private Object listenersLock = new Object();
+
+    // Message recipients
     private Map<InetAddress, List<MessageListener>> listeners;
 
+    // Initialized when needed to listen for incoming connections
     private PeerServer server;
 
     // Number of times to try opening a connection if the first attempt did not succeed.
@@ -41,9 +58,9 @@ public class Switchboard implements Closeable {
     private int connectionRetryInterval;
 
 
-    public static Switchboard getDefault(){
-        synchronized (defaultSwitchboardWriteLock){
-            if(defaultSwitchboard == null){
+    public static Switchboard getDefault() {
+        synchronized (defaultSwitchboardWriteLock) {
+            if (defaultSwitchboard == null) {
                 defaultSwitchboard = new Switchboard(defaultPort, 2, 1000);
             }
             return defaultSwitchboard;
@@ -73,20 +90,21 @@ public class Switchboard implements Closeable {
 
     /**
      * Asynchronously begins accepting connection
+     *
      * @param onError called when there is an error in the startup or execution of the server
      * @throws IOException
      */
     public void acceptIncoming(Callback<IOException> onError) {
-        new Thread(()-> {
+        new Thread(() -> {
             if (server == null || !server.isActive()) {
                 try {
-                    if(server != null){
+                    if (server != null) {
                         server.close();
                     }
                     server = new PeerServer(port);
                     server.addPeerConnectionListener(Switchboard.this::registerConnection);
                     server.startAcceptingConnections(onError);
-                } catch (IOException e){
+                } catch (IOException e) {
                     Callback.callOrThrow(onError, e);
                 }
             }
@@ -96,38 +114,42 @@ public class Switchboard implements Closeable {
     /**
      * Sends a message to the given recipient- no prior connection required. If a message cannot
      * be delivered, calls onError.
+     *
      * @param destination
      * @param msg
      * @param onError
      */
-    public void sendMessageAsync(InetAddress destination, Object msg, Callback<IOException> onError){
-        new Thread(()->{
+    public void sendMessageAsync(InetAddress destination, Object msg, Callback<IOException> onError) {
+        new Thread(() -> {
             try {
                 sendMessage(destination, msg);
-            } catch(IOException e){
+            } catch (IOException e) {
                 Callback.callOrThrow(onError, e);
             }
         }).start();
     }
 
     /**
-     * Registers a listener for incoming messages
-     * @param source - Address to listen for messages from. If null the listener will receive all messages.
+     * Registers a listener for incoming messages. Setting the source address to null registers the
+     * listener to messages from all addresses.
+     *
+     * @param source   - Address to listen for messages from. Set to null to listen to all messages.
      * @param listener
      */
-    public void addListener(InetAddress source, MessageListener listener){
-        synchronized (listenersLock){
+    public void addListener(InetAddress source, MessageListener listener) {
+        synchronized (listenersLock) {
             getListenerList(source).add(listener);
         }
     }
 
     /**
      * De-registers a listener. Must be called once per time the listener was added.
-     * @param source - Address used when addListener was called
+     *
+     * @param source   - Address used when addListener was called
      * @param listener - The listener object
      */
-    public void removeListener(InetAddress source, MessageListener listener){
-        synchronized (listenersLock){
+    public void removeListener(InetAddress source, MessageListener listener) {
+        synchronized (listenersLock) {
             getListenerList(source).remove(listener);
         }
     }
@@ -141,25 +163,26 @@ public class Switchboard implements Closeable {
     private void registerConnection(PeerConnection connection) {
         InetAddress address = connection.getRemoteAddress();
 
-        synchronized (connectionsLock) {
+        List<PeerConnection> connectionsForAddress = getConnectionList(address);
 
-            List<PeerConnection> connectionsForAddress = getConnectionList(address);
+        connection.addMessageListener(this::messageReceived);
 
-            connection.addMessageListener(this::messageReceived);
+        // Lock only this list reference
+        synchronized (connectionsForAddress) {
             connectionsForAddress.add(connection);
-
-            connection.listenForMessages((error) -> {
-                Log.d(TAG, "Closing connection to " + address + " due to error " + error);
-                try {
-                    connection.close();
-                } catch (IOException e) {
-                    Log.e(TAG, "Unable to close connection to " + address + " due to error " + e);
-                }
-            });
         }
+
+        connection.listenForMessages((error) -> {
+            Log.d(TAG, "Closing connection to " + address + " due to error " + error);
+            try {
+                connection.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Unable to close connection to " + address + " due to error " + e);
+            }
+        });
     }
 
-    private synchronized void sendMessage(InetAddress destination, Object msg) throws IOException{
+    private synchronized void sendMessage(InetAddress destination, Object msg) throws IOException {
         Log.d(TAG, "Sending message of type " + msg.getClass() + " to " + destination);
         PeerConnection connection = getActiveConnection(destination);
         connection.sendMessage(msg);
@@ -172,13 +195,14 @@ public class Switchboard implements Closeable {
      * @param address
      * @return
      */
-    private PeerConnection getActiveConnection(InetAddress address) throws IOException{
-        synchronized (connectionsLock) {
-            List<PeerConnection> addressConnections = getConnectionList(address);
-            while (addressConnections.size() > 0){
+    private PeerConnection getActiveConnection(InetAddress address) throws IOException {
+        List<PeerConnection> addressConnections = getConnectionList(address);
+
+        synchronized (addressConnections) {
+            while (addressConnections.size() > 0) {
                 PeerConnection connection = addressConnections.get(0);
                 // Remove disconnected connections
-                if(connection.getState() != ConnectionState.CONNECTED){
+                if (connection.getState() != ConnectionState.CONNECTED) {
                     connection.close();
                     addressConnections.remove(0);
                 } else {
@@ -195,6 +219,7 @@ public class Switchboard implements Closeable {
 
     /**
      * Finds the list for a given address or creates an empty one if not found
+     *
      * @param address
      * @return
      */
@@ -208,6 +233,7 @@ public class Switchboard implements Closeable {
 
     /**
      * Finds the list for a given address or creates an empty one if not found
+     *
      * @param address
      * @return
      */
@@ -220,7 +246,8 @@ public class Switchboard implements Closeable {
     }
 
     /**
-     * Connect to a remot address at the default port
+     * Connect to a remote address at the default port. Uses the default retry settings.
+     *
      * @param address
      * @return
      * @throws IOException
@@ -255,6 +282,7 @@ public class Switchboard implements Closeable {
 
     /**
      * Distributes the object to interested listeners
+     *
      * @param source
      * @param msg
      */
@@ -262,7 +290,6 @@ public class Switchboard implements Closeable {
         synchronized (listenersLock) {
             Log.d("TAG", "Received message of type " + msg.getClass() + " from " + source);
             // For all listeners to the given address or blanket/null listeners, dispatch the message
-            // TODO what if listeners list null
             Stream<MessageListener> interestedListeners = Stream.concat(getListenerList(source).stream(), getListenerList(null).stream());
             interestedListeners.forEach((l) -> l.messageReceived(msg, source));
         }
@@ -272,5 +299,7 @@ public class Switchboard implements Closeable {
     public void close() throws IOException {
         // TODO synchronization
         server.close(); // TODO check not null
+        // TODO in general- we have to close every connection
+        throw new RuntimeException("Close not yet fully implemented");
     }
 }
