@@ -21,7 +21,10 @@ public enum GamePhase {
      * The current round is finished.
      */
     ROUND_FINISHED,
-
+    /**
+     * The current trick is finished.
+     */
+    TRICK_FINISHED,
     /**
      * The game is complete.
      */

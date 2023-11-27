@@ -1,7 +1,5 @@
 package edu.utdallas.heartstohearts.game;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -135,12 +133,7 @@ public class GameManager {
         // If the current trick is full, add it to the current player and reset it
         if (currentTrick.size() == 4) {
             // determine winner of trick and give them the trick
-            currentPlayerId = determineTrickWinner();
-            players.get(currentPlayerId).takeTrick(new ArrayList<>(currentTrick.keySet()));
-            currentTrick.clear();
-            firstTrick = false;
-            boolean roundOver = players.stream().map(Player::getHand).allMatch(List::isEmpty);
-            return changeGamePhase(roundOver ? GamePhase.ROUND_FINISHED : GamePhase.PLAY);
+            return changeGamePhase(GamePhase.TRICK_FINISHED);
         }
         // Continue clockwise play
         currentPlayerId = (currentPlayerId + 1) % 4;
@@ -157,7 +150,7 @@ public class GameManager {
     }
 
     /**
-     * Should be called once shouldPlayCard returns false.
+     * Should be called once the round is finished.
      * Updates the PassDirection and scores and resets the player's tricks.
      *
      * @return the next phase of the game.
@@ -178,6 +171,21 @@ public class GameManager {
         heartsBroken = false;
         direction = direction.nextPassDirection();
         return changeGamePhase(players.stream().anyMatch(player -> player.getPoints() >= 100) ? GamePhase.COMPLETE : GamePhase.DEAL);
+    }
+
+    /**
+     * Should be called once the trick is finished. Transitions to the next round. Kept as a distinct
+     * state so the UI has a chance to see what was played.
+     * @return the next phase of the game.
+     */
+    public GamePhase finishTrick(){
+        currentPlayerId = determineTrickWinner();
+        players.get(currentPlayerId).takeTrick(new ArrayList<>(currentTrick.keySet()));
+        currentTrick.clear();
+        firstTrick = false;
+
+        boolean roundOver = players.stream().map(Player::getHand).allMatch(List::isEmpty);
+        return changeGamePhase(roundOver ? GamePhase.ROUND_FINISHED : GamePhase.PLAY);
     }
 
     /**
@@ -221,12 +229,10 @@ public class GameManager {
                         selectable &= (!firstTrick || card.getPoints() == 0); // no points on first round
                         card.setSelectable(selectable);
                     });
-
-
                 }
             }
         }
-        if (phase == GamePhase.DEAL || phase == GamePhase.PASS || phase == GamePhase.COMPLETE) {
+        if (phase == GamePhase.DEAL || phase == GamePhase.PASS || phase == GamePhase.COMPLETE || phase == GamePhase.TRICK_FINISHED) {
             PlayerAction action = phase == GamePhase.PASS ? PlayerAction.CHOOSE_CARDS : PlayerAction.WAIT;
             builder.actions = ListUtils.fourCopies(() -> action);
             builder.hands.stream().flatMap(List::stream).forEach(card -> card.setSelectable(phase == GamePhase.PASS));

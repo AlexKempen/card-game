@@ -17,11 +17,20 @@ public class PlayerState implements Serializable {
     private PlayerAction action;
     private int points;
 
-    public PlayerState(List<Card> hand, List<Card> trick, PlayerAction action, int points) {
+    // a counter that increases monotonically as the game progresses. Used for ordering states
+    // that may arrive from the server out-of-order
+    private int age;
+
+    public PlayerState(List<Card> hand, List<Card> trick, PlayerAction action, int points){
+        this(hand, trick, action, points, 0);
+    }
+
+    public PlayerState(List<Card> hand, List<Card> trick, PlayerAction action, int points, int age) {
         this.hand = new ArrayList<>(hand.stream().map(card -> card.clone()).collect(Collectors.toList()));
         this.trick = new ArrayList<>(trick.stream().map(card->card.clone()).collect(Collectors.toList()));
         this.action = action;
         this.points = points;
+        this.age=age;
     }
 
     @Override
@@ -57,4 +66,8 @@ public class PlayerState implements Serializable {
     public int getPoints() {
         return points;
     }
+
+    public int getAge() { return age;}
+
+    public void setAge(int age) {this.age = age;}
 }

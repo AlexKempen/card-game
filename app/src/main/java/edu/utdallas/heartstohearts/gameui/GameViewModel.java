@@ -11,6 +11,7 @@ import androidx.lifecycle.viewmodel.ViewModelInitializer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import edu.utdallas.heartstohearts.game.Card;
 import edu.utdallas.heartstohearts.game.PlayerAction;
@@ -20,17 +21,15 @@ import edu.utdallas.heartstohearts.game.Suit;
 import edu.utdallas.heartstohearts.gamenetwork.GameClient;
 
 public class GameViewModel extends ViewModel {
+
     static final ViewModelInitializer<GameViewModel> initializer = new ViewModelInitializer<>(GameViewModel.class, creationExtras -> {
         // TODO: Use creationExtras to get initial state from server
         GameActivity gameActivity = (GameActivity) creationExtras.get(SavedStateHandleSupport.VIEW_MODEL_STORE_OWNER_KEY);
 
         List<Card> hand = new ArrayList<>();
         List<Card> trick = new ArrayList<>();
-        for (Rank rank : Rank.values()) {
-            hand.add(new Card(Suit.DIAMONDS, rank));
-        }
 
-        PlayerState playerState = new PlayerState(hand, trick, PlayerAction.CHOOSE_CARDS, 0);
+        PlayerState playerState = new PlayerState(hand, trick, PlayerAction.WAIT, 0);
         return new GameViewModel(playerState, gameActivity.client);
     });
     private final MutableLiveData<PlayerState> playerStateData;
@@ -38,10 +37,10 @@ public class GameViewModel extends ViewModel {
 
     private GameClient client;
 
+
     public GameViewModel(PlayerState playerState, GameClient client) {
         playerStateData = new MutableLiveData<>(playerState);
         this.client = client;
-        client.addPlayerStateListener((msg) -> this.setPlayerState(msg));
     }
 
     public void setPlayerState(PlayerState playerState) {

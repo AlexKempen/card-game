@@ -11,19 +11,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import kotlin.NotImplementedError;
-
 /**
  * A central mailbox for sending and receiving messages. Handles all server and client setup.
- *
+ * <p>
  * Connections are created at need: when a message needs to be sent, if no active connections
  * currently exist, the switchboard will attempt to create one. As this may fail at any time, when
  * creating a connection the switchboard will attempt a specified number of retry times separated
  * by a retry interval. If this cannot be done, or if an error occurs in the process of sending a
  * message over an active connection, the callback registered with the message will be called.
- *
+ * <p>
  * All public methods are thread-safe.
- *
+ * <p>
  * Not scalable: this class focuses on simplicity rather than scalability, since we should only be
  * working with small connection groups. For instance, we retain a list of all addresses forever,
  * creating a potential memory leak that doesn't occur in our use case, and do operations one at a time.
@@ -259,7 +257,9 @@ public class Switchboard implements Closeable {
         for (int i = 0; i < connectionRetries + 1 && connection == null; i++) {
             try {
                 // if retry wait
-                if (i > 0) Thread.sleep(connectionRetryInterval);
+                if (i > 0) {
+                    Thread.sleep(connectionRetryInterval);
+                }
                 connection = PeerConnection.fromAddress(address, port);
 
             } catch (IOException e) {
