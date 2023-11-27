@@ -31,21 +31,6 @@ public class PeerServer implements Closeable {
     }
 
     /**
-     * Asynchronously creates a server but does NOT start listing for connections.
-     */
-    public static void makeServerAsync(int port, Callback<PeerServer> onServerCreated, @Nullable Callback<IOException> onError) {
-        new Thread(() -> {
-            try {
-                PeerServer server = new PeerServer(port);
-                onServerCreated.call(server);
-
-            } catch (IOException e) {
-                Callback.callOrThrow(onError, e);
-            }
-        }).start();
-    }
-
-    /**
      * Starts accepting client connections. Non-blocking: can be called on any thread.
      */
     public void startAcceptingConnections(@Nullable Callback<IOException> onError) {

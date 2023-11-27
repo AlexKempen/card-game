@@ -39,25 +39,6 @@ public class PeerConnection implements Closeable {
     private final Object stateLock = new Object();
     private ConnectionState state;
 
-    /**
-     * Connects to a server listening at the given host and port asynchronously, and calls back witthe result
-     *
-     * @param host
-     * @param port
-     * @param onConnectionAvailable called when the connection is available
-     * @param onError               may be left null, in which case a RuntimeException called on error. Otherwise,
-     *                              called whenever an error happens when connecting.
-     */
-    public static void fromAddressAsync(InetAddress host, int port, Callback<PeerConnection> onConnectionAvailable, Callback<IOException> onError) {
-        new Thread(() -> {
-            try {
-                PeerConnection connection = PeerConnection.fromAddress(host, port);
-                onConnectionAvailable.call(connection);
-            } catch (IOException e) {
-                Callback.callOrThrow(onError, e);
-            }
-        }).start();
-    }
 
     /**
      * Creates and attempts to connect a new PeerConnection. Blocks: do not use on main thread.
@@ -71,7 +52,7 @@ public class PeerConnection implements Closeable {
         Socket sock = new Socket();
 
         InetSocketAddress address = new InetSocketAddress(host, port);
-        Log.d(TAG, "Connecting to server at " + address.toString());
+        Log.d(TAG, "Connecting to server at " + address);
         sock.connect(address);
 
         return new PeerConnection(sock);
