@@ -6,8 +6,6 @@ import androidx.annotation.Nullable;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -18,17 +16,14 @@ import java.util.Collection;
  * ServerSocket
  */
 public class PeerServer implements Closeable {
-    private ServerSocket serverSocket;
-    private Collection<PeerConnectionListener> listeners;
+    private final ServerSocket serverSocket;
+    private final Collection<PeerConnectionListener> listeners;
     private Thread acceptConnectionsThread;
 
     /**
      * Synchronously creates a server but does NOT start listening for connections.
      * <p>
      * Do not use on main thread, as it performs networking operations.
-     *
-     * @param port
-     * @throws IOException
      */
     public PeerServer(int port) throws IOException {
         serverSocket = new ServerSocket(port);
@@ -37,18 +32,11 @@ public class PeerServer implements Closeable {
 
     /**
      * Asynchronously creates a server but does NOT start listing for connections.
-     *
-     * @param port
-     * @param onServerCreated
-     * @param onError
      */
-    public static void makeServerAsync(int port,
-                                       Callback<PeerServer> onServerCreated,
-                                       @Nullable Callback<IOException> onError) {
+    public static void makeServerAsync(int port, Callback<PeerServer> onServerCreated, @Nullable Callback<IOException> onError) {
         new Thread(() -> {
             try {
-                PeerServer server = null;
-                server = new PeerServer(port);
+                PeerServer server = new PeerServer(port);
                 onServerCreated.call(server);
 
             } catch (IOException e) {
@@ -81,8 +69,6 @@ public class PeerServer implements Closeable {
 
     /**
      * Listens for any incoming client connections.
-     *
-     * @param l
      */
     public void addPeerConnectionListener(PeerConnectionListener l) {
         listeners.add(l);

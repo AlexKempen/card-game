@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -137,7 +138,7 @@ public class GameTest {
     @Test
     public void testScoring() {
         // Create a mutable list
-        List<Card> trick = new ArrayList(Arrays.asList(Card.QUEEN_OF_SPADES, Card.TWO_OF_CLUBS, new Card(Suit.HEARTS, Rank.QUEEN)));
+        List<Card> trick = new ArrayList<>(Arrays.asList(Card.QUEEN_OF_SPADES, Card.TWO_OF_CLUBS, new Card(Suit.HEARTS, Rank.QUEEN)));
         playerBuilder.tricks.set(0, trick);
         managerBuilder.phase = GamePhase.ROUND_FINISHED;
         GameManager manager = managerBuilder.build();
@@ -162,7 +163,7 @@ public class GameTest {
 
     @Test
     public void testShootTheMoon() {
-        List<Card> trick = new ArrayList<>(Arrays.asList(Card.QUEEN_OF_SPADES));
+        List<Card> trick = new ArrayList<>(Collections.singletonList(Card.QUEEN_OF_SPADES));
         trick.addAll(Arrays.stream(Rank.values()).map(rank -> new Card(Suit.HEARTS, rank)).collect(Collectors.toList()));
         playerBuilder.tricks.set(0, trick);
         managerBuilder.phase = GamePhase.ROUND_FINISHED;
