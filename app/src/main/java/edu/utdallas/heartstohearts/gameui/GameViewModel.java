@@ -36,14 +36,6 @@ public class GameViewModel extends ViewModel {
     }
 
     public void setPlayerState(PlayerState playerState) {
-
-        // TODO remove
-        String msg = "Received hand:\n";
-        for (Card card : playerState.getHand()) {
-            msg += "\n\t" + card + "\t:\t" + card.toString() + "\t:\t" + card.isSelectable();
-        }
-        Log.d("DebugSelection", msg);
-
         playerStateData.postValue(playerState);
     }
 

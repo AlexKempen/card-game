@@ -106,7 +106,7 @@ public class GameServer extends Service {
                 try {
                     Pair<Integer, GameMessage> p = messages.take();
                     processMessage(p.first, p.second);
-                } catch (InterruptedException e){
+                } catch (InterruptedException e) {
                     Log.d(TAG, "Processing thread interrupted");
                     break;
                 }
@@ -177,6 +177,7 @@ public class GameServer extends Service {
 
     /**
      * Called when one
+     *
      * @param player
      * @param selection
      */
@@ -229,7 +230,7 @@ public class GameServer extends Service {
             // Check if passes from the bots are needed
             // state changed, so naturally need to call closure again
             stateChangedClosure();
-        } else if (game.getGamePhase() == GamePhase.TRICK_FINISHED){
+        } else if (game.getGamePhase() == GamePhase.TRICK_FINISHED) {
             Log.d(TAG, "Trick Finished");
             game.finishTrick();
             stateChangedClosure();
@@ -256,19 +257,11 @@ public class GameServer extends Service {
 
         if (playerTo < players.size()) {
             Log.d(TAG, "Sending state to player" + playerTo);
-            switchboard.sendMessageAsync(players.get(playerTo), state,
-                    (e) -> Log.d(TAG, "Unable to send state to player " + playerTo + ": " + e));
+            switchboard.sendMessageAsync(players.get(playerTo), state, (e) -> Log.d(TAG, "Unable to send state to player " + playerTo + ": " + e));
         } else {
             int botId = playerTo - players.size();
             bots.get(botId).notifyState(state);
         }
-
-        // TODO remove
-        String msg = "Server Dispatching Player " + playerTo + " hand:\n";
-        for(Card card : state.getHand()){
-            msg += "\n\t" + card + "\t:\t"+  card.toString() + "\t:\t" + card.isSelectable();
-        }
-        Log.d("DebugSelection", msg);
     }
 
     private void assertGameState(boolean condition) throws GameStateException {
