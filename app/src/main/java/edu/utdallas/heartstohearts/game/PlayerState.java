@@ -12,25 +12,26 @@ import java.util.stream.Collectors;
  */
 public class PlayerState implements Serializable {
     public static final long serialVersionUID = 6774190515566769539L;
-    private ArrayList<Card> hand;
-    private ArrayList<Card> trick;
-    private PlayerAction action;
-    private int points;
+    private final ArrayList<Card> hand;
+    private final ArrayList<Card> trick;
+    private final PlayerAction action;
+    private final int points;
 
     // a counter that increases monotonically as the game progresses. Used for ordering states
-    // that may arrive from the server out-of-order
+    // that may arrive from the server out-of-order.
     private int age;
 
-    public PlayerState(List<Card> hand, List<Card> trick, PlayerAction action, int points){
+    public PlayerState(List<Card> hand, List<Card> trick, PlayerAction action, int points) {
         this(hand, trick, action, points, 0);
     }
 
     public PlayerState(List<Card> hand, List<Card> trick, PlayerAction action, int points, int age) {
-        this.hand = new ArrayList<>(hand.stream().map(card -> card.clone()).collect(Collectors.toList()));
-        this.trick = new ArrayList<>(trick.stream().map(card->card.clone()).collect(Collectors.toList()));
+        // Clone hand and trick into new arraylists
+        this.hand = hand.stream().map(Card::clone).collect(Collectors.toCollection(ArrayList::new));
+        this.trick = trick.stream().map(Card::clone).collect(Collectors.toCollection(ArrayList::new));
         this.action = action;
         this.points = points;
-        this.age=age;
+        this.age = age;
     }
 
     @Override
@@ -67,7 +68,11 @@ public class PlayerState implements Serializable {
         return points;
     }
 
-    public int getAge() { return age;}
+    public int getAge() {
+        return age;
+    }
 
-    public void setAge(int age) {this.age = age;}
+    public void setAge(int age) {
+        this.age = age;
+    }
 }

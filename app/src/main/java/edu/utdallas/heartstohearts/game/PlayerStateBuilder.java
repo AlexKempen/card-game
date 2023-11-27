@@ -19,9 +19,11 @@ public class PlayerStateBuilder {
      * If the given hand contains the TWO_OF_CLUBS, that player's action is set to PLAY_CARD.
      * Else, it is set to WAIT.
      */
-    public void setHandAndAction(int playerId, List<Card> hand) {
-        hands.set(playerId, hand);
+    public void setHandForPlay(int playerId, List<Card> hand) {
         actions.set(playerId, hand.contains(Card.TWO_OF_CLUBS) ? PlayerAction.PLAY_CARD : PlayerAction.WAIT);
+        // The next selected card must be the two of clubs
+        hand.forEach(c -> c.setSelectable(c.equals(Card.TWO_OF_CLUBS)));
+        hands.set(playerId, hand);
     }
 
     /**

@@ -31,6 +31,13 @@ public class GameTest {
     private PlayerStateBuilder stateBuilder;
     private GameManagerBuilder managerBuilder;
 
+    public void assertPlayerStateEqual(GameManager manager) {
+        // Multiple lines to facilitate debugging
+        List<PlayerState> expected = stateBuilder.build();
+        List<PlayerState> actual = manager.getPlayerStates();
+        assertEquals(expected, actual);
+    }
+
     @Before
     public void initialize() {
         playerBuilder = new PlayerBuilder();
@@ -45,7 +52,7 @@ public class GameTest {
         GameManager manager = managerBuilder.build();
         manager.deal(hands);
         assertEquals(GamePhase.PASS, manager.getGamePhase());
-        assertEquals(stateBuilder.build(), manager.getPlayerStates());
+        assertPlayerStateEqual(manager);
     }
 
 
@@ -53,22 +60,27 @@ public class GameTest {
     public void testPassingPhase() {
         List<List<Card>> cardsToPass = ListUtils.fourCopies(ArrayList::new);
         managerBuilder.direction = PassDirection.ACROSS;
+        List<List<Card>> finalHands = new ArrayList<>();
+        for (List<Card> hand : hands) {
+            finalHands.add(new ArrayList<>(hand));
+        }
 
         // pass cards directly across in the stateBuilder to compare to the manager
         for (int i = 0; i < 2; i += 1) {
             int oppositeIndex = PassDirection.ACROSS.getPassId(i);
-            List<Card> hand = hands.get(i);
-            List<Card> oppositeHand = hands.get(oppositeIndex);
+            List<Card> hand = finalHands.get(i);
+            List<Card> oppositeHand = finalHands.get(oppositeIndex);
 
-            // Slice cards from hand and add them to the opposite
+            // Slice cards from each hand
             cardsToPass.set(i, ListUtils.slice(hand, 0, 3));
             cardsToPass.set(oppositeIndex, ListUtils.slice(oppositeHand, 0, 3));
 
+            // Add cards to opposite hand
             hand.addAll(cardsToPass.get(oppositeIndex));
             oppositeHand.addAll(cardsToPass.get(i));
 
-            stateBuilder.setHandAndAction(i, hand);
-            stateBuilder.setHandAndAction(oppositeIndex, oppositeHand);
+            stateBuilder.setHandForPlay(i, hand);
+            stateBuilder.setHandForPlay(oppositeIndex, oppositeHand);
         }
 
         // reset hands and deal them to manager so starting hands are the same as they were for stateBuilder
@@ -76,19 +88,16 @@ public class GameTest {
         manager.deal(hands);
         assertEquals(GamePhase.PASS, manager.getGamePhase());
 
-//        assertTrue(cardsToPass.stream().flatMap(Collection::stream).allMatch(Card::isSelectable));
         manager.passCards(cardsToPass);
 
-        List<PlayerState> expected = stateBuilder.build();
-        List<PlayerState> actual = manager.getPlayerStates();
-        assertEquals(expected, actual);
+        assertPlayerStateEqual(manager);
     }
 
     @Test
     public void testPlayCard() {
         // Mark player 0 as current player
         Card playedCard = new Card(Suit.SPADES, Rank.SEVEN);
-        Card extraCard = new Card(Suit.CLUBS, Rank.QUEEN);
+        Card extraCard = new Card(Suit.CLUBS, Rank.QUEEN, false);
         playerBuilder.hands.get(0).addAll(Arrays.asList(playedCard, extraCard));
 
         managerBuilder.currentPlayerId = 0;
@@ -103,9 +112,7 @@ public class GameTest {
         stateBuilder.trick.add(playedCard);
         stateBuilder.hands.get(0).add(extraCard);
 
-        List<PlayerState> expected = stateBuilder.build();
-        List<PlayerState> actual = manager.getPlayerStates();
-        assertEquals(expected, actual);
+        assertPlayerStateEqual(manager);
     }
 
     @Test
@@ -115,7 +122,7 @@ public class GameTest {
         managerBuilder.currentTrick.put(Card.QUEEN_OF_SPADES, 0);
         managerBuilder.currentTrick.put(Card.TWO_OF_CLUBS, 0);
         Card playedCard = new Card(Suit.HEARTS, Rank.SEVEN);
-        Card extraCard = new Card(Suit.CLUBS, Rank.QUEEN);
+        Card extraCard = new Card(Suit.CLUBS, Rank.QUEEN, false);
         playerBuilder.hands.get(0).add(playedCard);
         playerBuilder.hands.get(0).add(extraCard);
 
@@ -126,13 +133,16 @@ public class GameTest {
         GameManager manager = managerBuilder.build();
 
         assertEquals(0, manager.getCurrentPlayerId());
-        assertEquals(GamePhase.PLAY, manager.playCard(playedCard));
+        assertEquals(GamePhase.TRICK_FINISHED, manager.playCard(playedCard));
+
+        assertEquals(GamePhase.PLAY, manager.finishTrick());
         assertEquals(1, manager.getCurrentPlayerId());
 
         // Player 1 won the trick, so they should be set to play (lead) the next card
         PlayerAction.setToPlayCard(1, stateBuilder.actions);
         stateBuilder.hands.get(0).add(extraCard);
-        assertEquals(stateBuilder.build(), manager.getPlayerStates());
+
+        assertPlayerStateEqual(manager);
     }
 
     @Test
@@ -146,9 +156,7 @@ public class GameTest {
         manager.finishRound();
         stateBuilder.setWait();
         stateBuilder.points.set(0, 14);
-        List<PlayerState> expected = stateBuilder.build();
-        List<PlayerState> actual = manager.getPlayerStates();
-        assertEquals(expected, actual);
+        assertPlayerStateEqual(manager);
     }
 
     @Test
@@ -173,9 +181,7 @@ public class GameTest {
         stateBuilder.points = ListUtils.fourCopies(() -> 26);
         stateBuilder.points.set(0, 0);
         stateBuilder.setWait();
-        List<PlayerState> expected = stateBuilder.build();
-        List<PlayerState> actual = manager.getPlayerStates();
-        assertEquals(expected, actual);
+        assertPlayerStateEqual(manager);
     }
 
     @Test

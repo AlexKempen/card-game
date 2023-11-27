@@ -60,7 +60,7 @@ public class GameManager {
      * Sets currentPlayerId to the player holding the two of clubs.
      */
     private GamePhase startPlay() {
-        currentPlayerId = players.stream().filter(player -> player.getHand().contains(Card.TWO_OF_CLUBS)).map(p -> p.getId()).findFirst().orElse(null);
+        currentPlayerId = players.stream().filter(player -> player.getHand().contains(Card.TWO_OF_CLUBS)).map(Player::getId).findFirst().orElse(null);
         return changeGamePhase(GamePhase.PLAY);
     }
 
@@ -97,9 +97,12 @@ public class GameManager {
         if (phase != GamePhase.PASS) {
             throw new AssertionError("Expected phase to be GamePhase.PASS.");
         }
-        for (int p = 0; p < 4; p++) {
-            players.get(p).removeFromHand(playerChoices.get(p));
-            players.get(p).addToHand(playerChoices.get(direction.getPassId(p)));
+        for (int playerId = 0; playerId < 4; playerId++) {
+            // Remove each player's choices from their hand
+            players.get(playerId).removeFromHand(playerChoices.get(playerId));
+            // getPassId maps playerId to the id that player should pass to
+            // So add playerChoices to getPassId
+            players.get(direction.getPassId(playerId)).addToHand(playerChoices.get(playerId));
         }
 
         return startPlay();
@@ -176,9 +179,10 @@ public class GameManager {
     /**
      * Should be called once the trick is finished. Transitions to the next round. Kept as a distinct
      * state so the UI has a chance to see what was played.
+     *
      * @return the next phase of the game.
      */
-    public GamePhase finishTrick(){
+    public GamePhase finishTrick() {
         currentPlayerId = determineTrickWinner();
         players.get(currentPlayerId).takeTrick(new ArrayList<>(currentTrick.keySet()));
         currentTrick.clear();
@@ -220,12 +224,11 @@ public class GameManager {
                     // Trump suit cards must be played
                     Suit trumpSuit = getTrumpSuit();
                     boolean hasTrump = hand.stream().anyMatch(card -> card.getSuit() == trumpSuit);
-                    // If has trump cards, must play it
+                    // If the hand has trump cards, must play it
                     // Else, cannot play hearts
                     // TODO: Some variants don't allow queen without breaking hearts first
                     hand.forEach(card -> {
-                        boolean selectable = true;
-                        selectable &= (!hasTrump || (card.getSuit() == trumpSuit)); // match trick
+                        boolean selectable = (!hasTrump || (card.getSuit() == trumpSuit)); // match trick
                         selectable &= (!firstTrick || card.getPoints() == 0); // no points on first round
                         card.setSelectable(selectable);
                     });
