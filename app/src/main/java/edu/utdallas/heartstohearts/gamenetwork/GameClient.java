@@ -26,12 +26,13 @@ public class GameClient implements MessageListener {
 
     private static final String TAG = "GameClient";
 
-    // Wanted quick and dirty way to pass client from lobby to game activity. Feel free to change
     private static GameClient activeClient;
-    public static void setActiveClient(GameClient client){
+
+    public static void setActiveClient(GameClient client) {
         activeClient = client;
     }
-    public static GameClient getActiveClient(){
+
+    public static GameClient getActiveClient() {
         return activeClient;
     }
 
@@ -40,7 +41,7 @@ public class GameClient implements MessageListener {
     private InetAddress gameHost;
     private MessageFilter stateMessages;
 
-    public GameClient(Switchboard switchboard, InetAddress gameHost){
+    public GameClient(Switchboard switchboard, InetAddress gameHost) {
         this.switchboard = switchboard;
         this.gameHost = gameHost;
         stateMessages = new MessageFilter(PlayerState.class).addChildren(this);

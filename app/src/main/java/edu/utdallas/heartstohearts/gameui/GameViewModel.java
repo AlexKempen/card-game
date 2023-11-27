@@ -23,23 +23,15 @@ import edu.utdallas.heartstohearts.gamenetwork.GameClient;
 public class GameViewModel extends ViewModel {
 
     static final ViewModelInitializer<GameViewModel> initializer = new ViewModelInitializer<>(GameViewModel.class, creationExtras -> {
-        // TODO: Use creationExtras to get initial state from server
         GameActivity gameActivity = (GameActivity) creationExtras.get(SavedStateHandleSupport.VIEW_MODEL_STORE_OWNER_KEY);
-
-        List<Card> hand = new ArrayList<>();
-        List<Card> trick = new ArrayList<>();
-
-        PlayerState playerState = new PlayerState(hand, trick, PlayerAction.WAIT, 0);
-        return new GameViewModel(playerState, gameActivity.client);
+        return new GameViewModel(gameActivity.getClient());
     });
-    private final MutableLiveData<PlayerState> playerStateData;
+    private final MutableLiveData<PlayerState> playerStateData = new MutableLiveData<>(null);
     private final MutableLiveData<List<Card>> selectedCardsData = new MutableLiveData<>(new ArrayList<>());
 
     private GameClient client;
 
-
-    public GameViewModel(PlayerState playerState, GameClient client) {
-        playerStateData = new MutableLiveData<>(playerState);
+    public GameViewModel(GameClient client) {
         this.client = client;
     }
 
@@ -47,8 +39,8 @@ public class GameViewModel extends ViewModel {
 
         // TODO remove
         String msg = "Received hand:\n";
-        for(Card card : playerState.getHand()){
-            msg += "\n\t" + card + "\t:\t"+  card.toString() + "\t:\t" + card.isSelectable();
+        for (Card card : playerState.getHand()) {
+            msg += "\n\t" + card + "\t:\t" + card.toString() + "\t:\t" + card.isSelectable();
         }
         Log.d("DebugSelection", msg);
 

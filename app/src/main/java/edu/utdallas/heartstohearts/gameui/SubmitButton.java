@@ -21,6 +21,9 @@ public class SubmitButton extends AppCompatButton {
         this.model = model;
     }
 
+    /**
+     * Updates the button to correctly reflect the latest model information.
+     */
     public void update() {
         PlayerAction action = model.getPlayerStateData().getValue().getAction();
         List<Card> selectedCards = model.getSelectedCardsData().getValue();

@@ -32,14 +32,20 @@ import edu.utdallas.heartstohearts.network.Switchboard;
 public class GameActivity extends BaseActivity {
     public static final String TAG = "Game";
 
-    private static final int stateDelayMS = 1000; // delay before consuming the next state
-
     private GameViewModel model;
 
-    GameClient client;
+    private GameClient client;
+
+    /**
+     * A queue of state messages.
+     */
     private PriorityBlockingQueue<PlayerState> stateBacklog;
     private int stateAge;
     private Thread stateConsumer;
+
+    public GameClient getClient() {
+        return client;
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -60,9 +66,11 @@ public class GameActivity extends BaseActivity {
         submitButton.registerModel(model);
 
         model.getPlayerStateData().observe(this, gameState -> {
-            handView.displayHand(gameState.getHand());
-            trickView.displayTrick(gameState.getTrick());
-            submitButton.update();
+            if (gameState != null) {
+                handView.displayHand(gameState.getHand());
+                trickView.displayTrick(gameState.getTrick());
+                submitButton.update();
+            }
         });
 
         model.getSelectedCardsData().observe(this, selectedCards -> {
@@ -77,27 +85,26 @@ public class GameActivity extends BaseActivity {
 
         client.addPlayerStateListener(stateBacklog::put);
 
-        Log.d(TAG, "Init complete");
-
+        Log.d(TAG, "Initialization complete");
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
         stateConsumer.start();
+        // Re-request a state from the server
         client.requestState();
     }
 
     @Override
-    public void onPause(){
+    public void onPause() {
         stateConsumer.interrupt();
         super.onPause();
     }
 
     @WorkerThread
-    public void stateConsumerWorker(){
-        while(true){
+    public void stateConsumerWorker() {
+        while (true) {
             // Block until one there, then wait a small time for another to arrive so we keep things in order
             try {
                 // Peek doesn't actually wait, so take then put it back
@@ -108,12 +115,12 @@ public class GameActivity extends BaseActivity {
                 state = stateBacklog.take();
 
                 // Only consume later states
-                if(state.getAge() <= stateAge){
+                if (state.getAge() <= stateAge) {
                     model.setPlayerState(state);
                     stateAge = state.getAge();
                     Thread.sleep(1000);
                 }
-            } catch (InterruptedException e){
+            } catch (InterruptedException e) {
                 break;
             }
         }

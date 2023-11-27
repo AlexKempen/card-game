@@ -28,7 +28,7 @@ import java.util.stream.Stream;
  */
 public class Switchboard implements Closeable {
 
-    private static final String TAG = "Switchboard"; // debug tag
+    private static final String TAG = "Switchboard";
 
     private static int defaultPort = 8888;
     private static final Object defaultSwitchboardWriteLock = new Object();
@@ -56,6 +56,9 @@ public class Switchboard implements Closeable {
     private int connectionRetryInterval;
 
 
+    /**
+     * Returns a singleton instance of the switchboard.
+     */
     public static Switchboard getDefault() {
         synchronized (defaultSwitchboardWriteLock) {
             if (defaultSwitchboard == null) {
