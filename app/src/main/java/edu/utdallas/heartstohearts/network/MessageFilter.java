@@ -6,8 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MessageFilter implements MessageListener {
-    List<Class> allowedTypes;
-    List<MessageListener> subscribers;
+    private List<Class> allowedTypes;
+    private List<MessageListener> subscribers;
 
     /**
      * Creates a filter that only passes messages of the provided class type, using an "instance of"

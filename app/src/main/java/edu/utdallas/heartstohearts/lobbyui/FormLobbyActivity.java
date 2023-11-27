@@ -7,9 +7,7 @@ import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
-import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -19,7 +17,6 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -42,19 +39,19 @@ import edu.utdallas.heartstohearts.network.Switchboard;
  */
 public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.PeerListListener, SelfDeviceListener, MessageListener, WifiP2pManager.ConnectionInfoListener {
 
-    NetworkManager networkManager;
-    Switchboard switchboard;
+    private NetworkManager networkManager;
+    private Switchboard switchboard;
 
-    ListView connectedDevices;
-    DeviceDetailAdapter connectedDevicesAdapter;
-    ListView nearbyDevices;
-    DeviceDetailAdapter nearbyDevicesAdapter;
-    DeviceDetailView thisDeviceView;
+    private ListView connectedDevices;
+    private DeviceDetailAdapter connectedDevicesAdapter;
+    private ListView nearbyDevices;
+    private DeviceDetailAdapter nearbyDevicesAdapter;
+    private DeviceDetailView thisDeviceView;
 
-    Button startGameButton;
+    private Button startGameButton;
 
-    LimitedLinkedHashMap<String, InetAddress> macToAddress;
-    List<String> connectedMacs;
+    private LimitedLinkedHashMap<String, InetAddress> macToAddress;
+    private List<String> connectedMacs;
 
     private final String TAG = "FormLobbyActivity";
 
@@ -108,7 +105,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
         networkManager.addSelfDeviceListener(this);
         networkManager.addConnectionListener(this);
 
-        nearbyDevicesAdapter.onDeviceSelected((WifiP2pDevice device) -> {
+        nearbyDevicesAdapter.setOnDeviceSelected((WifiP2pDevice device) -> {
             networkManager.connectToPeer(device, null);
         });
 
@@ -179,7 +176,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
         nearbyDevicesAdapter.updateList(nearbyList);
     }
 
-    private void checkReadyForStart(){
+    private void checkReadyForStart() {
         // ready if all devices have greeted.
         boolean ready = connectedMacs.stream().allMatch((mac) -> macToAddress.containsKey(mac));
         startGameButton.setEnabled(ready);
@@ -204,8 +201,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
             macToAddress.forEach((mac, address) -> {
                 Log.d(TAG, "Notifying player " + mac + " at address " + address + " of game start.");
                 playerAddresses.add(address.getHostAddress());
-                switchboard.sendMessageAsync(address, new StartGame(),
-                        (e) -> Log.e(TAG, "Could not notify player of game start: " + e));
+                switchboard.sendMessageAsync(address, new StartGame(), (e) -> Log.e(TAG, "Could not notify player of game start: " + e));
             });
 
             String[] parceledPlayers = new String[playerAddresses.size()];
@@ -238,7 +234,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
 
             macToAddress.put(greet.mac, greet.address);
 
-            if(networkManager.isGroupLeader()) {
+            if (networkManager.isGroupLeader()) {
                 // If we are the lobby owner, distribute the greetings
                 Callback<IOException> onError = (error) -> {
                     Log.e(TAG, "Unable to propagate greeting");
@@ -253,7 +249,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
 
                 // send our own greetings
                 String selfMac = networkManager.getLastKnownSelf().deviceAddress;
-                switchboard.sendMessageAsync(author, new Greet(selfMac, null), (e) ->{
+                switchboard.sendMessageAsync(author, new Greet(selfMac, null), (e) -> {
                     Log.e(TAG, "Unable to return greetings");
                 });
             }
@@ -261,7 +257,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
             this.runOnUiThread(this::checkReadyForStart);
 
         } else if (o instanceof StartGame) {
-                joinGame(author);
+            joinGame(author);
         }
     }
 
@@ -272,8 +268,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
             Log.d(TAG, "Group formed");
             if (!wifiP2pInfo.isGroupOwner) {
                 String selfMac = networkManager.getLastKnownSelf().deviceAddress;
-                switchboard.sendMessageAsync(wifiP2pInfo.groupOwnerAddress, new Greet(selfMac, null),
-                        (e) -> Log.e(TAG, "Unable to greet group owner: " + e));
+                switchboard.sendMessageAsync(wifiP2pInfo.groupOwnerAddress, new Greet(selfMac, null), (e) -> Log.e(TAG, "Unable to greet group owner: " + e));
             }
         } else {
             Log.d(TAG, "Group changed but not formed");
@@ -281,9 +276,10 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
     }
 }
 
-class LimitedLinkedHashMap<K, V> extends LinkedHashMap<K, V>{
-    int maxSize = 0;
-    public LimitedLinkedHashMap(int maxSize){
+class LimitedLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
+    int maxSize;
+
+    public LimitedLinkedHashMap(int maxSize) {
         super(maxSize);
         this.maxSize = maxSize;
     }

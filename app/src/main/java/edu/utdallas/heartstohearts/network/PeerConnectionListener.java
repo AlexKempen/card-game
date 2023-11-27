@@ -1,8 +1,8 @@
 package edu.utdallas.heartstohearts.network;
 
 /**
- * Listens to whenever a peer connects.
+ * Represents a class with a method which is invoked when a peer is connected.
  */
 public interface PeerConnectionListener {
-    public void peerConnected(PeerConnection connection);
+    void peerConnected(PeerConnection connection);
 }

@@ -18,11 +18,9 @@ import java.util.Collection;
 
 /**
  * A thread-safe event-driven connection class to wrap socket logic. All public methods are thread-safe,
- * but may involved IO operations: read the comments before using them on the main thread.
- *
- * Note also that events are dispatched on a new thread that is set to listening for them. If this
- * is undesirable, you can write your listener to add them to a SynchronizedQueue and then read them
- * on the desired thread, or something similar.
+ * but may involve IO operations: read the comments before using them on the main thread.
+ * <p>
+ * Events are dispatched on new threads which explicitly listen for them.
  */
 public class PeerConnection implements Closeable {
 
@@ -141,7 +139,7 @@ public class PeerConnection implements Closeable {
      * send messages.
      */
     public void stopListening() {
-        synchronized (listeningThreadLock){
+        synchronized (listeningThreadLock) {
             if (isListening()) { // Reentrant lock acquisition is allowed, this will not deadlock
                 listeningThread.interrupt();
             }
@@ -152,16 +150,17 @@ public class PeerConnection implements Closeable {
      * @return true if this connection is currently listening.
      */
     public boolean isListening() {
-        synchronized (listeningThreadLock){
+        synchronized (listeningThreadLock) {
             return (listeningThread != null && listeningThread.isAlive());
         }
     }
 
     /**
      * Thread-safe state setter.
+     *
      * @param newState
      */
-    private void setState(ConnectionState newState){
+    private void setState(ConnectionState newState) {
         synchronized (stateLock) {
             state = newState;
         }
@@ -183,7 +182,7 @@ public class PeerConnection implements Closeable {
      * @param msg
      */
     private void broadcastMessageRead(Object msg) {
-        synchronized (listenersLock){
+        synchronized (listenersLock) {
             listeners.forEach((MessageListener l) -> l.messageReceived(msg, getRemoteAddress()));
         }
     }
@@ -195,7 +194,7 @@ public class PeerConnection implements Closeable {
      * @param l
      */
     public void addMessageListener(MessageListener l) {
-        synchronized (listenersLock){
+        synchronized (listenersLock) {
             listeners.add(l);
         }
     }
@@ -206,7 +205,7 @@ public class PeerConnection implements Closeable {
      * @param l
      */
     public void removeMessageListener(MessageListener l) {
-        synchronized (listenersLock){
+        synchronized (listenersLock) {
             listeners.remove(l);
         }
     }
@@ -223,7 +222,7 @@ public class PeerConnection implements Closeable {
             Log.d(TAG, "Sending Message: " + msg);
             messageOutputStream.writeObject(msg);
             messageOutputStream.flush();
-        } catch (IOException e){
+        } catch (IOException e) {
             setState(ConnectionState.ERROR);
             throw e;
         }
@@ -238,9 +237,9 @@ public class PeerConnection implements Closeable {
             stopListening();
             messageOutputStream.close();
             messageInputStream.close();
-            // closing the streams is supposed to close the socket, but hey- doesn't hurt to check
+            // Verify closing streams also closes the socket
             assert socket.isClosed();
-        }catch (IOException e){
+        } catch (IOException e) {
             setState(ConnectionState.ERROR);
             throw e;
         }
@@ -250,7 +249,7 @@ public class PeerConnection implements Closeable {
     /**
      * @return the address of the other end of the socket
      */
-    public InetAddress getRemoteAddress(){
+    public InetAddress getRemoteAddress() {
         return socket.getInetAddress();
     }
 }

@@ -111,8 +111,7 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
 
     @Override
     protected Card clone() {
-        Card other = new Card(this.suit, this.rank, this.selectable);
-        return other;
+        return new Card(this.suit, this.rank, this.selectable);
     }
 
     @Override

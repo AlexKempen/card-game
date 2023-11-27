@@ -8,12 +8,12 @@ import androidx.annotation.Nullable;
  * For example, can be used to call back with the result of a query, or only be called upon hitting
  * an exception.
  *
- * @param <ArgType>: the type of the single argument to the callback
+ * @param <ArgType>: the type of the single argument to the callback.
  */
 public interface Callback<ArgType> {
     void call(ArgType x);
 
-    public static <T extends Exception> void callOrThrow(@Nullable Callback<T> cb, T e) {
+    static <T extends Exception> void callOrThrow(@Nullable Callback<T> cb, T e) {
         if (cb == null) {
             throw new RuntimeException(e);
         } else {

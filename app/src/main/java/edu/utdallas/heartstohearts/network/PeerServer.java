@@ -18,9 +18,9 @@ import java.util.Collection;
  * ServerSocket
  */
 public class PeerServer implements Closeable {
-    ServerSocket serverSocket;
-    Collection<PeerConnectionListener> listeners;
-    Thread acceptConnectionsThread;
+    private ServerSocket serverSocket;
+    private Collection<PeerConnectionListener> listeners;
+    private Thread acceptConnectionsThread;
 
     /**
      * Synchronously creates a server but does NOT start listening for connections.
@@ -92,14 +92,12 @@ public class PeerServer implements Closeable {
         listeners.remove(l);
     }
 
-    public boolean isActive(){
+    public boolean isActive() {
         return acceptConnectionsThread.isAlive();
     }
 
     /**
-     * Notifies all listeners of new connection, using the callers thread.
-     *
-     * @param connection
+     * Notifies all listeners of new connection using the callers thread.
      */
     protected void notifyPeerConnected(PeerConnection connection) {
         Log.d("PeerServer", "Notifying new peer connection");
@@ -107,9 +105,7 @@ public class PeerServer implements Closeable {
     }
 
     /**
-     * Leaves all spawned connections untouched but closes the server
-     *
-     * @throws IOException
+     * Leaves all spawned connections untouched but closes the server.
      */
     @Override
     public void close() throws IOException {
