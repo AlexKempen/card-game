@@ -1,7 +1,11 @@
 package edu.utdallas.heartstohearts.game;
 
-public enum Rank {
+import java.io.Serializable;
+
+public enum Rank implements Serializable {
     TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE;
+
+    private static final long serialVersionUID = 4630732092238719595L;
 
     public int toInt() {
         switch (this) {

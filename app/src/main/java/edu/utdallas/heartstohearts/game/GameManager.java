@@ -1,10 +1,11 @@
 package edu.utdallas.heartstohearts.game;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class GameManager {
     private boolean heartsBroken;
@@ -188,6 +189,7 @@ public class GameManager {
         for (int i = 0; i < 4; i++) {
             builder.hands.set(i, players.get(i).getHand());
             builder.points.set(i, players.get(i).getPoints());
+
             if (phase == GamePhase.PLAY) {
                 builder.actions.set(i, i == currentPlayerId ? PlayerAction.PLAY_CARD : PlayerAction.WAIT);
 
@@ -203,7 +205,7 @@ public class GameManager {
                         // Can only lead first trick with two of clubs
                         hand.forEach(card -> card.setSelectable(card.equals(Card.TWO_OF_CLUBS)));
                     } else {
-                        // Cannot lead with hearts unless hearts broken
+                        // Cannot lead with hearts or queen of spades unless hearts broken
                         hand.forEach(card -> card.setSelectable(heartsBroken || card.getPoints() == 0));
                     }
                 } else {
@@ -213,11 +215,17 @@ public class GameManager {
                     // If has trump cards, must play it
                     // Else, cannot play hearts
                     // TODO: Some variants don't allow queen without breaking hearts first
-                    hand.forEach(card -> card.setSelectable(hasTrump ? card.getSuit() == trumpSuit : heartsBroken || card.getSuit() != Suit.HEARTS));
+                    hand.forEach(card -> {
+                        boolean selectable = true;
+                        selectable &= (!hasTrump || (card.getSuit() == trumpSuit)); // match trick
+                        selectable &= (!firstTrick || card.getPoints() == 0); // no points on first round
+                        card.setSelectable(selectable);
+                    });
+
+
                 }
             }
         }
-
         if (phase == GamePhase.DEAL || phase == GamePhase.PASS || phase == GamePhase.COMPLETE) {
             PlayerAction action = phase == GamePhase.PASS ? PlayerAction.CHOOSE_CARDS : PlayerAction.WAIT;
             builder.actions = ListUtils.fourCopies(() -> action);

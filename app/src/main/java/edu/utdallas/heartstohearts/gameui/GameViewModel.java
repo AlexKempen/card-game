@@ -1,5 +1,7 @@
 package edu.utdallas.heartstohearts.gameui;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.SavedStateHandleSupport;
@@ -22,8 +24,8 @@ public class GameViewModel extends ViewModel {
         // TODO: Use creationExtras to get initial state from server
         GameActivity gameActivity = (GameActivity) creationExtras.get(SavedStateHandleSupport.VIEW_MODEL_STORE_OWNER_KEY);
 
-        List<Card> hand = new ArrayList<>(Arrays.asList(Card.QUEEN_OF_SPADES, Card.TWO_OF_CLUBS, new Card(Suit.CLUBS, Rank.ACE), new Card(Suit.CLUBS, Rank.FIVE)));
-        List<Card> trick = new ArrayList<>(Arrays.asList(new Card(Suit.HEARTS, Rank.KING), new Card(Suit.DIAMONDS, Rank.ACE), new Card(Suit.SPADES, Rank.JACK)));
+        List<Card> hand = new ArrayList<>();
+        List<Card> trick = new ArrayList<>();
         for (Rank rank : Rank.values()) {
             hand.add(new Card(Suit.DIAMONDS, rank));
         }
@@ -39,10 +41,18 @@ public class GameViewModel extends ViewModel {
     public GameViewModel(PlayerState playerState, GameClient client) {
         playerStateData = new MutableLiveData<>(playerState);
         this.client = client;
-        client.addPlayerStateListener((msg) -> this.setPlayerState((PlayerState) msg));
+        client.addPlayerStateListener((msg) -> this.setPlayerState(msg));
     }
 
     public void setPlayerState(PlayerState playerState) {
+
+        // TODO remove
+        String msg = "Received hand:\n";
+        for(Card card : playerState.getHand()){
+            msg += "\n\t" + card + "\t:\t"+  card.toString() + "\t:\t" + card.isSelectable();
+        }
+        Log.d("DebugSelection", msg);
+
         playerStateData.postValue(playerState);
     }
 

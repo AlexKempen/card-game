@@ -239,6 +239,13 @@ public class GameServer extends Service {
             int botId = playerTo - players.size();
             bots.get(botId).notifyState(state);
         }
+
+        // TODO remove
+        String msg = "Server Dispatching Player " + playerTo + " hand:\n";
+        for(Card card : state.getHand()){
+            msg += "\n\t" + card + "\t:\t"+  card.toString() + "\t:\t" + card.isSelectable();
+        }
+        Log.d("DebugSelection", msg);
     }
 
     private void assertGameState(boolean condition) throws GameStateException {

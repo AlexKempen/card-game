@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * An immutable state holder containing a snapshot of game state for a single player.
@@ -17,8 +18,8 @@ public class PlayerState implements Serializable {
     private int points;
 
     public PlayerState(List<Card> hand, List<Card> trick, PlayerAction action, int points) {
-        this.hand = new ArrayList<>(hand);
-        this.trick = new ArrayList<>(trick);
+        this.hand = new ArrayList<>(hand.stream().map(card -> card.clone()).collect(Collectors.toList()));
+        this.trick = new ArrayList<>(trick.stream().map(card->card.clone()).collect(Collectors.toList()));
         this.action = action;
         this.points = points;
     }

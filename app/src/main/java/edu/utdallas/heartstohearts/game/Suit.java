@@ -1,10 +1,13 @@
 package edu.utdallas.heartstohearts.game;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public enum Suit {
+public enum Suit implements Serializable {
+
     HEARTS, DIAMONDS, CLUBS, SPADES;
+    private static final long serialVersionUID = 7865183916468303480L;
 
     public int toInt() {
         switch (this) {

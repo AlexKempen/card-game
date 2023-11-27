@@ -10,17 +10,18 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Card implements Serializable, Comparable<Card>, Cloneable {
+
+    private static final long serialVersionUID = 6236789073934771400L;
     public static Card QUEEN_OF_SPADES = new Card(Suit.SPADES, Rank.QUEEN);
     public static Card TWO_OF_CLUBS = new Card(Suit.CLUBS, Rank.TWO);
     private Suit suit;
     private Rank rank;
     private boolean selectable;
-    private boolean playable;
 
-    public Card(Suit suit, Rank rank, boolean playable) {
+    public Card(Suit suit, Rank rank, boolean selectable) {
         this.suit = suit;
         this.rank = rank;
-        this.playable = playable;
+        this.selectable = selectable;
     }
 
     public Card(Suit suit, Rank rank) {
@@ -56,7 +57,7 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
     public int getPoints() {
         if (this.equals(QUEEN_OF_SPADES)) {
             return 13;
-        } else if (this.suit == Suit.HEARTS) {
+        } else if (this.suit.equals(Suit.HEARTS)) {
             return 1;
         }
         return 0;
@@ -109,6 +110,12 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
 
     @Override
     protected Card clone() {
-        return new Card(this.suit, this.rank);
+        Card other = new Card(this.suit, this.rank, this.selectable);
+        return other;
+    }
+
+    @Override
+    public String toString(){
+        return rank.toString() + " of " + suit.toString();
     }
 }

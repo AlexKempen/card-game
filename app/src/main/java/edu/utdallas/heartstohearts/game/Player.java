@@ -22,43 +22,43 @@ public class Player implements Serializable {
         this.hand = hand;
     }
 
-    //sets action and determines legality of all cards
-    public void setAction(PlayerAction action, Suit trumpSuit, boolean heartsBroken) {
-        switch (action) {
-            case WAIT: // if not player's turn to play or pass cards, player can't select any card
-                hand.forEach(c -> c.setSelectable(false));
-                break;
-            case CHOOSE_CARDS: // all cards are selectable to be passed
-                hand.forEach(c -> c.setSelectable(true));
-                break;
-            case PLAY_CARD:
-                // determine playable cards based on trump suit
-                // if leading a card, all cards are playable except maybe Hearts
-                if (trumpSuit == null) {
-                    // if hand contains 2 of Clubs, that is the only playable card
-                    if (hand.contains(Card.TWO_OF_CLUBS)) {
-                        hand.forEach(c -> c.setSelectable(c.equals(Card.TWO_OF_CLUBS)));
-                    }
-                    // all cards are playable except maybe Hearts
-                    else if (heartsBroken) {
-                        hand.forEach(c -> c.setSelectable(true));
-                    } else {
-                        hand.forEach(c -> c.setSelectable(!c.getSuit().equals(Suit.HEARTS)));
-                    }
-                }
-                // if not leading a card, only trump suit cards are playable unless player has no trump cards
-                else {
-                    if (hand.stream().anyMatch(c -> c.getSuit() == trumpSuit)) {
-                        hand.forEach(c -> c.setSelectable(c.getSuit() == trumpSuit));
-                    }
-                    // player has no trump, all cards are playable
-                    else {
-                        hand.forEach(c -> c.setSelectable(false));
-                    }
-                }
-                break;
-        }
-    }
+//    //sets action and determines legality of all cards
+//    public void setAction(PlayerAction action, Suit trumpSuit, boolean heartsBroken) {
+//        switch (action) {
+//            case WAIT: // if not player's turn to play or pass cards, player can't select any card
+//                hand.forEach(c -> c.setSelectable(false));
+//                break;
+//            case CHOOSE_CARDS: // all cards are selectable to be passed
+//                hand.forEach(c -> c.setSelectable(true));
+//                break;
+//            case PLAY_CARD:
+//                // determine playable cards based on trump suit
+//                // if leading a card, all cards are playable except maybe Hearts
+//                if (trumpSuit == null) {
+//                    // if hand contains 2 of Clubs, that is the only playable card
+//                    if (hand.contains(Card.TWO_OF_CLUBS)) {
+//                        hand.forEach(c -> c.setSelectable(c.equals(Card.TWO_OF_CLUBS)));
+//                    }
+//                    // all cards are playable except maybe Hearts
+//                    else if (heartsBroken) {
+//                        hand.forEach(c -> c.setSelectable(true));
+//                    } else {
+//                        hand.forEach(c -> c.setSelectable(!c.getSuit().equals(Suit.HEARTS)));
+//                    }
+//                }
+//                // if not leading a card, only trump suit cards are playable unless player has no trump cards
+//                else {
+//                    if (hand.stream().anyMatch(c -> c.getSuit() == trumpSuit)) {
+//                        hand.forEach(c -> c.setSelectable(c.getSuit() == trumpSuit));
+//                    }
+//                    // player has no trump, all cards are playable
+//                    else {
+//                        hand.forEach(c -> c.setSelectable(false));
+//                    }
+//                }
+//                break;
+//        }
+//    }
 
     public List<Card> getHand() {
         return hand;

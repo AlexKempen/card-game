@@ -7,6 +7,7 @@ import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.util.Pair;
 import android.view.View;
@@ -73,6 +74,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_form_lobby);
 
+
         macToAddress = new LimitedLinkedHashMap<>(3); // Only three peers allowed!;
         connectedMacs = new ArrayList<>();
 
@@ -114,6 +116,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
         switchboard = Switchboard.getDefault();
         switchboard.addListener(null, new MessageFilter(LobbyMessage.class).addChildren(this));
         switchboard.acceptIncoming((error) -> Log.d("IncomingConnections", "Error accpting incoming: " + error));
+
     }
 
     /**
@@ -131,6 +134,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
                 Toast.makeText(getContext(), "Unable to search for nearby devices!", Toast.LENGTH_LONG);
             }
         });
+
     }
 
     @Override
@@ -176,8 +180,9 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
     }
 
     private void checkReadyForStart(){
+        // ready if all devices have greeted.
         boolean ready = connectedMacs.stream().allMatch((mac) -> macToAddress.containsKey(mac));
-        startGameButton.setActivated(ready);
+        startGameButton.setEnabled(ready);
     }
 
     public void startGame() {
@@ -253,7 +258,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
                 });
             }
 
-            checkReadyForStart();
+            this.runOnUiThread(this::checkReadyForStart);
 
         } else if (o instanceof StartGame) {
                 joinGame(author);
