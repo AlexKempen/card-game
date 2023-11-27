@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -32,7 +33,7 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
      * @param id : A card id, ranging from 0 to 51.
      */
     public Card(int id) {
-        this(Suit.fromInt(id / 13), Rank.fromInt(id % 13), true);
+        this(Suit.fromIndex(id / 13), Rank.fromIndex(id % 13), true);
     }
 
     public boolean isSelectable() {
@@ -101,11 +102,11 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
     }
 
     /**
-     * Cards are sorted by rank to facilitate UI display.
+     * Cards are sorted by suit, then rank.
      */
     @Override
     public int compareTo(Card card) {
-        return this.rank.toInt() - card.rank.toInt();
+        return Comparator.<Card>comparingInt(c -> c.getSuit().toIndex()).thenComparing(c -> c.getRank().toIndex()).compare(this, card);
     }
 
     @Override
@@ -115,7 +116,7 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return rank.toString() + " of " + suit.toString();
     }
 }

@@ -3,48 +3,27 @@ package edu.utdallas.heartstohearts.game;
 import java.io.Serializable;
 
 public enum Rank implements Serializable {
-    TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE;
+    TWO(0, "2"), THREE(1, "3"), FOUR(2, "4"), FIVE(3, "5"), SIX(4, "6"), SEVEN(5, "7"), EIGHT(6, "8"), NINE(7, "9"), TEN(8, "10"), JACK(9, "J"), QUEEN(10, "Q"), KING(11, "K"), ACE(12, "A");
 
     private static final long serialVersionUID = 4630732092238719595L;
 
-    public int toInt() {
-        switch (this) {
-            case TWO:
-                return 0;
-            case THREE:
-                return 1;
-            case FOUR:
-                return 2;
-            case FIVE:
-                return 3;
-            case SIX:
-                return 4;
-            case SEVEN:
-                return 5;
-            case EIGHT:
-                return 6;
-            case NINE:
-                return 7;
-            case TEN:
-                return 8;
-            case JACK:
-                return 9;
-            case QUEEN:
-                return 10;
-            case KING:
-                return 11;
-            case ACE:
-                return 12;
-            default:
-                throw new AssertionError("Unhandled rank");
-        }
+    private final int index;
+    private final String name;
+
+    Rank(int index, String name) {
+        this.index = index;
+        this.name = name;
     }
 
-    public static Rank fromInt(int rankIndex) {
-        return new Rank[]{TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE}[rankIndex];
+    public int toIndex() {
+        return this.index;
+    }
+
+    public static Rank fromIndex(int index) {
+        return new Rank[]{TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE}[index];
     }
 
     public String toString() {
-        return new String[]{"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"}[this.toInt()];
+        return this.name;
     }
 }
