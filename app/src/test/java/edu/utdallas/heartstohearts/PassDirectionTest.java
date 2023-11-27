@@ -29,7 +29,7 @@ public class PassDirectionTest {
                     expected = Arrays.asList(2, 3, 0, 1);
                     break;
                 case NONE:
-                    expected = Collections.nCopies(4, 0);
+                    expected = Arrays.asList(0, 1, 2, 3);
                     break;
                 default:
                     throw new AssertionError("Error");

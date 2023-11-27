@@ -33,7 +33,7 @@ public enum PassDirection {
             case ACROSS:
                 return (playerId + 2) % 4;
             case NONE:
-                return 0;
+                return playerId;
             default:
                 throw new AssertionError("Unhandled PassDirection");
         }
