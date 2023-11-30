@@ -4,18 +4,22 @@ import java.io.Serializable;
 import java.util.List;
 
 public class Player implements Serializable {
-    private final String name;
+    private final String nickname;
     private final int id;
     private int points;
     private List<Card> hand;
     private final List<Card> tricks;
 
-    public Player(int id, String name, List<Card> hand, List<Card> tricks, int points) {
+    public Player(int id, String nickname, List<Card> hand, List<Card> tricks, int points) {
         this.id = id;
-        this.name = name;
+        this.nickname = nickname;
         this.tricks = tricks;
         this.hand = hand;
         this.points = points;
+    }
+
+    public String getNickname() {
+        return nickname;
     }
 
     public void setHand(List<Card> hand) {

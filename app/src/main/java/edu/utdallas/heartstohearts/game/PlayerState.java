@@ -12,21 +12,25 @@ import java.util.stream.Collectors;
  */
 public class PlayerState implements Serializable {
     public static final long serialVersionUID = 6774190515566769539L;
-    private final ArrayList<Card> hand;
-    private final ArrayList<Card> trick;
+    private final List<Card> hand;
+    private final List<Card> trick;
     private final PlayerAction action;
-    private final int points;
+    private final int playerId;
+    private final List<Integer> points;
+    private final List<String> nicknames;
 
     // a counter that increases monotonically as the game progresses. Used for ordering states
     // that may arrive from the server out-of-order.
     private int age = 0;
 
-    public PlayerState(List<Card> hand, List<Card> trick, PlayerAction action, int points) {
+    public PlayerState(List<Card> hand, List<Card> trick, PlayerAction action, int playerId, List<Integer> points, List<String> nicknames) {
         // Clone hand and trick into new arraylists
         this.hand = hand.stream().map(Card::clone).collect(Collectors.toCollection(ArrayList::new));
         this.trick = trick.stream().map(Card::clone).collect(Collectors.toCollection(ArrayList::new));
         this.action = action;
+        this.playerId = playerId;
         this.points = points;
+        this.nicknames = nicknames;
     }
 
     @Override
@@ -43,8 +47,10 @@ public class PlayerState implements Serializable {
             }
         }
         return !otherIterator.hasNext() && !iterator.hasNext() && hand.equals(playerState.hand) && trick.equals(playerState.trick) &&
-                // TODO: Convert to .equals() once points has been modified to list
-                points == playerState.points && action == playerState.action;
+                action == playerState.action &&
+                playerId == playerState.playerId &&
+                points.equals(playerState.points) &&
+                nicknames.equals(playerState.nicknames);
     }
 
     public List<Card> getHand() {
@@ -59,8 +65,16 @@ public class PlayerState implements Serializable {
         return action;
     }
 
-    public int getPoints() {
+    public int getPlayerId() {
+        return playerId;
+    }
+
+    public List<Integer> getPoints() {
         return points;
+    }
+
+    public List<String> getNicknames() {
+        return nicknames;
     }
 
     public int getAge() {

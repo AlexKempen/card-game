@@ -5,14 +5,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-
 public class PlayerStateBuilder {
     public List<List<Card>> hands = ListUtils.fourCopies(ArrayList::new);
 
     // Trick is shared
     public List<Card> trick = new ArrayList<>();
     public List<PlayerAction> actions = ListUtils.fourCopies(() -> PlayerAction.CHOOSE_CARDS);
+
     public List<Integer> points = ListUtils.fourCopies(() -> 0);
+    public List<String> nicknames = ListUtils.fourCopies(() -> "");
 
     /**
      * Sets the hand of the given playerId.
@@ -34,6 +35,6 @@ public class PlayerStateBuilder {
     }
 
     public List<PlayerState> build() {
-        return IntStream.range(0, 4).mapToObj(i -> new PlayerState(hands.get(i), trick, actions.get(i), points.get(i))).collect(Collectors.toList());
+        return IntStream.range(0, 4).mapToObj(i -> new PlayerState(hands.get(i), trick, actions.get(i), i, points, nicknames)).collect(Collectors.toList());
     }
 }

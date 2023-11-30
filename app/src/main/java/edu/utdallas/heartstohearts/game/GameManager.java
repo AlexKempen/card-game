@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GameManager {
     private boolean heartsBroken;
@@ -242,6 +243,10 @@ public class GameManager {
         }
 
         builder.trick = new ArrayList<>(currentTrick.keySet());
+
+        builder.points = players.stream().map(Player::getPoints).collect(Collectors.toList());
+        builder.nicknames = players.stream().map(Player::getNickname).collect(Collectors.toList());
+
         return builder.build();
     }
 }

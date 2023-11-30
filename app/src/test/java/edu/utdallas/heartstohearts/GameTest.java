@@ -190,6 +190,7 @@ public class GameTest {
         managerBuilder.phase = GamePhase.ROUND_FINISHED;
         GameManager manager = managerBuilder.build();
         assertEquals(GamePhase.COMPLETE, manager.finishRound());
-        assertEquals(105, manager.getPlayerStates().get(0).getPoints());
+        PlayerState player = manager.getPlayerStates().get(0);
+        assertEquals(105, player.getPoints().get(player.getPlayerId()));
     }
 }
