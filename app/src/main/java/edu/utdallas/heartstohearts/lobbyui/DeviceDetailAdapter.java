@@ -14,8 +14,6 @@ import java.util.Comparator;
 import edu.utdallas.heartstohearts.network.Callback;
 
 public class DeviceDetailAdapter extends ArrayAdapter<WifiP2pDevice> {
-
-
     private boolean showInviteButton;
     private Callback<WifiP2pDevice> onSelect = null;
 

@@ -11,7 +11,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import edu.utdallas.heartstohearts.R;
 
-
 /**
  * A fragment that manages a particular peer and allows interaction with device
  * i.e. setting up network connection and transferring data.
@@ -20,16 +19,15 @@ public class DeviceDetailView extends ConstraintLayout {
     private WifiP2pDevice device;
     private TextView nameField;
     private TextView statusField;
-
     private Button inviteButton;
 
     public DeviceDetailView(@NonNull Context context) {
         super(context);
         inflate(context, R.layout.device_detail, this);
 
-        nameField = (TextView) findViewById(R.id.name_field);
-        statusField = (TextView) findViewById(R.id.status_field);
-        inviteButton = (Button) findViewById(R.id.invite_button);
+        nameField = findViewById(R.id.name_field);
+        statusField = findViewById(R.id.status_field);
+        inviteButton = findViewById(R.id.invite_button);
     }
 
     public void setDevice(WifiP2pDevice device) {
@@ -53,12 +51,7 @@ public class DeviceDetailView extends ConstraintLayout {
     }
 
     public void showInviteButton(boolean shouldShow) {
-        int visibility = View.GONE;
-        if (shouldShow) {
-            visibility = View.VISIBLE;
-        }
-
-        inviteButton.setVisibility(visibility);
+        inviteButton.setVisibility(shouldShow ? View.VISIBLE : View.GONE);
         inviteButton.invalidate();
     }
 
