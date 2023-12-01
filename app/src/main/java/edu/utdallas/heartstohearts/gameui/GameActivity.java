@@ -10,6 +10,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.material.color.utilities.Score;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -55,6 +57,7 @@ public class GameActivity extends BaseActivity {
         final HandView handView = findViewById(R.id.hand_view);
         final SubmitButton submitButton = findViewById(R.id.submit_button);
         final TrickView trickView = findViewById(R.id.trick_view);
+        final ScoreboardView scoreboardView = findViewById(R.id.scoreboard_view);
 
         client = GameClient.getActiveClient();
 
@@ -65,10 +68,19 @@ public class GameActivity extends BaseActivity {
         handView.registerModel(model);
         submitButton.registerModel(model);
 
+<<<<<<< Updated upstream
         model.getPlayerStateData().observe(this, state -> {
             if (state != null) {
                 handView.displayHand(state.getHand());
                 trickView.displayTrick(state.getTrick());
+=======
+        model.getPlayerStateData().observe(this, gameState -> {
+            if (gameState != null) {
+                handView.displayHand(gameState.getHand());
+                trickView.displayTrick(gameState.getTrick());
+                scoreboardView.updateNames(gameState.getNicknames(), gameState.getPlayerId());
+                scoreboardView.updateScores(gameState.getPoints(), gameState.getPlayerId());
+>>>>>>> Stashed changes
                 submitButton.update();
             }
         });
