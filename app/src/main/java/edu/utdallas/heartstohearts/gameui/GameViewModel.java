@@ -9,15 +9,10 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.viewmodel.ViewModelInitializer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.PriorityBlockingQueue;
 
 import edu.utdallas.heartstohearts.game.Card;
-import edu.utdallas.heartstohearts.game.PlayerAction;
 import edu.utdallas.heartstohearts.game.PlayerState;
-import edu.utdallas.heartstohearts.game.Rank;
-import edu.utdallas.heartstohearts.game.Suit;
 import edu.utdallas.heartstohearts.gamenetwork.GameClient;
 
 public class GameViewModel extends ViewModel {
@@ -29,7 +24,7 @@ public class GameViewModel extends ViewModel {
     private final MutableLiveData<PlayerState> playerStateData = new MutableLiveData<>(null);
     private final MutableLiveData<List<Card>> selectedCardsData = new MutableLiveData<>(new ArrayList<>());
 
-    private GameClient client;
+    private final GameClient client;
 
     public GameViewModel(GameClient client) {
         this.client = client;

@@ -65,18 +65,21 @@ public class GameActivity extends BaseActivity {
         handView.registerModel(model);
         submitButton.registerModel(model);
 
-        model.getPlayerStateData().observe(this, gameState -> {
-            if (gameState != null) {
-                handView.displayHand(gameState.getHand());
-                trickView.displayTrick(gameState.getTrick());
+        model.getPlayerStateData().observe(this, state -> {
+            if (state != null) {
+                handView.displayHand(state.getHand());
+                trickView.displayTrick(state.getTrick());
                 submitButton.update();
             }
         });
 
         model.getSelectedCardsData().observe(this, selectedCards -> {
-            List<Card> hand = model.getPlayerStateData().getValue().getHand();
-            handView.displayHand(hand);
-            submitButton.update();
+            PlayerState state = model.getPlayerStateData().getValue();
+            if (state != null) {
+                List<Card> hand = state.getHand();
+                handView.displayHand(hand);
+                submitButton.update();
+            }
         });
 
         // Set up state consumer backlog
