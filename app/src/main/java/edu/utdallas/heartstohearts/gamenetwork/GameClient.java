@@ -23,7 +23,6 @@ import edu.utdallas.heartstohearts.network.Switchboard;
  * launched  by the group owner
  */
 public class GameClient implements MessageListener {
-
     private static final String TAG = "GameClient";
 
     private static GameClient activeClient;
@@ -36,10 +35,9 @@ public class GameClient implements MessageListener {
         return activeClient;
     }
 
-    private PlayerState lastPlayerState = null;
-    private Switchboard switchboard;
-    private InetAddress gameHost;
-    private MessageFilter stateMessages;
+    private final Switchboard switchboard;
+    private final InetAddress gameHost;
+    private final MessageFilter stateMessages;
 
     public GameClient(Switchboard switchboard, InetAddress gameHost) {
         this.switchboard = switchboard;
@@ -89,8 +87,6 @@ public class GameClient implements MessageListener {
      * Registers a listener to game state updates. Messages will be passed in as objects which can
      * be cast to PlayerStates. When added, the last known game state (if not null) will be
      * send to the listener.
-     *
-     * @param l
      */
     public synchronized void addPlayerStateListener(Callback<PlayerState> l) {
         stateMessages.addChildren((msg, author) -> l.call((PlayerState) msg));
@@ -100,6 +96,5 @@ public class GameClient implements MessageListener {
     public void messageReceived(Object o, InetAddress author) {
         Log.d(TAG, "State Received");
         PlayerState msg = (PlayerState) o;
-        lastPlayerState = msg;
     }
 }

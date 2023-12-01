@@ -1,10 +1,12 @@
 package edu.utdallas.heartstohearts.network;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -14,6 +16,7 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 
 import java.net.InetAddress;
 import java.util.HashSet;
@@ -42,7 +45,6 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
 
     private WifiP2pInfo lastConnectionInfo = null;
     private WifiP2pDevice lastSelfDevice = null;
-    private WifiP2pDeviceList lastPeerList = null;
 
 
     public static synchronized NetworkManager getInstance(Context context) {
@@ -156,7 +158,7 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
     }
 
     public void onP2PThisDeviceChanged(Intent intent) {
-        lastSelfDevice = (WifiP2pDevice) intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
+        lastSelfDevice = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
         // notify listeners
         selfDeviceListeners.forEach((listener) -> listener.selfDeviceChanged(lastSelfDevice));
     }
@@ -167,7 +169,7 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
      *
      * @param listener: may be left null and a default will be used.
      */
-    @SuppressLint("MissingPermission")
+//    @SuppressLint("MissingPermission")
     public void discoverPeers(@Nullable WifiP2pManager.ActionListener listener) {
         if (listener == null) {
             listener = new WifiP2pManager.ActionListener() {
@@ -181,6 +183,7 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
                 }
             };
         }
+
         manager.discoverPeers(channel, listener);
     }
 
@@ -226,20 +229,6 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
 
     public WifiP2pInfo getLastConnectionInfo() {
         return lastConnectionInfo;
-    }
-
-    /**
-     * @return the last known address of the group leader. Warning: this information may be out of
-     * date. Register a ConnectionInfoListener to receive events about group changes.
-     * <p>
-     * May return null if no address known.
-     */
-    public InetAddress getGroupLeaderAddress() {
-        if (lastConnectionInfo == null) {
-            return null;
-        }
-
-        return lastConnectionInfo.groupOwnerAddress;
     }
 
     public boolean isGroupLeader() {
