@@ -68,28 +68,21 @@ public class GameActivity extends BaseActivity {
         handView.registerModel(model);
         submitButton.registerModel(model);
 
-<<<<<<< Updated upstream
         model.getPlayerStateData().observe(this, state -> {
             if (state != null) {
                 handView.displayHand(state.getHand());
                 trickView.displayTrick(state.getTrick());
-=======
-        model.getPlayerStateData().observe(this, gameState -> {
-            if (gameState != null) {
-                handView.displayHand(gameState.getHand());
-                trickView.displayTrick(gameState.getTrick());
-                scoreboardView.updateNames(gameState.getNicknames(), gameState.getPlayerId());
-                scoreboardView.updateScores(gameState.getPoints(), gameState.getPlayerId());
->>>>>>> Stashed changes
+                scoreboardView.updateNames(state.getNicknames(), state.getPlayerId());
+                scoreboardView.updateScores(state.getPoints(), state.getPlayerId());
                 submitButton.update();
             }
         });
 
         model.getSelectedCardsData().observe(this, selectedCards -> {
             PlayerState state = model.getPlayerStateData().getValue();
-            Log.e(TAG, "Player state: " + state);
+            Log.d(TAG, "Player state: " + state);
             if (state != null) {
-                Log.e(TAG, "Hand: " + state.getHand());
+                Log.d(TAG, "Hand: " + state.getHand());
                 List<Card> hand = state.getHand();
                 handView.displayHand(hand);
                 submitButton.update();
