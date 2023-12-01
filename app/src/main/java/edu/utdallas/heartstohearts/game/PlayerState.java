@@ -12,12 +12,12 @@ import java.util.stream.Collectors;
  */
 public class PlayerState implements Serializable {
     public static final long serialVersionUID = 6774190515566769539L;
-    private final List<Card> hand;
-    private final List<Card> trick;
+    private final ArrayList<Card> hand;
+    private final ArrayList<Card> trick;
     private final PlayerAction action;
     private final int playerId;
-    private final List<Integer> points;
-    private final List<String> nicknames;
+    private final ArrayList<Integer> points;
+    private final ArrayList<String> nicknames;
 
     // a counter that increases monotonically as the game progresses. Used for ordering states
     // that may arrive from the server out-of-order.
@@ -29,8 +29,8 @@ public class PlayerState implements Serializable {
         this.trick = trick.stream().map(Card::clone).collect(Collectors.toCollection(ArrayList::new));
         this.action = action;
         this.playerId = playerId;
-        this.points = points;
-        this.nicknames = nicknames;
+        this.points = new ArrayList<>(points);
+        this.nicknames = new ArrayList<>(nicknames);
     }
 
     @Override
