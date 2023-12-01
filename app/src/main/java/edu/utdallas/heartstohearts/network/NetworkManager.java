@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
@@ -16,8 +17,13 @@ import androidx.annotation.Nullable;
 
 import java.net.InetAddress;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+/**
+ * TODO synchronization
+ */
 public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.ConnectionInfoListener {
 
     private static NetworkManager instance = null;
@@ -29,13 +35,14 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
     WifiP2pManager manager;
     WifiP2pManager.Channel channel;
 
-    private Set<WifiP2pManager.PeerListListener> peerListListeners;
-    private Set<WifiP2pManager.ConnectionInfoListener> connectionInfoListeners;
-    private Set<SelfDeviceListener> selfDeviceListeners;
+    private Set<WifiP2pManager.PeerListListener> peerListListeners = new HashSet<>();
+    private Set<WifiP2pManager.ConnectionInfoListener> connectionInfoListeners = new HashSet<>();
+    private Set<SelfDeviceListener> selfDeviceListeners = new HashSet<>();
 
 
     private WifiP2pInfo lastConnectionInfo = null;
     private WifiP2pDevice lastSelfDevice = null;
+    private WifiP2pDeviceList lastPeerList = null;
 
 
     public static synchronized NetworkManager getInstance(Context context) {
@@ -55,10 +62,6 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
      */
     protected NetworkManager(Context context) {
         this.context = context;
-
-        peerListListeners = new HashSet<WifiP2pManager.PeerListListener>();
-        connectionInfoListeners = new HashSet<WifiP2pManager.ConnectionInfoListener>();
-        selfDeviceListeners = new HashSet<SelfDeviceListener>();
 
         manager = (WifiP2pManager) context.getSystemService(Context.WIFI_P2P_SERVICE);
         channel = manager.initialize(context, context.getMainLooper(), null);
@@ -114,9 +117,9 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
-            onConnectionChanged(intent);
+            onConnectionChanged();
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
-            onPeersChanged(intent);
+            onPeersChanged();
         } else if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
             onP2PStateChanged(intent);
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
@@ -126,15 +129,17 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
         }
     }
 
-    protected void onConnectionChanged(Intent intent) {
-        // Need to request new connection info.
+    protected void onConnectionChanged() {
+        // Request new connection info from each listener
         connectionInfoListeners.forEach((listener -> manager.requestConnectionInfo(channel, listener)));
     }
 
     @SuppressLint("MissingPermission")
-    protected void onPeersChanged(Intent intent) {
+    protected void onPeersChanged() {
 
-        peerListListeners.forEach((listener) -> manager.requestPeers(channel, listener));
+        manager.requestPeers(channel, (result) -> {
+            peerListListeners.forEach((listener) -> listener.onPeersAvailable(result));
+        });
         Log.d(TAG, "Peers changed");
     }
 
@@ -152,7 +157,6 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
 
     public void onP2PThisDeviceChanged(Intent intent) {
         lastSelfDevice = (WifiP2pDevice) intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
-
         // notify listeners
         selfDeviceListeners.forEach((listener) -> listener.selfDeviceChanged(lastSelfDevice));
     }
@@ -220,6 +224,10 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
         selfDeviceListeners.remove(l);
     }
 
+    public WifiP2pInfo getLastConnectionInfo() {
+        return lastConnectionInfo;
+    }
+
     /**
      * @return the last known address of the group leader. Warning: this information may be out of
      * date. Register a ConnectionInfoListener to receive events about group changes.
@@ -238,7 +246,6 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
         if (lastConnectionInfo == null) {
             return false;
         }
-
         return lastConnectionInfo.isGroupOwner;
     }
 
@@ -246,9 +253,9 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
         return lastSelfDevice;
     }
 
+
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
         lastConnectionInfo = wifiP2pInfo;
     }
-
 }

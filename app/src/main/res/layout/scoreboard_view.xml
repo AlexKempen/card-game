@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:stretchColumns="*"
+    >
+
+    <TableRow
+        android:layout_weight="0.5"
+        >
+
+        <TextView
+            android:id="@+id/scoreboard_player1_name"
+            android:layout_width="0dp"
+            android:layout_weight="0.25"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="10dip"
+            android:text="Alice"
+            android:singleLine="true"/>
+
+        <TextView
+            android:id="@+id/scoreboard_player2_name"
+            android:layout_width="0dp"
+            android:layout_weight="0.25"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="10dip"
+            android:text="Bob"
+            android:singleLine="true"/>
+
+        <TextView
+            android:id="@+id/scoreboard_player3_name"
+            android:layout_width="0dp"
+            android:layout_weight="0.25"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="10dip"
+            android:text="Charlie"
+            android:singleLine="true"/>
+
+        <TextView
+            android:id="@+id/scoreboard_player4_name"
+            android:layout_width="0dp"
+            android:layout_weight="0.25"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="10dip"
+            android:text="You"
+            android:singleLine="true"/>
+
+    </TableRow>
+
+    <TableRow
+        android:layout_weight="0.5">
+
+        <TextView
+            android:id="@+id/scoreboard_player1_score"
+            android:layout_width="0dp"
+            android:layout_weight="0.25"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="10dip"
+            android:text="1"
+            android:singleLine="true"/>
+
+        <TextView
+            android:id="@+id/scoreboard_player2_score"
+            android:layout_width="0dp"
+            android:layout_weight="0.25"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="10dip"
+            android:text="13"
+            android:singleLine="true"/>
+
+        <TextView
+            android:id="@+id/scoreboard_player3_score"
+            android:layout_width="0dp"
+            android:layout_weight="0.25"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="10dip"
+            android:text="4"
+            android:singleLine="true"/>
+
+        <TextView
+            android:id="@+id/scoreboard_player4_score"
+            android:layout_width="0dp"
+            android:layout_weight="0.25"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="10dip"
+            android:text="8"
+            android:singleLine="true"/>
+    </TableRow>
+
+</TableLayout>

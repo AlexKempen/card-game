@@ -8,9 +8,8 @@ import org.junit.rules.TemporaryFolder;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import edu.utdallas.heartstohearts.command.CommandInvoker;
 import edu.utdallas.heartstohearts.command.CommandReceiver;
@@ -34,11 +33,11 @@ public class CommandTest {
         File sentCommands = folder.newFile("commands.txt");
         File commandResults = folder.newFile("results.txt");
 
-        serverStream = new CommandStream(new FileOutputStream(sentCommands));
-        clientStream = new CommandStream(new FileOutputStream(commandResults));
+        serverStream = new CommandStream(Files.newOutputStream(sentCommands.toPath()));
+        clientStream = new CommandStream(Files.newOutputStream(commandResults.toPath()));
 
-        serverStream.addInputStream(new FileInputStream(commandResults));
-        clientStream.addInputStream(new FileInputStream(sentCommands));
+        serverStream.addInputStream(Files.newInputStream(commandResults.toPath()));
+        clientStream.addInputStream(Files.newInputStream(sentCommands.toPath()));
     }
 
     public CommandStream serverStream;

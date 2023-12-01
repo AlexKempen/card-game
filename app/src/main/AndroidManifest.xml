@@ -13,7 +13,8 @@
         />
     <uses-permission
         android:name="android.permission.NEARBY_WIFI_DEVICES"
-        android:usesPermissionFlags="neverForLocation" />
+        android:usesPermissionFlags="neverForLocation"
+        android:required="true"/>
     <uses-permission
         android:required="true"
         android:name="android.permission.ACCESS_WIFI_STATE"/>
@@ -50,8 +51,9 @@
             android:name=".gameui.GameActivity"
             android:exported="true" />
         <activity
-            android:name=".networkui.FormLobbyActivity"
+            android:name=".lobbyui.FormLobbyActivity"
             android:exported="true" />
+        <service android:name=".gamenetwork.GameServer"/>
     </application>
 
 </manifest>

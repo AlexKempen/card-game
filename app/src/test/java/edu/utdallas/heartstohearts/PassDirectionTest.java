@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -16,7 +15,7 @@ public class PassDirectionTest {
     @Test
     public void testPassDirection() {
         for (PassDirection direction : PassDirection.values()) {
-            List<Integer> actual = IntStream.range(0, 4).mapToObj(direction::mapPassIndex).collect(Collectors.toList());
+            List<Integer> actual = IntStream.range(0, 4).mapToObj(direction::getPassId).collect(Collectors.toList());
             List<Integer> expected;
             switch (direction) {
                 case LEFT:
@@ -29,7 +28,7 @@ public class PassDirectionTest {
                     expected = Arrays.asList(2, 3, 0, 1);
                     break;
                 case NONE:
-                    expected = Collections.nCopies(4, 0);
+                    expected = Arrays.asList(0, 1, 2, 3);
                     break;
                 default:
                     throw new AssertionError("Error");

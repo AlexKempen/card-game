@@ -4,26 +4,28 @@ import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Card implements Serializable, Comparable<Card>, Cloneable {
+
+    private static final long serialVersionUID = 6236789073934771400L;
     public static Card QUEEN_OF_SPADES = new Card(Suit.SPADES, Rank.QUEEN);
     public static Card TWO_OF_CLUBS = new Card(Suit.CLUBS, Rank.TWO);
     private Suit suit;
     private Rank rank;
     private boolean selectable;
-    private boolean playable;
 
-    public Card(Suit suit, Rank rank, boolean playable) {
+    public Card(Suit suit, Rank rank, boolean selectable) {
         this.suit = suit;
         this.rank = rank;
-        this.playable = playable;
+        this.selectable = selectable;
     }
 
-    public Card(Suit suit, Rank rank){
+    public Card(Suit suit, Rank rank) {
         this(suit, rank, true);
     }
 
@@ -31,7 +33,7 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
      * @param id : A card id, ranging from 0 to 51.
      */
     public Card(int id) {
-        this(Suit.fromInt(id / 13), Rank.fromInt(id % 13), true);
+        this(Suit.fromIndex(id / 13), Rank.fromIndex(id % 13), true);
     }
 
     public boolean isSelectable() {
@@ -41,6 +43,7 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
     public void setSelectable(boolean selectable) {
         this.selectable = selectable;
     }
+
     public Suit getSuit() {
         return suit;
     }
@@ -55,7 +58,7 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
     public int getPoints() {
         if (this.equals(QUEEN_OF_SPADES)) {
             return 13;
-        } else if (this.suit == Suit.HEARTS) {
+        } else if (this.suit.equals(Suit.HEARTS)) {
             return 1;
         }
         return 0;
@@ -70,6 +73,10 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
         return deck;
     }
 
+    /**
+     * Divides a deck of cards into four hands equally.
+     * The deck is assumed to be 52 cards.
+     */
     public static List<List<Card>> dealHands(List<Card> deck) {
         List<List<Card>> hands = new ArrayList<>();
         for (int i = 0; i < 4; ++i) {
@@ -78,6 +85,9 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
         return hands;
     }
 
+    /**
+     * Note equality for cards does not depend on selectable.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -92,19 +102,20 @@ public class Card implements Serializable, Comparable<Card>, Cloneable {
     }
 
     /**
-     * Cards are sorted by rank.
+     * Cards are sorted by suit, then rank.
      */
     @Override
     public int compareTo(Card card) {
-        return this.rank.toInt() - card.rank.toInt();
+        return Comparator.<Card>comparingInt(c -> c.getSuit().toIndex()).thenComparing(c -> c.getRank().toIndex()).compare(this, card);
     }
 
     @Override
     protected Card clone() {
-        return new Card(this.suit, this.rank);
+        return new Card(this.suit, this.rank, this.selectable);
     }
 
-    public boolean isPlayable() {
-        return playable;
+    @Override
+    public String toString() {
+        return rank.toString() + " of " + suit.toString();
     }
 }

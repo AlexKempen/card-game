@@ -1,5 +1,7 @@
 package edu.utdallas.heartstohearts.gameui;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.SavedStateHandleSupport;
@@ -9,41 +11,36 @@ import androidx.lifecycle.viewmodel.ViewModelInitializer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import edu.utdallas.heartstohearts.game.Card;
-import edu.utdallas.heartstohearts.game.GameState;
 import edu.utdallas.heartstohearts.game.PlayerAction;
+import edu.utdallas.heartstohearts.game.PlayerState;
 import edu.utdallas.heartstohearts.game.Rank;
 import edu.utdallas.heartstohearts.game.Suit;
+import edu.utdallas.heartstohearts.gamenetwork.GameClient;
 
 public class GameViewModel extends ViewModel {
-    static final ViewModelInitializer<GameViewModel> initializer = new ViewModelInitializer<>(GameViewModel.class, creationExtras -> {
-        // TODO: Use creationExtras to get initial state from server
-        GameActivity gameActivity = (GameActivity) creationExtras.get(SavedStateHandleSupport.VIEW_MODEL_STORE_OWNER_KEY);
-//        String socketPort = (String) gameActivity.getIntent().getExtras().get("socket");
-//        Log.d(GameActivity.TAG, "View model init port: " + socketPort);
 
-        List<Card> hand = new ArrayList<>(Arrays.asList(Card.QUEEN_OF_SPADES, Card.TWO_OF_CLUBS, new Card(Suit.CLUBS, Rank.ACE), new Card(Suit.CLUBS, Rank.FIVE)));
-        List<Card> trick = new ArrayList<>(Arrays.asList(new Card(Suit.HEARTS, Rank.KING), new Card(Suit.DIAMONDS, Rank.ACE), new Card(Suit.SPADES, Rank.JACK)));
-        for (Rank rank : Rank.values()) {
-            hand.add(new Card(Suit.DIAMONDS, rank));
-        }
-        GameState gameState = new GameState(hand, trick, PlayerAction.CHOOSE_CARDS, 0);
-        return new GameViewModel(gameState);
+    static final ViewModelInitializer<GameViewModel> initializer = new ViewModelInitializer<>(GameViewModel.class, creationExtras -> {
+        GameActivity gameActivity = (GameActivity) creationExtras.get(SavedStateHandleSupport.VIEW_MODEL_STORE_OWNER_KEY);
+        return new GameViewModel(gameActivity.getClient());
     });
-    private final MutableLiveData<GameState> gameStateData;
+    private final MutableLiveData<PlayerState> playerStateData = new MutableLiveData<>(null);
     private final MutableLiveData<List<Card>> selectedCardsData = new MutableLiveData<>(new ArrayList<>());
 
-    public GameViewModel(GameState gameState) {
-        gameStateData = new MutableLiveData<>(gameState);
+    private GameClient client;
+
+    public GameViewModel(GameClient client) {
+        this.client = client;
     }
 
-    public void setGameState(GameState gameState) {
-        gameStateData.setValue(gameState);
+    public void setPlayerState(PlayerState playerState) {
+        playerStateData.postValue(playerState);
     }
 
-    public LiveData<GameState> getGameStateData() {
-        return gameStateData;
+    public LiveData<PlayerState> getPlayerStateData() {
+        return playerStateData;
     }
 
     public LiveData<List<Card>> getSelectedCardsData() {
@@ -66,7 +63,8 @@ public class GameViewModel extends ViewModel {
      * Choose three cards to pass.
      */
     public void passCards() {
-        // Send cards to socket
+        List<Card> cards = selectedCardsData.getValue();
+        client.passCards(cards);
         selectedCardsData.setValue(new ArrayList<>());
     }
 
@@ -74,7 +72,8 @@ public class GameViewModel extends ViewModel {
      * Choose a card to play from your hand.
      */
     public void playCard() {
-        // send card to socket
+        Card card = selectedCardsData.getValue().get(0);
+        client.playCard(card);
         selectedCardsData.setValue(new ArrayList<>());
     }
 }

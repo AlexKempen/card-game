@@ -1,4 +1,4 @@
-package edu.utdallas.heartstohearts.networkui;
+package edu.utdallas.heartstohearts.lobbyui;
 
 import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -9,26 +9,29 @@ import android.widget.ArrayAdapter;
 import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
 import edu.utdallas.heartstohearts.network.Callback;
 
 public class DeviceDetailAdapter extends ArrayAdapter<WifiP2pDevice> {
 
 
-    boolean showInviteButton;
-    Callback<WifiP2pDevice> onSelect;
+    private boolean showInviteButton;
+    private Callback<WifiP2pDevice> onSelect = null;
 
     public DeviceDetailAdapter(@NonNull Context context, boolean showInviteButton) {
         super(context, 0);
         this.showInviteButton = showInviteButton;
-        onSelect = (x) -> {};
     }
 
-    public void onDeviceSelected(Callback<WifiP2pDevice> callback) {
+    /**
+     * Registers the given callback as the onDeviceSelected callback.
+     */
+    public void setOnDeviceSelected(Callback<WifiP2pDevice> callback) {
         onSelect = callback;
     }
 
-    private void deviceSelected(WifiP2pDevice device) {
+    private void onDeviceSelected(WifiP2pDevice device) {
         if (onSelect != null) onSelect.call(device);
     }
 
@@ -49,13 +52,14 @@ public class DeviceDetailAdapter extends ArrayAdapter<WifiP2pDevice> {
         view.setDevice(device);
         view.showInviteButton(showInviteButton);
         view.getInviteButton().setOnClickListener((View v) -> {
-            deviceSelected(device);
+            onDeviceSelected(device);
         });
 
         return view;
     }
 
     public void updateList(ArrayList<WifiP2pDevice> updatedList) {
+        // Sorts so that nonempty devices are first
         updatedList.sort((a, b) -> {
             if (a.deviceName.isEmpty() && !b.deviceName.isEmpty()) return 1;
             else if (!a.deviceName.isEmpty() && b.deviceName.isEmpty()) return -1;

@@ -1,236 +1,252 @@
 package edu.utdallas.heartstohearts.game;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GameManager {
     private boolean heartsBroken;
+    private boolean firstTrick;
     private List<Player> players;
     private PassDirection direction;
-    private List<Card> currentTrick;
-    private Suit trumpSuit = null;
 
-    public GameManager(List<Player> players, PassDirection direction, List<Card> currentTrick, boolean heartsBroken, Suit trumpSuit) {
+    /**
+     * Maps player ids to the player who played it.
+     * LinkedHashMap is used since it maintains insertion order.
+     */
+    private LinkedHashMap<Card, Integer> currentTrick;
+    private GamePhase phase;
+    private Integer currentPlayerId;
+
+    /**
+     * Creates a GameManager set up to start a new game.
+     */
+    public static GameManager startGame() {
+        return new GameManagerBuilder().build();
+    }
+
+    public GameManager(List<Player> players, PassDirection direction, LinkedHashMap<Card, Integer> currentTrick, GamePhase phase, Integer currentPlayerId, boolean heartsBroken, boolean firstTrick) {
         this.players = players;
         this.direction = direction;
         this.currentTrick = currentTrick;
+        this.phase = phase;
+        this.currentPlayerId = currentPlayerId;
         this.heartsBroken = heartsBroken;
-        this.trumpSuit = trumpSuit;
+        this.firstTrick = firstTrick;
     }
 
-    public List<Player> getPlayers() {
-        return players;
+    /**
+     * Returns the current phase of the game.
+     */
+    public GamePhase getGamePhase() {
+        return phase;
     }
 
-    public PassDirection getDirection() {
-        return direction;
+    private Suit getTrumpSuit() {
+        return currentTrick.keySet().stream().findFirst().get().getSuit();
+    }
+
+    /**
+     * Changes the phase of the game to nextPhase.
+     */
+    private GamePhase changeGamePhase(GamePhase nextPhase) {
+        this.phase = nextPhase;
+        return this.phase;
+    }
+
+    /**
+     * Starts a round of play.
+     * Sets currentPlayerId to the player holding the two of clubs.
+     */
+    private GamePhase startPlay() {
+        currentPlayerId = players.stream().filter(player -> player.getHand().contains(Card.TWO_OF_CLUBS)).map(Player::getId).findFirst().orElse(null);
+        return changeGamePhase(GamePhase.PLAY);
     }
 
     /**
      * Deals a random deck of 52 cards to each player.
      */
-    public void deal() {
-        deal(Card.dealHands(Card.makeDeck()));
+    public GamePhase deal() {
+        return deal(Card.dealHands(Card.makeDeck()));
     }
 
     /**
      * Begins a round by assigning the given hands to each player.
+     * Also initializes each player's actions.
      */
-    public void deal(List<List<Card>> hands) {
+    public GamePhase deal(List<List<Card>> hands) {
+        if (phase != GamePhase.DEAL) {
+            throw new AssertionError("Expected phase to be GamePhase.DEAL.");
+        }
         // assign cards
-        for (int p = 0; p < 4; p++) {
-            this.players.get(p).setHand(hands.get(p));
-        }
-
-        // update PlayerActions - TO DO
         for (int i = 0; i < 4; i++) {
-            this.players.get(i).setAction(PlayerAction.CHOOSE_CARDS, trumpSuit, heartsBroken);
+            this.players.get(i).setHand(hands.get(i));
         }
+        if (direction == PassDirection.NONE) {
+            return startPlay();
+        }
+        return changeGamePhase(GamePhase.PASS);
     }
 
-    /**
-     * Returns true if the players should pass cards to each other.
-     */
-    public boolean shouldPass() {
-      return direction != PassDirection.NONE;
-    }
 
     /**
      * Passes the cards among the players according to the current PassDirection.
-     * This method may throw if shouldPass() currently returns false.
      */
-    public void passCards(List<List<Card>> playerChoices) {
-        if (shouldPass()) {
-            for (int p = 0; p < 4; p++) {
-                // player p passes playerChoices.get(p) to player this.direction.mapPassIndex(p)
-                // and those cards are removed from p's hand
-                players.get(p).removeFromHand(playerChoices.get(p));
-                players.get(p).addToHand(playerChoices.get(direction.mapPassIndex(p)));
-            }
+    public GamePhase passCards(List<List<Card>> playerChoices) {
+        if (phase != GamePhase.PASS) {
+            throw new AssertionError("Expected phase to be GamePhase.PASS.");
         }
-
-
-        // update player actions - player with 2 of Clubs set to play a card, all others set to wait
-        int hasTwoOfClubs = -1;
         for (int playerId = 0; playerId < 4; playerId++) {
-            for (Card c : players.get(playerId).getHand()) {
-                if (c.equals(Card.TWO_OF_CLUBS)) {
-                    hasTwoOfClubs = playerId;
-                }
-            }
-            if (hasTwoOfClubs == playerId) {
-                players.get(playerId).setAction(PlayerAction.PLAY_CARD, trumpSuit, heartsBroken);
-            }
-            else {
-                players.get(playerId).setAction(PlayerAction.WAIT, trumpSuit, heartsBroken);
-            }
-
+            // Remove each player's choices from their hand
+            players.get(playerId).removeFromHand(playerChoices.get(playerId));
+            // getPassId maps playerId to the id that player should pass to
+            // So add playerChoices to getPassId
+            players.get(direction.getPassId(playerId)).addToHand(playerChoices.get(playerId));
         }
+
+        return startPlay();
     }
 
-
     /**
-     * Returns the id of the player who should currently play a card, or null if no player should.
+     * Returns the id of the player who should currently play a card.
+     * Throws if the current phase is not GamePhase.PLAY.
      */
-    public Integer shouldPlayCard() {
-        for (Player player : players) {
-            if (player.getAction() == PlayerAction.PLAY_CARD) {
-                return player.getId();
-            }
+    public Integer getCurrentPlayerId() {
+        if (phase != GamePhase.PLAY) {
+            throw new AssertionError("Expected phase to be GamePhase.PLAY.");
         }
-        return null;
+        return currentPlayerId;
     }
 
     /**
      * Plays a given card.
-     * The card is assumed to have been played by the current active player.
-     * The card is also assumed to be a legal play
+     * The card is assumed to be legal and played by the current active player.
      */
-    public void playCard(Card card) {
-        // Remove the card from the current player's hand
-        int currPlayer = shouldPlayCard();
-        players.get(currPlayer).removeFromHand(card);
-
-        // Add the card to the trick
-        currentTrick.add(card);
-
-        // If card is first card in the trick, set the trump suit
-        if (currentTrick.size() == 1) {
-            trumpSuit = card.getSuit();
+    public GamePhase playCard(Card card) {
+        if (phase != GamePhase.PLAY) {
+            throw new AssertionError("Expected phase to be GamePhase.PLAY.");
         }
-
-        int winnerOfTrick;
+        // Remove the card from the current player's hand
+        players.get(currentPlayerId).removeFromHand(card);
+        currentTrick.put(card, currentPlayerId);
+        // TODO: Whether queens breaks hearts is an open question?
+        heartsBroken = heartsBroken || card.getSuit() == Suit.HEARTS;
 
         // If the current trick is full, add it to the current player and reset it
         if (currentTrick.size() == 4) {
             // determine winner of trick and give them the trick
-            winnerOfTrick = determineTrickWinner(currentTrick, currPlayer);
-            players.get(winnerOfTrick).takeTrick(currentTrick);
-            trumpSuit = null;
-            currentTrick.clear();
-
-            // if round is not completely over (hands aren't empty)
-            // set the winner of the trick to play (lead) a card next
-            if (players.get(0).getHand().size() != 0) {
-                for (int i = 0; i < 4; i++) {
-                    if (i == winnerOfTrick) {
-                        players.get(i).setAction(PlayerAction.PLAY_CARD, trumpSuit, heartsBroken);
-                    } else players.get(i).setAction(PlayerAction.WAIT, trumpSuit, heartsBroken);
-                }
-            }
-
-
+            return changeGamePhase(GamePhase.TRICK_FINISHED);
         }
-
-        // Update PlayerActions to match the current state if current trick is not full
-        // Clockwise play continues
-        else {
-            players.get(currPlayer).setAction(PlayerAction.WAIT, trumpSuit, heartsBroken);
-            if (currPlayer < 3) {
-                players.get(currPlayer + 1).setAction(PlayerAction.PLAY_CARD, trumpSuit, heartsBroken);
-            }
-            else players.get(0).setAction(PlayerAction.PLAY_CARD, trumpSuit, heartsBroken);
-        }
-
-
-        // If all cards have been played (all hands are empty), shouldPlayCard should become false,
-        // and calling this method should throw an error
+        // Continue clockwise play
+        currentPlayerId = (currentPlayerId + 1) % 4;
+        return GamePhase.PLAY;
     }
 
     /**
-     * Returns id of player who won the trick
-     * Requires knowledge of player who played most recent card (recentPlayer) to determine who played the winning card
+     * Returns id of player who won the trick.
      */
-    public int determineTrickWinner(List<Card> trick, int recentPlayer) {
-        //find highest card of trump suit in currentPlay list; this card is the winning card
-        int currWinningIndex = 0;
-        for (int cardIndex = 0; cardIndex < trick.size(); cardIndex++) {
-            if (trick.get(cardIndex).getSuit().equals(trumpSuit) && trick.get(cardIndex).getRank().toInt() >= trick.get(currWinningIndex).getRank().toInt()) {
-                currWinningIndex = cardIndex;
-            }
-        }
-
-        int winner = recentPlayer - 3 + currWinningIndex;
-        if (winner < 0) {
-            winner += 4;
-        }
-        return winner;
+    private int determineTrickWinner() {
+        Suit trumpSuit = getTrumpSuit();
+        Card nextCard = currentTrick.keySet().stream().filter(card -> card.getSuit() == trumpSuit).max(Comparator.naturalOrder()).get();
+        return currentTrick.get(nextCard);
     }
 
     /**
-     * Should be called once shouldPlayCard returns false.
+     * Should be called once the round is finished.
      * Updates the PassDirection and scores and resets the player's tricks.
      *
-     * @return true if the game is over, and false otherwise.
+     * @return the next phase of the game.
      */
-    public boolean finishRound() {
+    public GamePhase finishRound() {
+        if (phase != GamePhase.ROUND_FINISHED) {
+            throw new AssertionError("Expected phase to be GamePhase.ROUND_FINISHED.");
+        }
+        boolean shotTheMoon = players.stream().anyMatch(player -> player.getTrickPoints() == 26);
+        if (shotTheMoon) {
+            players.forEach(player -> player.addPoints(player.getTrickPoints() == 26 ? 0 : 26));
+        } else {
+            // update scores
+            players.forEach(Player::addTrickPoints);
+        }
+        players.forEach(Player::clearTricks);
+        firstTrick = false;
+        heartsBroken = false;
         direction = direction.nextPassDirection();
-        boolean shotTheMoon = false;
-        //check for if someone shot the moon
-        for (int playerId = 0; playerId < 4; playerId++) {
-            if (players.get(playerId).getTrickPoints() == 26) {
-                shotTheMoon = true;
+        return changeGamePhase(players.stream().anyMatch(player -> player.getPoints() >= 100) ? GamePhase.COMPLETE : GamePhase.DEAL);
+    }
 
-                // all other players gain 26 points
-                for (int j = 0; j < 4; j++) {
-                    if (j != playerId) {
-                        players.get(j).addSpecificPoints(26);
-                    }
-                }
-            }
-        }
+    /**
+     * Should be called once the trick is finished. Transitions to the next round. Kept as a distinct
+     * state so the UI has a chance to see what was played.
+     *
+     * @return the next phase of the game.
+     */
+    public GamePhase finishTrick() {
+        currentPlayerId = determineTrickWinner();
+        players.get(currentPlayerId).takeTrick(new ArrayList<>(currentTrick.keySet()));
+        currentTrick.clear();
+        firstTrick = false;
 
-        // update scores and reset tricks
-        if (!shotTheMoon) {
-            for (int playerId = 0; playerId < 4; playerId++) {
-                players.get(playerId).addTrickPoints(); //sums points and clears tricks
-                players.get(playerId).clearTricks();
-            }
-        }
-
-        // if game is completely over
-        for (int playerId = 0; playerId < 4; playerId++) {
-            if (players.get(playerId).getPoints() >= 100) {
-                return true;
-            }
-        }
-        return false;
+        boolean roundOver = players.stream().map(Player::getHand).allMatch(List::isEmpty);
+        return changeGamePhase(roundOver ? GamePhase.ROUND_FINISHED : GamePhase.PLAY);
     }
 
     /**
      * Returns a list of the current game states, one for each player.
      */
     // Maybe use GameStateBuilder
-    public List<GameState> getGameStates() {
-        GameStateBuilder builder = new GameStateBuilder();
+    public List<PlayerState> getPlayerStates() {
+        PlayerStateBuilder builder = new PlayerStateBuilder();
         for (int i = 0; i < 4; i++) {
-            builder.actions.set(i, players.get(i).getAction());
             builder.hands.set(i, players.get(i).getHand());
             builder.points.set(i, players.get(i).getPoints());
-        }
-        builder.trick = currentTrick;
-        builder.trumpSuit = trumpSuit;
 
-        return builder.make();
+            if (phase == GamePhase.PLAY) {
+                builder.actions.set(i, i == currentPlayerId ? PlayerAction.PLAY_CARD : PlayerAction.WAIT);
+
+                List<Card> hand = builder.hands.get(i);
+                if (i != currentPlayerId) {
+                    hand.forEach(card -> card.setSelectable(false));
+                    continue;
+                }
+
+                // Leading a trick
+                if (currentTrick.isEmpty()) {
+                    if (firstTrick) {
+                        // Can only lead first trick with two of clubs
+                        hand.forEach(card -> card.setSelectable(card.equals(Card.TWO_OF_CLUBS)));
+                    } else {
+                        // Cannot lead with hearts or queen of spades unless hearts broken
+                        hand.forEach(card -> card.setSelectable(heartsBroken || card.getPoints() == 0));
+                    }
+                } else {
+                    // Trump suit cards must be played
+                    Suit trumpSuit = getTrumpSuit();
+                    boolean hasTrump = hand.stream().anyMatch(card -> card.getSuit() == trumpSuit);
+                    // If the hand has trump cards, must play it
+                    // Else, cannot play hearts
+                    // TODO: Some variants don't allow queen without breaking hearts first
+                    hand.forEach(card -> {
+                        boolean selectable = (!hasTrump || (card.getSuit() == trumpSuit)); // match trick
+                        selectable &= (!firstTrick || card.getPoints() == 0); // no points on first round
+                        card.setSelectable(selectable);
+                    });
+                }
+            }
+        }
+        if (phase == GamePhase.DEAL || phase == GamePhase.PASS || phase == GamePhase.COMPLETE || phase == GamePhase.TRICK_FINISHED) {
+            PlayerAction action = phase == GamePhase.PASS ? PlayerAction.CHOOSE_CARDS : PlayerAction.WAIT;
+            builder.actions = ListUtils.fourCopies(() -> action);
+            builder.hands.stream().flatMap(List::stream).forEach(card -> card.setSelectable(phase == GamePhase.PASS));
+        }
+
+        builder.trick = new ArrayList<>(currentTrick.keySet());
+
+        builder.points = players.stream().map(Player::getPoints).collect(Collectors.toList());
+        builder.nicknames = players.stream().map(Player::getNickname).collect(Collectors.toList());
+
+        return builder.build();
     }
 }

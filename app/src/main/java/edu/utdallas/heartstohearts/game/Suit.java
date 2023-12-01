@@ -1,35 +1,31 @@
 package edu.utdallas.heartstohearts.game;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.io.Serializable;
 
-public enum Suit {
-    HEARTS, DIAMONDS, CLUBS, SPADES;
+public enum Suit implements Serializable {
 
-    public int toInt() {
-        switch (this) {
-            case HEARTS:
-                return 0;
-            case DIAMONDS:
-                return 1;
-            case CLUBS:
-                return 2;
-            case SPADES:
-                return 3;
-            default:
-                throw new AssertionError("Unhandled suit");
-        }
+    HEARTS(0, "Hearts"), DIAMONDS(1, "Diamonds"), CLUBS(2, "Clubs"), SPADES(3, "Spades");
+
+    private static final long serialVersionUID = 7865183916468303480L;
+
+    private final int index;
+    private final String name;
+
+    Suit(int index, String name) {
+        this.index = index;
+        this.name = name;
     }
 
-    public static Suit fromInt(int suiteIndex) {
-        return new Suit[]{HEARTS, DIAMONDS, CLUBS, SPADES}[suiteIndex];
+    public int toIndex() {
+        return this.index;
     }
 
+    public static Suit fromIndex(int index) {
+        return new Suit[]{HEARTS, DIAMONDS, CLUBS, SPADES}[index];
+    }
+
+    @Override
     public String toString() {
-        return new String[]{"Hearts", "Diamonds", "Clubs", "Spades"}[this.toInt()];
-    }
-
-    public List<Card> filterBySuit(List<Card> cards) {
-        return cards.stream().filter(c -> c.getSuit() == this).collect(Collectors.toList());
+        return this.name;
     }
 }

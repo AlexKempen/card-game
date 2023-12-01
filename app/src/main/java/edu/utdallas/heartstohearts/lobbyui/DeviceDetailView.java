@@ -1,4 +1,4 @@
-package edu.utdallas.heartstohearts.networkui;
+package edu.utdallas.heartstohearts.lobbyui;
 
 import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -67,23 +67,6 @@ public class DeviceDetailView extends ConstraintLayout {
     }
 
     /**
-     * Determines if two devices are physically the same. Currently uses address.
-     *
-     * @param d1
-     * @param d2
-     * @return whether the two objects represent the same physical device
-     */
-    public static boolean deviceSame(WifiP2pDevice d1, WifiP2pDevice d2) {
-        if (d1 == null || d2 == null) {
-            return d1 == d2; // both null
-        }
-
-        return d1.deviceAddress.equals(d2.deviceAddress);
-    }
-
-    /**
-     * @param d1
-     * @param d2
      * @return whether the two objects hold the same information, in the context of the view. Presently,
      * this cares only about device name, address, and status.
      */
@@ -92,7 +75,7 @@ public class DeviceDetailView extends ConstraintLayout {
             return d1 == d2; // both null
         }
 
-        return deviceSame(d1, d2) && d1.status == d2.status && d1.deviceName.equals(d2.deviceName);
+        return d1.deviceAddress.equals(d2.deviceAddress) && d1.status == d2.status && d1.deviceName.equals(d2.deviceName);
     }
 
     public static String deviceStatusString(int statusCode) {

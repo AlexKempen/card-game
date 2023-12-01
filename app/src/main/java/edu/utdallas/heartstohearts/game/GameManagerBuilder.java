@@ -1,7 +1,6 @@
 package edu.utdallas.heartstohearts.game;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
 
 public class GameManagerBuilder {
     public GameManagerBuilder(PlayerBuilder playerBuilder) {
@@ -13,13 +12,16 @@ public class GameManagerBuilder {
     }
 
     public boolean heartsBroken = false;
+    public boolean firstTrick = true;
+    public Integer currentPlayerId = null;
     public PlayerBuilder playerBuilder;
     public PassDirection direction = PassDirection.LEFT;
-    public List<Card> currentTrick = new ArrayList<>();
-    public Suit trumpSuit;
+    public LinkedHashMap<Card, Integer> currentTrick = new LinkedHashMap<>();
 
-    public GameManager make() {
-        return new GameManager(playerBuilder.make(), direction, currentTrick, heartsBroken, trumpSuit);
+    public GamePhase phase = GamePhase.DEAL;
+
+    public GameManager build() {
+        return new GameManager(playerBuilder.build(), direction, currentTrick, phase, currentPlayerId, heartsBroken, firstTrick);
     }
 
 }

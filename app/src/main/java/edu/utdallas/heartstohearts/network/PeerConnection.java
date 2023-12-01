@@ -16,35 +16,29 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
 
+/**
+ * A thread-safe event-driven connection class to wrap socket logic. All public methods are thread-safe,
+ * but may involve IO operations: read the comments before using them on the main thread.
+ * <p>
+ * Events are dispatched on new threads which explicitly listen for them.
+ */
 public class PeerConnection implements Closeable {
 
     private Socket socket;
     private ObjectInputStream messageInputStream;
     private ObjectOutputStream messageOutputStream;
+
+    private final Object listeningThreadLock = new Object();
     private Thread listeningThread = null;
+
+    private final Object listenersLock = new Object();
     private Collection<MessageListener> listeners;
 
     private static final String TAG = "PeerConnection";
 
-    /**
-     * Connects to a server listening at the given host and port asynchronously, and calls back witthe result
-     *
-     * @param host
-     * @param port
-     * @param onConnectionAvailable called when the connection is available
-     * @param onError               may be left null, in which case a RuntimeException called on error. Otherwise,
-     *                              called whenever an error happens when connecting.
-     */
-    public static void fromAddressAsync(InetAddress host, int port, Callback<PeerConnection> onConnectionAvailable, Callback<IOException> onError) {
-        new Thread(() -> {
-            try {
-                PeerConnection connection = PeerConnection.fromAddress(host, port);
-                onConnectionAvailable.call(connection);
-            } catch (IOException e) {
-                CallbackUtils.callOrThrow(onError, e);
-            }
-        }).start();
-    }
+    private final Object stateLock = new Object();
+    private ConnectionState state;
+
 
     /**
      * Creates and attempts to connect a new PeerConnection. Blocks: do not use on main thread.
@@ -58,7 +52,7 @@ public class PeerConnection implements Closeable {
         Socket sock = new Socket();
 
         InetSocketAddress address = new InetSocketAddress(host, port);
-        Log.d(TAG, "Connecting to server at " + address.toString());
+        Log.d(TAG, "Connecting to server at " + address);
         sock.connect(address);
 
         return new PeerConnection(sock);
@@ -80,7 +74,10 @@ public class PeerConnection implements Closeable {
         // This may block until the other end of the connection creates the ObjectOutputStream
         messageInputStream = new ObjectInputStream(inputStream);
 
-        listeners = new ArrayList<MessageListener>();
+        listeners = new ArrayList<>();
+        // Should be no need to synchronize this as we are in the constructor and no threads are being
+        // run.
+        state = ConnectionState.CONNECTED;
         Log.d(TAG, "Peer Connection creation");
     }
 
@@ -102,12 +99,13 @@ public class PeerConnection implements Closeable {
                         broadcastMessageRead(msg);
                     } catch (Exception e) {
                         if (e instanceof IOException || e instanceof ClassNotFoundException) {
-                            CallbackUtils.callOrThrow(onError, e);
+                            setState(ConnectionState.ERROR);
+                            Callback.callOrThrow(onError, e);
                         } else if (e instanceof InterruptedException) {
                             break;
-                        }
-                        {
+                        } else {
                             // Wrong type, rethrow
+                            setState(ConnectionState.ERROR);
                             throw new RuntimeException(e);
                         }
                     }
@@ -117,73 +115,98 @@ public class PeerConnection implements Closeable {
         listeningThread.start();
     }
 
+    /**
+     * Stops this connection from reading incoming messages. This connection may still be used to
+     * send messages.
+     */
     public void stopListening() {
-        if (isListening()) {
-            listeningThread.interrupt();
+        synchronized (listeningThreadLock) {
+            if (isListening()) { // Reentrant lock acquisition is allowed, this will not deadlock
+                listeningThread.interrupt();
+            }
         }
     }
 
+    /**
+     * @return true if this connection is currently listening.
+     */
     public boolean isListening() {
-        return (listeningThread != null && listeningThread.isAlive());
+        synchronized (listeningThreadLock) {
+            return (listeningThread != null && listeningThread.isAlive());
+        }
     }
 
     /**
-     * Notifies all message listeners that a new message has been recieved
+     * Thread-safe state setter.
+     *
+     * @param newState
+     */
+    private void setState(ConnectionState newState) {
+        synchronized (stateLock) {
+            state = newState;
+        }
+    }
+
+    /**
+     * @return The current state of the socket. Note that, as the socket may fail at any time, this
+     * provides a snapshot only.
+     */
+    public ConnectionState getState() {
+        synchronized (stateLock) {
+            return state;
+        }
+    }
+
+    /**
+     * Notifies all message listeners that a new message has been received.
      *
      * @param msg
      */
-    protected void broadcastMessageRead(Object msg) {
-        listeners.forEach((MessageListener l) -> l.messageReceived(msg));
+    private void broadcastMessageRead(Object msg) {
+        synchronized (listenersLock) {
+            listeners.forEach((MessageListener l) -> l.messageReceived(msg, getRemoteAddress()));
+        }
     }
 
     /**
-     * Registers a listener to receive future messages received on this connection
+     * Registers a listener to receive future messages received on this connection. Messages are
+     * dispatched on a separate thread than the caller: handle this properly if this is not desired.
      *
      * @param l
      */
     public void addMessageListener(MessageListener l) {
-        listeners.add(l);
+        synchronized (listenersLock) {
+            listeners.add(l);
+        }
     }
 
     /**
-     * De-registers an existing listener from messages on this connection
+     * De-registers an existing listener from messages on this connection.
      *
      * @param l
      */
     public void removeMessageListener(MessageListener l) {
-        listeners.remove(l);
+        synchronized (listenersLock) {
+            listeners.remove(l);
+        }
     }
 
     /**
-     * Sends a message over this connection. Involved in IO operations: do not use on main thread.
+     * Sends a message over this connection. Involved in IO operations: DO NOT USE on main thread.
      * Instead, use sendMessageAsync.
      *
      * @param msg
      * @throws IOException
      */
-    public void sendMessage(Object msg) throws IOException {
-        messageOutputStream.writeObject(msg);
-        messageOutputStream.flush();
-    }
-
-    /**
-     * Sends a message on a new thread.
-     *
-     * @param msg
-     * @param onError
-     */
-    public void sendMessageAsync(Object msg, @Nullable Callback<IOException> onError) {
-        new Thread(() -> {
-            try {
-                sendMessage(msg);
-            } catch (IOException e) {
-                if (onError == null) {
-                    throw new RuntimeException(e);
-                } else {
-                    onError.call(e);
-                }
-            }
-        }).start();
+    public synchronized void sendMessage(Object msg) throws IOException {
+        try {
+            Log.d(TAG, "Sending Message: " + msg);
+            messageOutputStream.writeObject(msg);
+            messageOutputStream.flush();
+        } catch (IOException e) {
+            setState(ConnectionState.ERROR);
+            throw e;
+        }
     }
 
     /**
@@ -191,10 +214,23 @@ public class PeerConnection implements Closeable {
      */
     @Override
     public void close() throws IOException {
-        stopListening();
-        messageOutputStream.close();
-        messageInputStream.close();
-        // closing the streams is supposed to close the socket, but hey- doesn't hurt to check
-        assert socket.isClosed();
+        try {
+            stopListening();
+            messageOutputStream.close();
+            messageInputStream.close();
+            // Verify closing streams also closes the socket
+            assert socket.isClosed();
+        } catch (IOException e) {
+            setState(ConnectionState.ERROR);
+            throw e;
+        }
+        setState(ConnectionState.CLOSED);
+    }
+
+    /**
+     * @return the address of the other end of the socket
+     */
+    public InetAddress getRemoteAddress() {
+        return socket.getInetAddress();
     }
 }

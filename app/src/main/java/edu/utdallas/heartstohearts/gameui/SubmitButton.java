@@ -1,7 +1,6 @@
 package edu.utdallas.heartstohearts.gameui;
 
 import android.content.Context;
-import android.graphics.Canvas;
 import android.util.AttributeSet;
 
 import androidx.appcompat.widget.AppCompatButton;
@@ -9,7 +8,6 @@ import androidx.appcompat.widget.AppCompatButton;
 import java.util.List;
 
 import edu.utdallas.heartstohearts.game.Card;
-import edu.utdallas.heartstohearts.game.Player;
 import edu.utdallas.heartstohearts.game.PlayerAction;
 
 public class SubmitButton extends AppCompatButton {
@@ -23,8 +21,11 @@ public class SubmitButton extends AppCompatButton {
         this.model = model;
     }
 
+    /**
+     * Updates the button to correctly reflect the latest model information.
+     */
     public void update() {
-        PlayerAction action = model.getGameStateData().getValue().getAction();
+        PlayerAction action = model.getPlayerStateData().getValue().getAction();
         List<Card> selectedCards = model.getSelectedCardsData().getValue();
 
         int visibility = action == PlayerAction.WAIT ? INVISIBLE : VISIBLE;

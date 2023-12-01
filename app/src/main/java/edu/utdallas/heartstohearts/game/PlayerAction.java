@@ -1,8 +1,9 @@
 package edu.utdallas.heartstohearts.game;
 
+import java.io.Serializable;
 import java.util.List;
 
-public enum PlayerAction {
+public enum PlayerAction implements Serializable {
     PLAY_CARD, CHOOSE_CARDS, WAIT;
 
     public int getSelectionLimit() {
@@ -18,16 +19,12 @@ public enum PlayerAction {
         }
     }
 
+    /**
+     * Sets actions.get(i) to PlayerAction.PLAY_CARD, and the rest to PlayerAction.WAIT.
+     */
     public static void setToPlayCard(int playerId, List<PlayerAction> actions) {
         for (int i = 0; i < 4; ++i) {
             PlayerAction action = playerId == i ? PlayerAction.PLAY_CARD : PlayerAction.WAIT;
-            actions.set(i, action);
-        }
-    }
-
-    public static void setToChooseCards(int playerId, List<PlayerAction> actions) {
-        for (int i = 0; i < 4; ++i) {
-            PlayerAction action = PlayerAction.CHOOSE_CARDS;
             actions.set(i, action);
         }
     }

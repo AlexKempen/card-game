@@ -1,5 +1,7 @@
 package edu.utdallas.heartstohearts.network;
 
+import java.net.InetAddress;
+
 public interface MessageListener {
-    void messageReceived(Object o);
+    void messageReceived(final Object o, InetAddress author);
 }
