@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import edu.utdallas.heartstohearts.MainActivity;
 import edu.utdallas.heartstohearts.R;
 import edu.utdallas.heartstohearts.appui.BaseActivity;
 import edu.utdallas.heartstohearts.gamenetwork.GameClient;
@@ -60,11 +61,12 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
 
     private final String TAG = "FormLobbyActivity";
 
-    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-        if (isGranted) {
-            Log.d(TAG, "Permissions granted!");
-        } else {
-            Log.e(TAG, "Permissions denied. What happens now?");
+    private final ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), isGranted -> {
+        boolean granted = isGranted.values().stream().allMatch(grant -> grant == true);
+        if(!granted){
+            Toast.makeText(getContext(), "Without permissions, the app can't run!", Toast.LENGTH_LONG).show();
+            // switch to homescreen
+            startActivity(new Intent(this, MainActivity.class));
         }
     });
 
@@ -133,10 +135,26 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
     public void onResume() {
         super.onResume();
 
-        for (String permission : Arrays.asList(Manifest.permission.NEARBY_WIFI_DEVICES, Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.NEARBY_WIFI_DEVICES) != PackageManager.PERMISSION_GRANTED) {
+        List<String> permissions = Arrays.asList(Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.CHANGE_WIFI_STATE,
+                Manifest.permission.INTERNET, Manifest.permission.ACCESS_NETWORK_STATE);
+        // TODO if android 13 or higher, request NEARBY_DEVICES
+        List<String> notGrantedPermissions = new ArrayList<>();
+
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
                 Log.e(TAG, "Permission not granted: " + permission);
+                notGrantedPermissions.add(permission);
+            } else {
+                Log.d(TAG, "Permission granted: " + permission);
             }
+        }
+
+        if(!notGrantedPermissions.isEmpty()){
+            // request permissions
+            String[] notGrantedArray = new String[notGrantedPermissions.size()];
+            notGrantedPermissions.toArray(notGrantedArray);
+            requestPermissionLauncher.launch(notGrantedArray);
         }
 
         networkManager.discoverPeers(new WifiP2pManager.ActionListener() {
@@ -149,13 +167,6 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
                 Log.e(TAG, "Failed to discover peers. Error code: " + i);
             }
         });
-//        else if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.NEARBY_WIFI_DEVICES)){
-//
-//        }
-//        else {
-//            Log.d(TAG, "Requesting permission");
-//            requestPermissionLauncher.launch(Manifest.permission.NEARBY_WIFI_DEVICES);
-//        }
     }
 
     @Override
