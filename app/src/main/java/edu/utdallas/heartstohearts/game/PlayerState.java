@@ -46,11 +46,7 @@ public class PlayerState implements Serializable {
                 return false;
             }
         }
-        return !otherIterator.hasNext() && !iterator.hasNext() && hand.equals(playerState.hand) && trick.equals(playerState.trick) &&
-                action == playerState.action &&
-                playerId == playerState.playerId &&
-                points.equals(playerState.points) &&
-                nicknames.equals(playerState.nicknames);
+        return !otherIterator.hasNext() && !iterator.hasNext() && hand.equals(playerState.hand) && trick.equals(playerState.trick) && action == playerState.action && playerId == playerState.playerId && points.equals(playerState.points) && nicknames.equals(playerState.nicknames);
     }
 
     public List<Card> getHand() {
