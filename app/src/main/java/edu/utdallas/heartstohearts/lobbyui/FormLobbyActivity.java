@@ -60,14 +60,6 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
 
     private final String TAG = "FormLobbyActivity";
 
-    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-        if (isGranted) {
-            Log.d(TAG, "Permissions granted!");
-        } else {
-            Log.e(TAG, "Permissions denied. What happens now?");
-        }
-    });
-
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
