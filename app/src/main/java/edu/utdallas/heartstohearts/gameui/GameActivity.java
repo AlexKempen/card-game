@@ -75,7 +75,9 @@ public class GameActivity extends BaseActivity {
 
         model.getSelectedCardsData().observe(this, selectedCards -> {
             PlayerState state = model.getPlayerStateData().getValue();
+            Log.e(TAG, "Player state: " + state);
             if (state != null) {
+                Log.e(TAG, "Hand: " + state.getHand());
                 List<Card> hand = state.getHand();
                 handView.displayHand(hand);
                 submitButton.update();
@@ -118,10 +120,13 @@ public class GameActivity extends BaseActivity {
                 state = stateBacklog.take();
 
                 // Only consume later states
-                if (state.getAge() <= stateAge) {
+                if (state.getAge() >= stateAge) {
+                    Log.d(TAG, "Set state");
                     model.setPlayerState(state);
                     stateAge = state.getAge();
                     Thread.sleep(1000);
+                } else {
+                    Log.d(TAG, "Stale state rejected. Rejected state age: " + state.getAge() + ", Current age: " + stateAge);
                 }
             } catch (InterruptedException e) {
                 break;

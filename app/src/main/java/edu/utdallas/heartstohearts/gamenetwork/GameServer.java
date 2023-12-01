@@ -44,9 +44,7 @@ public class GameServer extends Service {
 
     private List<List<Card>> passSelections;
 
-    private Thread messageProcessor;
-
-    private int gameAge = 0;
+    private int gameAge = 1;
 
     @Override
     public void onCreate() {
@@ -100,7 +98,8 @@ public class GameServer extends Service {
             startGame();
         }
 
-        messageProcessor = new Thread(() -> {
+        // Blocking queue, can always poll
+        Thread messageProcessor = new Thread(() -> {
             while (true) {
                 // Blocking queue, can always poll
                 try {
