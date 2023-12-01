@@ -2,18 +2,24 @@
 package edu.utdallas.heartstohearts.gameui;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
+import java.util.List;
+
 import edu.utdallas.heartstohearts.R;
+import edu.utdallas.heartstohearts.game.Card;
+import edu.utdallas.heartstohearts.game.PlayerState;
 
 public class ScoreboardView extends TableLayout {
 
 
     private TextView playerScoreTextViews[];
     private TextView playerNameTextViews[];
+
 
     public ScoreboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -33,16 +39,38 @@ public class ScoreboardView extends TableLayout {
 
     }
 
-
-    //TO:DO
-    void updateScoreboardNames(){
-
+    void updateNames(List<String> nicknames, int thisPlayerId){
+        for (int playerId = 0; playerId < nicknames.size(); playerId++)
+        {
+            TextView nameTextView = playerNameTextViews[playerId];
+            if (playerId == thisPlayerId)
+            {
+                nameTextView.setText("You");
+                nameTextView.setTypeface(null, Typeface.BOLD);
+            }
+            else
+            {
+                nameTextView.setText(nicknames.get(playerId));
+                nameTextView.setTypeface(null, Typeface.NORMAL);
+            }
+        }
     }
 
-    //TO:DO
-    void updateScoreboardScores(){
-
+    void updateScores(List<Integer> scores, int thisPlayerId){
+        for (int playerId = 0; playerId < scores.size(); playerId++)
+        {
+            TextView scoreTextView = playerScoreTextViews[playerId];
+            scoreTextView.setText(scores.get(playerId).toString());
+            if (thisPlayerId == playerId)
+            {
+                scoreTextView.setTypeface(null, Typeface.BOLD);
+            }
+            else {
+                scoreTextView.setTypeface(null, Typeface.NORMAL);
+            }
+        }
     }
+
 
 
 }
