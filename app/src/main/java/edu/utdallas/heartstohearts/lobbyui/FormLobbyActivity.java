@@ -1,3 +1,12 @@
+/**
+ * Hearts to Hearts project
+ * Senior design project, University of Texas at Dallas CS 4485.0W1
+ * Fall 2023
+ *
+ * File authors:
+ *  - Egan Johnson
+ *  - Alex Kempen
+ */
 package edu.utdallas.heartstohearts.lobbyui;
 
 import android.Manifest;
@@ -46,20 +55,25 @@ import edu.utdallas.heartstohearts.network.Switchboard;
  */
 public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.PeerListListener, SelfDeviceListener, MessageListener, WifiP2pManager.ConnectionInfoListener {
 
+    // Logging tag
+    private static final String TAG = "FormLobbyActivity";
+
+    // Networking utilities
     private NetworkManager networkManager;
     private Switchboard switchboard;
 
+    // UI elements
     private DeviceDetailAdapter connectedDevicesAdapter;
     private DeviceDetailAdapter nearbyDevicesAdapter;
     private DeviceDetailView thisDeviceView;
 
     private Button startGameButton;
 
+    // Connectivity info storage
     private LimitedLinkedHashMap<String, InetAddress> macToAddress;
     private List<String> connectedMacs;
 
-    private final String TAG = "FormLobbyActivity";
-
+    // Permissions requester
     private final ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), isGranted -> {
         boolean granted = isGranted.values().stream().allMatch(grant -> grant == true);
         if(!granted){
@@ -69,6 +83,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
         }
     });
 
+    // More permissions stuff
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -84,10 +99,10 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_form_lobby);
 
-        macToAddress = new LimitedLinkedHashMap<>(3); // Only three peers allowed!;
+        macToAddress = new LimitedLinkedHashMap<>(3); // Only three peers allowed!
         connectedMacs = new ArrayList<>();
 
-        // Set up lists
+        // Set up lists and associated adapters
         ListView connectedDevices = findViewById(R.id.connected_devices_list);
         ListView nearbyDevices = findViewById(R.id.nearby_devices_list);
         connectedDevicesAdapter = new DeviceDetailAdapter(getContext(), false);
@@ -103,14 +118,14 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
         startGameButton = findViewById(R.id.button_start_game);
         startGameButton.setOnClickListener((view) -> startGame());
 
-        // swap out
+        // swap out placeholder for device view
         View placeholder = findViewById(R.id.this_device_details_placeholder);
         ViewGroup parent = (ViewGroup) placeholder.getParent();
         int index = parent.indexOfChild(placeholder);
         parent.removeView(placeholder);
         parent.addView(thisDeviceView, index);
 
-        // set up networking. Use application context since the network needs to exist over
+        // set up P2P networking. Use application context since the network needs to exist over
         // multiple activities
         networkManager = NetworkManager.getInstance(getApplicationContext());
         networkManager.addPeerListListener(this);
@@ -121,19 +136,18 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
             networkManager.connectToPeer(device, null);
         });
 
-        // Start accepting incoming connections for switchboard
+        // Set up socket-level networking and listen for incoming messages. Idempotent if already
+        // active.
         switchboard = Switchboard.getDefault();
         switchboard.addListener(null, new MessageFilter(LobbyMessage.class).addChildren(this));
         switchboard.acceptIncoming((error) -> Log.d("IncomingConnections", "Error accepting incoming: " + error));
     }
 
-    /**
-     * register the BroadcastReceiver with the intent values to be matched.
-     */
     @Override
     public void onResume() {
         super.onResume();
 
+        // Each time we resume check for permissions and request any not granted.
         List<String> permissions = Arrays.asList(Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.CHANGE_WIFI_STATE,
                 Manifest.permission.INTERNET, Manifest.permission.ACCESS_NETWORK_STATE);
@@ -156,6 +170,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
             requestPermissionLauncher.launch(notGrantedArray);
         }
 
+        // Start peer discovery
         networkManager.discoverPeers(new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {/* do nothing */}
@@ -168,8 +183,10 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
         });
     }
 
+
     @Override
     public void onPause() {
+        // stop peer discovery while not forming lobby
         networkManager.stopPeerDiscovery(null);
         super.onPause();
     }
@@ -183,11 +200,23 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
         super.onDestroy();
     }
 
+    /**
+     * Called whenever the networking status of this current device has changed. Update view.
+     * @param self
+     */
     @Override
     public void selfDeviceChanged(WifiP2pDevice self) {
         thisDeviceView.setDevice(self);
     }
 
+    /**
+     * Called whenever a new peer list is available. Update view.
+     *
+     * Note: On some of the devices we tested with, this would call with an empty list. This comes
+     * straight from the WifiP2P API, so there's not much we can do about it. However, other people
+     * can still invite such devices to their group and start the game.
+     * @param devices
+     */
     @Override
     public void onPeersAvailable(WifiP2pDeviceList devices) {
         ArrayList<WifiP2pDevice> connectedList = new ArrayList<>();
@@ -210,15 +239,29 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
         nearbyDevicesAdapter.updateList(nearbyList);
     }
 
+    /**
+     * Checks conditions on whether a game can be started, and if so enables the start game button.
+     *
+     * A game can be started only if we know the IP for every connected device, distinguished by
+     * MAC address. Otherwise we could not send them the message notifying them of game start.
+     */
     private void checkReadyForStart() {
         // ready if all devices have greeted.
         boolean ready = connectedMacs.stream().allMatch((mac) -> macToAddress.containsKey(mac));
         startGameButton.setEnabled(ready);
     }
 
+    /**
+     * Launches all tasks to begin the game then switches to the game activity.
+     *
+     * Game startup tasks include:
+     *  - Starting the game server service in the background
+     *  - Sending the "game start" message to all connected players
+     *  - Launching the game activity
+     */
     public void startGame() {
         // Launch the game server. Done in a new thread because, apparently, fetching localhost address
-        // is networking on main thread.
+        // is networking on main thread. Perhaps a bit lazy.
         new Thread(() -> {
             Intent intent = new Intent(this, GameServer.class);
             List<String> playerAddresses = new ArrayList<>();
@@ -238,6 +281,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
                 switchboard.sendMessageAsync(address, new StartGame(), (e) -> Log.e(TAG, "Could not notify player of game start: " + e));
             });
 
+            // Send address of players to the game server so it knows who to contact/listen to
             String[] parceledPlayers = new String[playerAddresses.size()];
             playerAddresses.toArray(parceledPlayers);
             intent.putExtra("players", parceledPlayers);
@@ -245,29 +289,51 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
 
             startService(intent);
 
+            // Game launched, we can now join it ourselves.
             joinGame(selfAddress);
         }).start();
     }
 
+    /**
+     * joins a game started by the given host
+     * @param host - device hosting the game server
+     */
     public void joinGame(InetAddress host) {
         GameClient.setActiveClient(new GameClient(switchboard, host));
         startActivity(new Intent(this, GameActivity.class));
     }
 
 
+    /**
+     * Called whenever a message from any device is received. Messages are filtered at the listener
+     * level to only include messages we are interested in.
+     *
+     * Note that this function is called on a non-ui thread, so any UI actions must be posted.
+     *
+     * @param o - the message object
+     * @param author - the address of the sender
+     */
     @Override
     public void messageReceived(Object o, InetAddress author) {
         if (author.isLoopbackAddress()) return; // in this case uninterested in responding to self
 
         Log.d(TAG, "Message received from " + author);
+
         if (o instanceof Greet) {
+            // We have been greeted by the message author, notifying us of their MAC and IP.
             Greet greet = (Greet) o;
+            // if an address is not provided it is because the author is unsure of what their public-facing
+            // address is, which we easily infer from the sender. Otherwise if it is provided,
+            // it might be a forwarded greeting, in which case the author is not the greeter.
             if (greet.address == null) {
                 greet.address = author;
             }
 
+            // associate mac with (possibly new) address
             macToAddress.put(greet.mac, greet.address);
 
+            // If we are the group leader it is this devices duty to forward the greetings to all other
+            // previously greeted devices.
             if (networkManager.isGroupLeader()) {
                 // If we are the lobby owner, distribute the greetings
                 Callback<IOException> onError = (error) -> {
@@ -275,26 +341,32 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
                 };
                 macToAddress.forEach((m, a) -> {
                     if (!m.equals(greet.mac)) {
-                        // Connect previously-greeted device with new device
+                        // Connect previously-greeted device with new device and vice versa
                         switchboard.sendMessageAsync(author, new Greet(m, a), onError);
                         switchboard.sendMessageAsync(a, greet, onError);
                     }
                 });
 
-                // send our own greetings
+                // send our own greetings back to the sender.
                 String selfMac = networkManager.getLastKnownSelf().deviceAddress;
                 switchboard.sendMessageAsync(author, new Greet(selfMac, null), (e) -> {
                     Log.e(TAG, "Unable to return greetings");
                 });
             }
 
+            // With a new greeting, we may be ready to start the game
             this.runOnUiThread(this::checkReadyForStart);
 
         } else if (o instanceof StartGame) {
+            // author has notified us they are starting the game
             joinGame(author);
         }
     }
 
+    /**
+     * Called when new devices have joined/disconnected
+     * @param wifiP2pInfo
+     */
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
         // Addresses have possibly changed, greet group owner
@@ -310,6 +382,13 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
     }
 }
 
+/**
+ * HashMap of fixed size with FIFO eviction.
+ *
+ * Courtesy of Louis Wasserman at https://stackoverflow.com/a/16989040
+ * @param <K>
+ * @param <V>
+ */
 class LimitedLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
     int maxSize;
 

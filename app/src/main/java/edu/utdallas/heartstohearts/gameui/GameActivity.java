@@ -1,3 +1,14 @@
+/**
+ * Hearts to Hearts project
+ * Senior design project, University of Texas at Dallas CS 4485.0W1
+ * Fall 2023
+ * <p>
+ * File authors:
+ * - Alex Kempen
+ * - Egan Johnson
+ * - Ragib Arnab
+ */
+
 package edu.utdallas.heartstohearts.gameui;
 
 import android.content.Intent;

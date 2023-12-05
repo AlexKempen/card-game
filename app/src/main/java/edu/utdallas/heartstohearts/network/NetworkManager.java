@@ -1,3 +1,12 @@
+/**
+ * Hearts to Hearts project
+ * Senior design project, University of Texas at Dallas CS 4485.0W1
+ * Fall 2023
+ * <p>
+ * File authors:
+ * - Egan Johnson
+ */
+
 package edu.utdallas.heartstohearts.network;
 
 import android.Manifest;
@@ -25,19 +34,24 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
+ * Singleton managing the wifi state of the device.
+ *
  * TODO synchronization
  */
 public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.ConnectionInfoListener {
 
+    // Log tag
+    private static final String TAG = "NetworkManager";
+
     private static NetworkManager instance = null;
 
-    private static final String TAG = "NetworkManager";
 
     protected Context context;
 
     WifiP2pManager manager;
     WifiP2pManager.Channel channel;
 
+    // Track registered listeners
     private Set<WifiP2pManager.PeerListListener> peerListListeners = new HashSet<>();
     private Set<WifiP2pManager.ConnectionInfoListener> connectionInfoListeners = new HashSet<>();
     private Set<SelfDeviceListener> selfDeviceListeners = new HashSet<>();
@@ -47,6 +61,11 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
     private WifiP2pDevice lastSelfDevice = null;
 
 
+    /**
+     * Gets the global instance for the network manager
+     * @param context - should be the application-wide context, NOT activity-specific.
+     * @return
+     */
     public static synchronized NetworkManager getInstance(Context context) {
         if (instance == null) {
             instance = new NetworkManager(context);
@@ -132,13 +151,13 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
     }
 
     protected void onConnectionChanged() {
-        // Request new connection info from each listener
+        // Request new connection info to be sent  to each listener
         connectionInfoListeners.forEach((listener -> manager.requestConnectionInfo(channel, listener)));
     }
 
     @SuppressLint("MissingPermission")
     protected void onPeersChanged() {
-
+        // Request peer information to be sent to each listener
         manager.requestPeers(channel, (result) -> {
             peerListListeners.forEach((listener) -> listener.onPeersAvailable(result));
         });
@@ -169,7 +188,7 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
      *
      * @param listener: may be left null and a default will be used.
      */
-//    @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission")
     public void discoverPeers(@Nullable WifiP2pManager.ActionListener listener) {
         if (listener == null) {
             listener = new WifiP2pManager.ActionListener() {
@@ -187,6 +206,10 @@ public class NetworkManager extends BroadcastReceiver implements WifiP2pManager.
         manager.discoverPeers(channel, listener);
     }
 
+    /**
+     * Shuts down peer discovery until startPeerDiscovery next called.
+     * @param listener
+     */
     public void stopPeerDiscovery(@Nullable WifiP2pManager.ActionListener listener) {
         if (listener == null) {
             listener = new WifiP2pManager.ActionListener() {

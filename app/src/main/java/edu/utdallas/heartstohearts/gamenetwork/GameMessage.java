@@ -1,3 +1,11 @@
+/**
+ * Hearts to Hearts project
+ * Senior design project, University of Texas at Dallas CS 4485.0W1
+ * Fall 2023
+ * <p>
+ * File authors:
+ * - Egan Johnson
+ */
 package edu.utdallas.heartstohearts.gamenetwork;
 
 import java.io.Serializable;
@@ -11,6 +19,9 @@ public class GameMessage implements Serializable {
     private static final long serialVersionUID = 7860268870820163182L;
 
     public PlayerAction action;
+
+    // Use concrete implementation here instead of more abstract List<Card> to avoid potential
+    // serialization unpleasantness
     public ArrayList<Card> actionItems;
 
     /**

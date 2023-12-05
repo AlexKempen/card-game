@@ -1,3 +1,13 @@
+/**
+ * Hearts to Hearts project
+ * Senior design project, University of Texas at Dallas CS 4485.0W1
+ * Fall 2023
+ * <p>
+ * File authors:
+ * - Egan Johnson
+ */
+
+
 package edu.utdallas.heartstohearts.network;
 
 import java.net.InetAddress;
@@ -20,6 +30,11 @@ public class MessageFilter implements MessageListener {
         subscribers = new ArrayList<>();
     }
 
+    /**
+     * Registers a listener to receive only filtered messages
+     * @param l
+     * @return
+     */
     public MessageFilter addChildren(MessageListener... l) {
         subscribers.addAll(Arrays.asList(l));
         return this;

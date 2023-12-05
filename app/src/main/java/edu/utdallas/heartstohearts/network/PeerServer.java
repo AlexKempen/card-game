@@ -1,3 +1,12 @@
+/**
+ * Hearts to Hearts project
+ * Senior design project, University of Texas at Dallas CS 4485.0W1
+ * Fall 2023
+ * <p>
+ * File authors:
+ * - Egan Johnson
+ */
+
 package edu.utdallas.heartstohearts.network;
 
 import android.util.Log;
@@ -31,7 +40,8 @@ public class PeerServer implements Closeable {
     }
 
     /**
-     * Starts accepting client connections. Non-blocking: can be called on any thread.
+     * Starts accepting client connections. Non-blocking and idempotent: can be called on any thread.
+     * Not thread-safe.
      */
     public void startAcceptingConnections(@Nullable Callback<IOException> onError) {
         if (acceptConnectionsThread != null && acceptConnectionsThread.isAlive()) return;
@@ -59,10 +69,17 @@ public class PeerServer implements Closeable {
         listeners.add(l);
     }
 
+    /**
+     * Unregisters a previously registered listener object
+     * @param l
+     */
     public void removePeerConnectionListener(PeerConnectionListener l) {
         listeners.remove(l);
     }
 
+    /**
+     * @return if server still actively accepting connections
+     */
     public boolean isActive() {
         return acceptConnectionsThread.isAlive();
     }

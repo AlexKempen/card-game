@@ -1,3 +1,12 @@
+/**
+ * Hearts to Hearts project
+ * Senior design project, University of Texas at Dallas CS 4485.0W1
+ * Fall 2023
+ * <p>
+ * File authors:
+ * - Egan Johnson
+ */
+
 package edu.utdallas.heartstohearts.appui;
 
 import android.content.Context;
@@ -11,6 +20,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
 
+/**
+ * Base activity for all Hearts to Hearts activities
+ */
 public class BaseActivity extends AppCompatActivity {
 
     private static final String TAG = "BaseActivity";

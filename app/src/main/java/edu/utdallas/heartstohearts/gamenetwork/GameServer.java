@@ -1,3 +1,12 @@
+/**
+ * Hearts to Hearts project
+ * Senior design project, University of Texas at Dallas CS 4485.0W1
+ * Fall 2023
+ *
+ * File authors:
+ *  - Egan Johnson
+ */
+
 package edu.utdallas.heartstohearts.gamenetwork;
 
 import android.app.Service;
@@ -57,17 +66,19 @@ public class GameServer extends Service {
     // Android lifecycle stuff
 
     /**
-     * @param intent  - Must contain as an extra a list of InetAddress by the name of "players". If less
-     *                than 4, a list of bots must also be provided.
+     * @param intent  - Must contain as an extra an array of strings representing InetAddress
+     *                by the name of "players". If less than 4, bots will be added to the game.
      * @param flags
      * @param startID
      * @return
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startID) {
+        // if a game is already running no need to restart (?)
         if (game == null) {
             int playerId = 0;
 
+            // Convert strings to InetAddresses
             players = new ArrayList<>();
             String[] addressStrings = intent.getStringArrayExtra("players");
             for (String playerAddr : addressStrings) {
@@ -78,11 +89,13 @@ public class GameServer extends Service {
                 }
             }
 
+            // Check player count
             if (players.size() > 4) {
                 Log.e(TAG, "Received too many players! Limiting to 4");
                 players = players.stream().limit(4).collect(Collectors.toList());
             }
 
+            // Assign player IDs, start listening for incoming messages
             for (InetAddress player : players) {
                 int id = playerId;
                 playerId++;
@@ -90,6 +103,8 @@ public class GameServer extends Service {
                     messageReceived(id, (GameMessage) msg);
                 }));
             }
+
+            // Fill missing player seats with bots, handled specially
             while (playerId < 4) {
                 int id = playerId;
                 playerId++;
@@ -98,7 +113,7 @@ public class GameServer extends Service {
             startGame();
         }
 
-        // Blocking queue, can always poll
+        // Start processing incoming messages one at a time.
         Thread messageProcessor = new Thread(() -> {
             while (true) {
                 // Blocking queue, can always poll
@@ -111,7 +126,6 @@ public class GameServer extends Service {
                 }
             }
         });
-
         messageProcessor.start();
 
         return START_NOT_STICKY;
@@ -121,11 +135,13 @@ public class GameServer extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-
         return null;
     }
 
 
+    /**
+     * Start a new game, reset all other game state
+     */
     public void startGame() {
         Log.d(TAG, "Starting new game");
         game = GameManager.startGame();
@@ -133,7 +149,16 @@ public class GameServer extends Service {
         stateChangedClosure();
     }
 
+    /**
+     * Called by the processing thread when a message is available.
+     *
+     * Will check if a player's action is valid and if so add it to the game state
+     *
+     * @param playerId
+     * @param msg
+     */
     private void processMessage(int playerId, GameMessage msg) {
+        // Use custom exception to reject messages conveniently in one line from anywhere
         try {
             assertGameState(game != null, "Game has not been initialized");
 
@@ -168,14 +193,15 @@ public class GameServer extends Service {
     }
 
     /**
-     * Removes all player pass selections and reinitializes the list the list.
+     * Removes all player pass selections and (re)initializes the list.
      */
     private void resetPassSelections() {
         passSelections = Arrays.asList(new List[MAX_PLAYERS]);
     }
 
     /**
-     * Called when one
+     * Called when one player has made their pass selections. When all selections are in moves to
+     * next game phase.
      *
      * @param player
      * @param selection
@@ -191,6 +217,11 @@ public class GameServer extends Service {
         }
     }
 
+    /**
+     * Checks if a pass selection has been made by a given player.
+     * @param player
+     * @return
+     */
     private boolean hasPassed(int player) {
         return passSelections.get(player) != null;
     }
@@ -203,17 +234,16 @@ public class GameServer extends Service {
      */
     protected void messageReceived(int playerId, GameMessage msg) {
         Log.d(TAG, "Message received from player " + playerId);
-        // blocking queue already synchronized
+        // blocking queue already thread-safe, wait for processing thread to take care of it
         messages.add(new Pair<>(playerId, msg));
     }
 
     /**
-     * Called whenever the state can reasonable be assumed to have changed.
-     * <p>
-     * Checks for necessary state transitions for the game manager and broadcasts the new states
-     * to each player.
-     * <p>
-     * TODO Warning: 99% sure this will not let anyone see the last card played per trick
+     * Called whenever the state can reasonable be assumed to have changed. Checks game for
+     * necessary state transitions for the game manager and broadcasts the new states
+     * to each player. Tags game state messages with their age (lower is older) so that clients recieving
+     * messages out of order (most likely due to fast bot play) can re-order the game history and act
+     * only on the most recent.
      */
     private void stateChangedClosure() {
 
@@ -223,7 +253,8 @@ public class GameServer extends Service {
         }
         gameAge++;
 
-        // Follow game transitions
+        // Follow game transitions. Must be done AFTER sending state because if all transitions
+        // were followed invisibly, nobody would be able to see the last card played.
         if (game.getGamePhase() == GamePhase.DEAL) {
             game.deal();
             // Check if passes from the bots are needed

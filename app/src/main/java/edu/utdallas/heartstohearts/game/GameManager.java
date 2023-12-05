@@ -1,3 +1,15 @@
+/**
+ * Hearts to Hearts project
+ * Senior design project, University of Texas at Dallas CS 4485.0W1
+ * Fall 2023
+ * <p>
+ * File authors:
+ * - Jacob Baskins
+ * - Ragib Arnab
+ * - Alex Kempen
+ * - Egan Johnson
+ */
+
 package edu.utdallas.heartstohearts.game;
 
 import java.util.ArrayList;

@@ -1,3 +1,12 @@
+/**
+ * Hearts to Hearts project
+ * Senior design project, University of Texas at Dallas CS 4485.0W1
+ * Fall 2023
+ *
+ * File authors:
+ *  - Egan Johnson
+ *  - Alex Kempen
+ */
 package edu.utdallas.heartstohearts.lobbyui;
 
 import android.content.Context;
@@ -12,7 +21,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import edu.utdallas.heartstohearts.R;
 
 /**
- * A fragment that manages a particular peer and allows interaction with device
+ * A fragment that shows information for a particular peer and allows interaction with device
  * i.e. setting up network connection and transferring data.
  */
 public class DeviceDetailView extends ConstraintLayout {
@@ -23,6 +32,7 @@ public class DeviceDetailView extends ConstraintLayout {
 
     public DeviceDetailView(@NonNull Context context) {
         super(context);
+        // inflate from XML file
         inflate(context, R.layout.device_detail, this);
 
         nameField = findViewById(R.id.name_field);
@@ -30,6 +40,10 @@ public class DeviceDetailView extends ConstraintLayout {
         inviteButton = findViewById(R.id.invite_button);
     }
 
+    /**
+     * Update view to display new device
+     * @param device
+     */
     public void setDevice(WifiP2pDevice device) {
         boolean revalidate = (device == null) || !deviceInfoSame(this.device, device);
 
@@ -50,6 +64,10 @@ public class DeviceDetailView extends ConstraintLayout {
         }
     }
 
+    /**
+     * Sets the visibility of the invite button
+     * @param shouldShow
+     */
     public void showInviteButton(boolean shouldShow) {
         inviteButton.setVisibility(shouldShow ? View.VISIBLE : View.GONE);
         inviteButton.invalidate();
@@ -71,6 +89,11 @@ public class DeviceDetailView extends ConstraintLayout {
         return d1.deviceAddress.equals(d2.deviceAddress) && d1.status == d2.status && d1.deviceName.equals(d2.deviceName);
     }
 
+    /**
+     * Conversion utility from status code to status string
+     * @param statusCode
+     * @return
+     */
     public static String deviceStatusString(int statusCode) {
         switch (statusCode) {
             case WifiP2pDevice.UNAVAILABLE:

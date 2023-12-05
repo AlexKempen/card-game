@@ -1,9 +1,18 @@
+/**
+ * Hearts to Hearts project
+ * Senior design project, University of Texas at Dallas CS 4485.0W1
+ * Fall 2023
+ * <p>
+ * File authors:
+ * - Egan Johnson
+ */
+
 package edu.utdallas.heartstohearts.network;
 
 import androidx.annotation.Nullable;
 
 /**
- * Convenience method for a one-argument callback for use with asynchronous calls.
+ * Convenience interface for a one-argument callback for use with asynchronous calls.
  * <p>
  * For example, can be used to call back with the result of a query, or only be called upon hitting
  * an exception.

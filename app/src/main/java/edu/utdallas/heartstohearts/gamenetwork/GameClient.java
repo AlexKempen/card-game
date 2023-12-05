@@ -1,3 +1,12 @@
+/**
+ * Hearts to Hearts project
+ * Senior design project, University of Texas at Dallas CS 4485.0W1
+ * Fall 2023
+ *
+ * File authors:
+ * - Egan Johnson
+ */
+
 package edu.utdallas.heartstohearts.gamenetwork;
 
 import android.util.Log;
@@ -25,6 +34,7 @@ import edu.utdallas.heartstohearts.network.Switchboard;
 public class GameClient implements MessageListener {
     private static final String TAG = "GameClient";
 
+    // Singleton often convenient
     private static GameClient activeClient;
 
     public static void setActiveClient(GameClient client) {
@@ -35,6 +45,7 @@ public class GameClient implements MessageListener {
         return activeClient;
     }
 
+    // Connection to game server
     private final Switchboard switchboard;
     private final InetAddress gameHost;
     private final MessageFilter stateMessages;
@@ -77,7 +88,7 @@ public class GameClient implements MessageListener {
     }
 
     /**
-     * Sends a message to request the game state, which will be handled through the appropriate listeners
+     * Sends a message to request the game state, which will be returned through the appropriate listeners
      */
     public void requestState() {
         switchboard.sendMessageAsync(gameHost, new GameMessage(null, null), null);
@@ -85,8 +96,7 @@ public class GameClient implements MessageListener {
 
     /**
      * Registers a listener to game state updates. Messages will be passed in as objects which can
-     * be cast to PlayerStates. When added, the last known game state (if not null) will be
-     * send to the listener.
+     * be cast to PlayerStates.
      */
     public synchronized void addPlayerStateListener(Callback<PlayerState> l) {
         stateMessages.addChildren((msg, author) -> l.call((PlayerState) msg));

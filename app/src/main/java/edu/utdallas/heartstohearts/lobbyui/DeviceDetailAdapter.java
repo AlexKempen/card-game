@@ -1,3 +1,13 @@
+/**
+ * Hearts to Hearts project
+ * Senior design project, University of Texas at Dallas CS 4485.0W1
+ * Fall 2023
+ *
+ * File authors:
+ *  - Egan Johnson
+ *  - Alex Kempen
+ */
+
 package edu.utdallas.heartstohearts.lobbyui;
 
 import android.content.Context;
@@ -13,10 +23,17 @@ import java.util.Comparator;
 
 import edu.utdallas.heartstohearts.network.Callback;
 
+/**
+ * UI element for showing list of nearby devices, with optional button for inviting to group
+ */
 public class DeviceDetailAdapter extends ArrayAdapter<WifiP2pDevice> {
     private boolean showInviteButton;
     private Callback<WifiP2pDevice> onSelect = null;
 
+    /**
+     * @param context UI context
+     * @param showInviteButton - if the adapter should include invite button or not
+     */
     public DeviceDetailAdapter(@NonNull Context context, boolean showInviteButton) {
         super(context, 0);
         this.showInviteButton = showInviteButton;
@@ -29,10 +46,21 @@ public class DeviceDetailAdapter extends ArrayAdapter<WifiP2pDevice> {
         onSelect = callback;
     }
 
+    /**
+     * Called whenever the button for a device is pressed
+     * @param device - device associated with the pressed button
+     */
     private void onDeviceSelected(WifiP2pDevice device) {
         if (onSelect != null) onSelect.call(device);
     }
 
+    /**
+     * ArrayAdapter boilerplate for creating the view for a device
+     * @param position
+     * @param convertView
+     * @param parent
+     * @return
+     */
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
@@ -49,6 +77,7 @@ public class DeviceDetailAdapter extends ArrayAdapter<WifiP2pDevice> {
         WifiP2pDevice device = getItem(position);
         view.setDevice(device);
         view.showInviteButton(showInviteButton);
+        // register button press to trigger event with correct device
         view.getInviteButton().setOnClickListener((View v) -> {
             onDeviceSelected(device);
         });
@@ -56,6 +85,10 @@ public class DeviceDetailAdapter extends ArrayAdapter<WifiP2pDevice> {
         return view;
     }
 
+    /**
+     * Tells the adapter to track an updated list
+     * @param updatedList
+     */
     public void updateList(ArrayList<WifiP2pDevice> updatedList) {
         // Sorts so that nonempty devices are first
         updatedList.sort((a, b) -> {
