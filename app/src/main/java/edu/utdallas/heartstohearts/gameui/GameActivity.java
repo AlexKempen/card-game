@@ -10,6 +10,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.material.color.utilities.Score;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -55,6 +57,7 @@ public class GameActivity extends BaseActivity {
         final HandView handView = findViewById(R.id.hand_view);
         final SubmitButton submitButton = findViewById(R.id.submit_button);
         final TrickView trickView = findViewById(R.id.trick_view);
+        final ScoreboardView scoreboardView = findViewById(R.id.scoreboard_view);
 
         client = GameClient.getActiveClient();
 
@@ -65,18 +68,25 @@ public class GameActivity extends BaseActivity {
         handView.registerModel(model);
         submitButton.registerModel(model);
 
-        model.getPlayerStateData().observe(this, gameState -> {
-            if (gameState != null) {
-                handView.displayHand(gameState.getHand());
-                trickView.displayTrick(gameState.getTrick());
+        model.getPlayerStateData().observe(this, state -> {
+            if (state != null) {
+                handView.displayHand(state.getHand());
+                trickView.displayTrick(state.getTrick());
+                scoreboardView.updateNames(state.getNicknames(), state.getPlayerId());
+                scoreboardView.updateScores(state.getPoints(), state.getPlayerId());
                 submitButton.update();
             }
         });
 
         model.getSelectedCardsData().observe(this, selectedCards -> {
-            List<Card> hand = model.getPlayerStateData().getValue().getHand();
-            handView.displayHand(hand);
-            submitButton.update();
+            PlayerState state = model.getPlayerStateData().getValue();
+            Log.d(TAG, "Player state: " + state);
+            if (state != null) {
+                Log.d(TAG, "Hand: " + state.getHand());
+                List<Card> hand = state.getHand();
+                handView.displayHand(hand);
+                submitButton.update();
+            }
         });
 
         // Set up state consumer backlog
@@ -115,10 +125,13 @@ public class GameActivity extends BaseActivity {
                 state = stateBacklog.take();
 
                 // Only consume later states
-                if (state.getAge() <= stateAge) {
+                if (state.getAge() >= stateAge) {
+                    Log.d(TAG, "Set state");
                     model.setPlayerState(state);
                     stateAge = state.getAge();
                     Thread.sleep(1000);
+                } else {
+                    Log.d(TAG, "Stale state rejected. Rejected state age: " + state.getAge() + ", Current age: " + stateAge);
                 }
             } catch (InterruptedException e) {
                 break;

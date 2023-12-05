@@ -1,5 +1,6 @@
 package edu.utdallas.heartstohearts.lobbyui;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -14,13 +15,19 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import edu.utdallas.heartstohearts.MainActivity;
 import edu.utdallas.heartstohearts.R;
 import edu.utdallas.heartstohearts.appui.BaseActivity;
 import edu.utdallas.heartstohearts.gamenetwork.GameClient;
@@ -42,9 +49,7 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
     private NetworkManager networkManager;
     private Switchboard switchboard;
 
-    private ListView connectedDevices;
     private DeviceDetailAdapter connectedDevicesAdapter;
-    private ListView nearbyDevices;
     private DeviceDetailAdapter nearbyDevicesAdapter;
     private DeviceDetailView thisDeviceView;
 
@@ -55,6 +60,14 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
 
     private final String TAG = "FormLobbyActivity";
 
+    private final ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), isGranted -> {
+        boolean granted = isGranted.values().stream().allMatch(grant -> grant == true);
+        if(!granted){
+            Toast.makeText(getContext(), "Without permissions, the app can't run!", Toast.LENGTH_LONG).show();
+            // switch to homescreen
+            startActivity(new Intent(this, MainActivity.class));
+        }
+    });
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -71,13 +84,12 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_form_lobby);
 
-
         macToAddress = new LimitedLinkedHashMap<>(3); // Only three peers allowed!;
         connectedMacs = new ArrayList<>();
 
         // Set up lists
-        connectedDevices = (ListView) findViewById(R.id.connected_devices_list);
-        nearbyDevices = (ListView) findViewById(R.id.nearby_devices_list);
+        ListView connectedDevices = findViewById(R.id.connected_devices_list);
+        ListView nearbyDevices = findViewById(R.id.nearby_devices_list);
         connectedDevicesAdapter = new DeviceDetailAdapter(getContext(), false);
         nearbyDevicesAdapter = new DeviceDetailAdapter(getContext(), true);
         nearbyDevices.setAdapter(nearbyDevicesAdapter);
@@ -112,26 +124,48 @@ public class FormLobbyActivity extends BaseActivity implements WifiP2pManager.Pe
         // Start accepting incoming connections for switchboard
         switchboard = Switchboard.getDefault();
         switchboard.addListener(null, new MessageFilter(LobbyMessage.class).addChildren(this));
-        switchboard.acceptIncoming((error) -> Log.d("IncomingConnections", "Error accpting incoming: " + error));
-
+        switchboard.acceptIncoming((error) -> Log.d("IncomingConnections", "Error accepting incoming: " + error));
     }
 
     /**
-     * register the BroadcastReceiver with the intent values to be matched
+     * register the BroadcastReceiver with the intent values to be matched.
      */
     @Override
     public void onResume() {
         super.onResume();
+
+        List<String> permissions = Arrays.asList(Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.CHANGE_WIFI_STATE,
+                Manifest.permission.INTERNET, Manifest.permission.ACCESS_NETWORK_STATE);
+        // TODO if android 13 or higher, request NEARBY_DEVICES
+        List<String> notGrantedPermissions = new ArrayList<>();
+
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                Log.e(TAG, "Permission not granted: " + permission);
+                notGrantedPermissions.add(permission);
+            } else {
+                Log.d(TAG, "Permission granted: " + permission);
+            }
+        }
+
+        if(!notGrantedPermissions.isEmpty()){
+            // request permissions
+            String[] notGrantedArray = new String[notGrantedPermissions.size()];
+            notGrantedPermissions.toArray(notGrantedArray);
+            requestPermissionLauncher.launch(notGrantedArray);
+        }
+
         networkManager.discoverPeers(new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {/* do nothing */}
 
             @Override
             public void onFailure(int i) {
-                Toast.makeText(getContext(), "Unable to search for nearby devices!", Toast.LENGTH_LONG);
+                Toast.makeText(getContext(), "Unable to search for nearby devices!", Toast.LENGTH_LONG).show();
+                Log.e(TAG, "Failed to discover peers. Error code: " + i);
             }
         });
-
     }
 
     @Override

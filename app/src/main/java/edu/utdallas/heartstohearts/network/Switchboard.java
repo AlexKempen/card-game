@@ -101,7 +101,7 @@ public class Switchboard implements Closeable {
                         server.close();
                     }
                     server = new PeerServer(port);
-                    server.addPeerConnectionListener(Switchboard.this::registerConnection);
+                    server.addPeerConnectionListener(this::registerConnection);
                     server.startAcceptingConnections(onError);
                 } catch (IOException e) {
                     Callback.callOrThrow(onError, e);
@@ -266,7 +266,7 @@ public class Switchboard implements Closeable {
      */
     private void messageReceived(final Object msg, InetAddress source) {
         synchronized (listenersLock) {
-            Log.d("TAG", "Received message of type " + msg.getClass() + " from " + source);
+            Log.d(TAG, "Received message of type " + msg.getClass() + " from " + source);
             // For all listeners to the given address or blanket/null listeners, dispatch the message
             Stream<MessageListener> interestedListeners = Stream.concat(getListenerList(source).stream(), getListenerList(null).stream());
             interestedListeners.forEach((l) -> l.messageReceived(msg, source));
