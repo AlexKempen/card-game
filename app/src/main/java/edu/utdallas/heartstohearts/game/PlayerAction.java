@@ -1,3 +1,12 @@
+/**
+ * Hearts to Hearts project
+ * Senior design project, University of Texas at Dallas CS 4485.0W1
+ * Fall 2023
+ * <p>
+ * File authors:
+ * - Alex Kempen
+ * - Jacob Baskins
+ */
 package edu.utdallas.heartstohearts.game;
 
 import java.io.Serializable;
